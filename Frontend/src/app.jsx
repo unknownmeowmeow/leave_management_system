@@ -1,43 +1,44 @@
-import { useState } from 'preact/hooks'
-import preactLogo from './assets/preact.svg'
-import viteLogo from '/vite.svg'
-import './app.css'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-export function App() {
-  const [count, setCount] = useState(0)
+import Login from "./components/auth/Login.jsx";
+import Register from "./components/auth/Register.jsx";
+import Dashboard from "./components/employee/Dashboard.jsx";
+import AdminDashboard from "./components/admin/Dashboard.jsx";
+import LeaveFile from "./components/employee/LeaveFile.jsx";
+import RecordFile from "./components/employee/RecordFile.jsx";
+import PendingLeave from "./components/admin/PendingLeave.jsx";
+import ApprovedLeave from "./components/admin/ApprovedLeave.jsx";
+import CancelledLeave from "./components/admin/CancelledLeave.jsx";
+import RecordLeave from "./components/admin/RecordLeave.jsx";
+import RejectedLeave from "./components/admin/RejectedLeave.jsx";
+import NotFound from "./components/NotFound.jsx";
+import Footers from "./components/partial/Footer.jsx";
+
+function App() {
+  const mainContentStyle = { padding: "20px", minHeight: "80vh" };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} class="logo" alt="Vite logo" />
-        </a>
-        <a href="https://preactjs.com" target="_blank">
-          <img src={preactLogo} class="logo preact" alt="Preact logo" />
-        </a>
+    <Router>
+      <div style={mainContentStyle}>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/application" element={<LeaveFile />} />
+          <Route path="/recordfile" element={<RecordFile />} />
+          <Route path="/pendingleave" element={<PendingLeave />} />
+          <Route path="/approvedleave" element={<ApprovedLeave />} />
+          <Route path="/cancelledleave" element={<CancelledLeave />} />
+          <Route path="/recordleave" element={<RecordLeave />} />
+          <Route path="/rejectedleave" element={<RejectedLeave />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </div>
-      <h1>Vite + Preact</h1>
-      <div class="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/app.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p>
-        Check out{' '}
-        <a
-          href="https://preactjs.com/guide/v10/getting-started#create-a-vite-powered-preact-app"
-          target="_blank"
-        >
-          create-preact
-        </a>
-        , the official Preact + Vite starter
-      </p>
-      <p class="read-the-docs">
-        Click on the Vite and Preact logos to learn more
-      </p>
-    </>
-  )
+      <Footers />
+    </Router>
+  );
 }
+
+export default App;
