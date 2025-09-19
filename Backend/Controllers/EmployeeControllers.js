@@ -1,104 +1,162 @@
 import bcrypt from "bcrypt";
 import EmployeeModel from "../Models/EmployeeModel.js";
-import { 
-    GENDER_MALE, GENDER_FEMALE, ACTIVE_STATUS, MESSAGE_ALL_FIELD_ERROR, MESSAGE_FIRST_NAME_ERROR, 
-    MESSAGE_LAST_NAME_ERROR, MESSAGE_ADDRESS_ERROR, MESSAGE_EMAIL_REGEX_ERROR, MESSAGE_CONFIRM_PASSWORD, MESSAGE_PASSWORD_ERROR, 
-    MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE, MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE,
-    MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION, MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FIRST_NAME_INVALID_CHARACTER,
-    MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_LAST_NAME_INVALID_CHARACTER, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE
-} from "../Constant.js";
+import EmployeeGenderModel from "../Models/EmployeeGenderModel.js";
+import EmployeeRoleTypeModel from "../Models/EmployeeRoleTypeModel.js";
+import {
+    MESSAGE_ALL_FIELD_ERROR, MESSAGE_FIRST_NAME_ERROR, MESSAGE_LAST_NAME_ERROR,
+    MESSAGE_EMAIL_REGEX_ERROR, MESSAGE_CONFIRM_PASSWORD, MESSAGE_PASSWORD_ERROR,
+    MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
+    MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE, MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION,
+    MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FIRST_NAME_INVALID_CHARACTER, MESSAGE_LAST_NAME_INVALID_CHARACTER,
+    MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE,
+    CATCH_IN_GENDER, CATCH_IN_ROLE,
+} from "../constant.js";
 
-class EmployeeControllers{
+class EmployeeControllers {
+    /**
+     * Controller to get all roles and send as JSON response.
+     * @param {Object} req - The Express request object.
+     * @param {Object} res - The Express response object.
+     * @returns {Promise<void>} Sends JSON response with roles or error message.
+     */
+    static async getRoles(req, res) {
 
-    static async userRegistration(req, res){
+        try {
+            const response_data = await EmployeeRoleTypeModel.getAllRoles();
+
+            if(response_data.error){
+                return res.json({ success: false, message: response_data.error });
+            }
+            res.json({ success: true, roles: response_data.result });
+        }
+        catch{
+            res.json(CATCH_IN_ROLE);
+        }
+    }
+
+    /**
+    * Controller to get all genders and send as JSON response.
+    * @param {Object} req - The Express request object.
+    * @param {Object} res - The Express response object.
+    * @returns {Promise<void>} Sends JSON response with genders or error message.
+    */
+    static async getGender(req, res) {
 
         try{
-            const { first_name, last_name, email, password, confirm_password, address, gender, role_id, status_id } = req.body;
-            
-            if(!first_name || !last_name || !email || !password || !confirm_password || !address || !gender){
+            const response_data = await EmployeeGenderModel.getAllGenders();
+
+            if(response_data.error){
+                return res.json({ success: false, message: response_data.error });
+            }
+            res.json({ success: true, genders: response_data.result });
+        }
+        catch{
+            res.json(CATCH_IN_GENDER);
+        }
+    }
+
+    /**
+     * Controller to handle user registration.
+     * Validates input data, checks for existing email,
+     * verifies role and gender IDs, hashes password,
+     * and creates a new user.
+     * 
+     * @param {Object} req - The Express request object.
+     * @param {Object} req.body - The request body containing user details.
+     * @param {string} req.body.first_name - User's first name.
+     * @param {string} req.body.last_name - User's last name.
+     * @param {string} req.body.email - User's email address.
+     * @param {string} req.body.password - User's password.
+     * @param {string} req.body.confirm_password - Confirmation of the user's password.
+     * @param {number} req.body.role - Role ID of the user.
+     * @param {number} req.body.gender - Gender ID of the user.
+     * @param {Object} res - The Express response object.
+     * @returns {Promise<Object>} Sends JSON response indicating success or failure.
+     */
+    static async userRegistration(req, res) {
+
+        try{
+            const { first_name, last_name, email, password, confirm_password, role, gender } = req.body;
+
+            if(!first_name || !last_name || !email || !password || !confirm_password || !role || !gender){
                 return res.json(MESSAGE_ALL_FIELD_ERROR);
-            } 
-            else if (!/^[a-zA-Z\s]+$/.test(first_name.trim())) {
+            }
+            if(!/^[a-zA-Z\s]+$/.test(first_name.trim())){
                 return res.json(MESSAGE_FIRST_NAME_INVALID_CHARACTER);
             }
-            else if(first_name.trim().length < 3){
+            if(first_name.trim().length < 3){
                 return res.json(MESSAGE_FIRST_NAME_ERROR);
-            } 
-            else if (last_name.trim().length < 3) {
+            }
+            if(last_name.trim().length < 3){
                 return res.json(MESSAGE_LAST_NAME_ERROR);
             }
-            else if (!/^[a-zA-Z\s]+$/.test(last_name.trim())) {
+            if(!/^[a-zA-Z\s]+$/.test(last_name.trim())){
                 return res.json(MESSAGE_LAST_NAME_INVALID_CHARACTER);
             }
-            else if(address.trim().length < 5){
-                return res.json(MESSAGE_ADDRESS_ERROR);
-            } 
-            else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
                 return res.json(MESSAGE_EMAIL_REGEX_ERROR);
-            } 
-            else if(password.trim().length < 8){
+            }
+            if(password.trim().length < 8){
                 return res.json(MESSAGE_PASSWORD_ERROR);
-            } 
-            else if(password !== confirm_password){
+            }
+            if(password !== confirm_password){
                 return res.json(MESSAGE_CONFIRM_PASSWORD);
-            } 
+            }
             const email_exist = await EmployeeModel.getEmployeeEmail(email);
-            
+
             if(email_exist.result){
                 return res.json(MESSAGE_EMAIL_EXIST);
             }
-            let gender_value = null;
+            const role_data = await EmployeeRoleTypeModel.getRoleById(role);
 
-            if(gender){
-                const ang_kanyang_kasarian = gender.toLowerCase();
-                if (ang_kanyang_kasarian === "male") {
-                    gender_value = GENDER_MALE;
-                } 
-                else if(ang_kanyang_kasarian === "female") {
-                    gender_value = GENDER_FEMALE;
-                }
+            if(!role_data.result){
+                return res.json(CATCH_IN_ROLE);
             }
-            let role_value = null;
+            const gender_data = await EmployeeGenderModel.getGenderById(gender);
 
-            if(role_id){
-                role_value = parseInt(role_id, 10);
-            }
-            let status_value = ACTIVE_STATUS; 
-            
-            if(status_id){
-                status_value = parseInt(status_id, 10);
+            if(!gender_data.result){
+                return res.json(CATCH_IN_GENDER);
             }
             const hash_password = await bcrypt.hash(password, 12);
-    
+
             const new_user = await EmployeeModel.createUser({
                 first_name,
                 last_name,
-                address,
-                gender: gender_value,
                 email,
+                role,
+                gender,
                 password: hash_password,
-                role_id: role_value,
-                status_id: status_value
             });
-    
+
             if(new_user.status){
                 return res.json(MESSAGE_REGISTRATION_MESSAGE);
-            } 
-            else {
+            }
+            else{
                 return res.json(MESSAGE_FAILED_REGISTRATION_MESSAGE);
             }
-        } 
+        }
         catch(error){
             return res.json(MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE);
         }
     }
-    
-    
+
+    /**
+     * Controller to handle user login.
+     * Validates input, checks for existing email,
+     * compares password hash, and sets session data on success.
+     * 
+     * @param {Object} req - The Express request object.
+     * @param {Object} req.body - The request body containing login details.
+     * @param {string} req.body.email - The user's email.
+     * @param {string} req.body.password - The user's password.
+     * @param {Object} res - The Express response object.
+     * @returns {Promise<Object>} Sends JSON response indicating success or failure.
+     */
     static async userLogin(req, res) {
 
-        try {
+        try{
             const { email, password } = req.body;
-    
+
             if(!email || !password){
                 return res.json(MESSAGE_ALL_FIELD_ERROR);
             }
@@ -113,48 +171,56 @@ class EmployeeControllers{
             if(!match){
                 return res.json(MESSAGE_CONFIRM_PASSWORD);
             }
+
             req.session.user = {
                 employee_id: user.id,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
-                gender: user.is_gender,
-                role_id: user.role_id,
+                role: user.employee_role_type_id,
             };
+            
             return res.json({
                 success: true,
                 message: "Successfully logged in!",
-                role: user.role_id, 
-                user: req.session.user
-            });
-    
-        } 
+                user: req.session.user,
+            });            
+        }
         catch(error){
             return res.json(MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE);
         }
     }
-    
-    static async logout(req, res){
 
-        try {
+    /**
+     * Controller to handle user logout.
+     * Destroys the user session if active.
+     * 
+     * @param {Object} req - The Express request object.
+     * @param {Object} res - The Express response object.
+     * @returns {Promise<Object>} Sends JSON response indicating success or failure.
+     */
+    static async logout(req, res) {
+
+        try{
+
             if(!req.session.user){
                 return res.json(MESSAGE_NO_EMPLOYEE_SESSION);
-            } 
-            else{
-                req.session.destroy(error => {
-                    if(error){
-                        return res.json();
-                    } 
-                    else{
-                        return res.json(MESSAGE_IN_SUCCESS_LOGOUT);
-                    }
-                });
             }
-        } 
+
+            req.session.destroy(error => {
+                if(error){
+                    return res.json(MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE);
+                }
+                else{
+                    return res.json(MESSAGE_IN_SUCCESS_LOGOUT);
+                }
+            });
+        }
         catch(error){
             return res.json(MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE);
         }
     }
+
 }
 
 export default EmployeeControllers;

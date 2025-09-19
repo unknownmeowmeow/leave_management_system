@@ -26,10 +26,10 @@ export default function Dashboard() {
 
     return (
         <div style={header_container_style}>
-             <h1>welcome employee</h1>
+
+            <h1>welcome intern</h1>
             <button style={button_style}>Time IN</button>
             <button style={button_style}>Time Out</button>
-            <a href="/application" style={link_style}> Leave File Application</a>
             <a href="/" style={link_style}>
                 Logout
             </a>

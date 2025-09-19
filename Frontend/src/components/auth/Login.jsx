@@ -15,48 +15,51 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-    
+
         try {
             const response = await axios.post(
                 "http://localhost:5000/api/auth/login",
                 { email, password },
                 { withCredentials: true }
             );
-    
+
             if (response.data.success) {
-                const role = response.data.role;
-    
+                const user = response.data.user;
+                const role = user.role;
+
                 if (role === 1) {
                     navigate("/admin");
                 } 
                 else if (role === 2) {
                     navigate("/dashboard");
+                } 
+                else if (role === 3) {
+                    navigate("/interndashboard");
                 }
                 else {
-                    navigate("/");
+                    setError("Unknown role. Cannot navigate.");
                 }
             } 
             else {
                 setError(response.data.message || "Login failed.");
             }
-        } 
-        catch(error){
-            console.error(error);
-            setError(error.response?.data?.message || "Server error in frontend login. Please try again.");
+        } catch (error) {
+            console.error("Login error:", error);
+            setError(
+                error.response?.data?.message ||
+                "Server error in frontend login. Please try again."
+            );
         }
     };
-    
 
     return (
         <div className="container" style={{ maxWidth: "400px", marginTop: "50px" }}>
             <div className="card shadow-sm p-4">
                 <h2 className="text-center mb-4">Login</h2>
 
-                {/* Error message */}
                 {error && <div className="alert alert-danger text-center">{error}</div>}
 
                 <form onSubmit={handleSubmit}>
-                    {/* Email input */}
                     <div className="mb-3">
                         <label className="form-label">Email</label>
                         <input
@@ -64,7 +67,7 @@ export default function Login() {
                             className="form-control"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-
+                            required
                         />
                     </div>
 
@@ -76,7 +79,7 @@ export default function Login() {
                                 className="form-control"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-
+                                required
                             />
                             <button
                                 type="button"
@@ -88,7 +91,6 @@ export default function Login() {
                         </div>
                     </div>
 
-                    {/* Submit button */}
                     <button type="submit" className="btn btn-primary w-100">
                         Login
                     </button>

@@ -14,15 +14,19 @@ import RecordLeave from "./components/admin/RecordLeave.jsx";
 import RejectedLeave from "./components/admin/RejectedLeave.jsx";
 import NotFound from "./components/NotFound.jsx";
 import Footers from "./components/partial/Footer.jsx";
-
+import Logout from "./components/auth/Login.jsx";
+import InternDashboard from "./components/intern/Dashboard.jsx"
 function App() {
-  const mainContentStyle = { padding: "20px", minHeight: "80vh" };
+  const main_content_style = { padding: "20px", minHeight: "80vh" };
 
   return (
+
     <Router>
-      <div style={mainContentStyle}>
+
+      <div style={main_content_style}>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/" element={<Logout />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
@@ -33,11 +37,15 @@ function App() {
           <Route path="/cancelledleave" element={<CancelledLeave />} />
           <Route path="/recordleave" element={<RecordLeave />} />
           <Route path="/rejectedleave" element={<RejectedLeave />} />
+          <Route path="/interndashboard" element={<InternDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
+      
       <Footers />
+      
     </Router>
+    
   );
 }
 

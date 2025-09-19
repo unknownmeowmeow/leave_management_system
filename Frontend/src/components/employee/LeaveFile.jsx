@@ -1,4 +1,4 @@
 export default function LeaveFile() {
-    return <div>Approved Leave Component</div>;
+    return <div>Application form</div>;
   }
   

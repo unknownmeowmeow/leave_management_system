@@ -3,8 +3,8 @@ import React from "react";
 export default function AdminDashboard() {
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h2>Admin Dashboard</h2>
-      <p>Dummy content for frontend testing.</p>
+       <h1>welcome admin</h1>
+      <p></p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
 export default function CancelledLeave() {
-    return <div>Approved Leave Component</div>;
+    return <div>Cancel Leave Component</div>;
   }
   
