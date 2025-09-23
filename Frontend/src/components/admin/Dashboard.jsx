@@ -88,7 +88,7 @@ export default function Dashboard() {
                             const timeOutDisplay = record.time_out
                                 ? new Date(record.time_out).toLocaleTimeString()
                                 : "N/A";
-                            const dateDisplay = record.time_in
+                            const dateDisplay =  record.time_in
                                 ? new Date(record.time_in).toLocaleDateString()
                                 : "N/A";
 
