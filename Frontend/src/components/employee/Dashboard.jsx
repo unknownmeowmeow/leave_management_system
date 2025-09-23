@@ -42,7 +42,7 @@ export default function Dashboard() {
                     alert(response.data.message);
                 }
             } catch (error) {
-                alert(error.response?.data?.message || "Failed to fetch attendance records.");
+                alert(error.response?.data?.message);
             }
         };
 
