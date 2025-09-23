@@ -11,10 +11,10 @@ class EmployeeRoleTypeModel{
      * created by: rogendher keith lachica
      * updated at: September 19 2025 1:00 pm  
      */
-    static async getAllRoles() {
+    static async getAllRoles(){
         const response_data = { ...STATUS_QUERY };
 
-        try {
+        try{
             const [get_all_role_result] = await db.execute(`
             SELECT * 
             FROM employee_role_types
@@ -37,7 +37,7 @@ class EmployeeRoleTypeModel{
     * created by: rogendher keith lachica
     * updated at: September 19 2025 1:04 pm  
     */
-    static async getRoleById(roleId) {
+    static async getRoleById(role_id){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -45,7 +45,7 @@ class EmployeeRoleTypeModel{
                     SELECT * 
                     FROM employee_role_types 
                     WHERE id = ?
-                `, [roleId]);
+                `, [role_id]);
 
             response_data.status = true;
 

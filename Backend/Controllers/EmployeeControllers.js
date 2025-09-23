@@ -2,18 +2,16 @@ import bcrypt from "bcrypt";
 import EmployeeModel from "../Models/EmployeeModel.js";
 import EmployeeGenderModel from "../Models/EmployeeGenderModel.js";
 import EmployeeRoleTypeModel from "../Models/EmployeeRoleTypeModel.js";
-import ValidationHelper from "../Helpers/ValidationHelpers.js";
-    MESSAGE_ALL_FIELD_ERROR, MESSAGE_CONFIRM_PASSWORD,
-    MESSAGE_EMAIL_REGEX_ERROR, MESSAGE_CONFIRM_PASSWORD, MESSAGE_PASSWORD_ERROR,
-    MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
+import ValidationHelper from '../Helpers/ValidationHelper.js';
+import {
+    MESSAGE_CONFIRM_PASSWORD, MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
     MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE, MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION,
-    MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FIRST_NAME_INVALID_CHARACTER, MESSAGE_LAST_NAME_INVALID_CHARACTER,
-    MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE,
-    CATCH_IN_GENDER, CATCH_IN_ROLE,
+    MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE,
+    CATCH_IN_GENDER, CATCH_IN_ROLE
 } from "../constant.js";
 
 
-class EmployeeControllers {
+class EmployeeControllers{
     /**
      * Controller to get all roles and send as JSON response.
      * @param {Object} req - The Express request object.
@@ -22,9 +20,9 @@ class EmployeeControllers {
      * created by: rogendher keith lachica
      * updated at: September 19 2025 9:37 am  
      */  
-    static async getRoles(req, res) {
+    static async getRoles(req, res){
 
-        try {
+        try{
             const response_data = await EmployeeRoleTypeModel.getAllRoles();
 
             if(response_data.error){
@@ -45,7 +43,7 @@ class EmployeeControllers {
     * created by: rogendher keith lachica
     * updated at: September 19 2025 9:17 am  
     */  
-    static async getGender(req, res) {
+    static async getGender(req, res){
 
         try{
             const response_data = await EmployeeGenderModel.getAllGenders();
@@ -78,37 +76,29 @@ class EmployeeControllers {
      * @param {Object} res - The Express response object.
      * @returns {Promise<Object>} Sends JSON response indicating success or failure.
      * created by: rogendher keith lachica
-     * updated at: September 19 2025 10:15 am    
+     * updated at: September 19 2025 3:47 pm    
      */
-    static async userRegistration(req, res) {
-        
-        try {
-            const validation_errors = ValidationHelper.validateUserRegistration(req.body);
-            
-            if (validation_errors.length > 0) {
-                return res.json({ success: false, errors: validation_errors });
-            }
-            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-                return res.json(MESSAGE_EMAIL_REGEX_ERROR);
-            }
-            if(password.trim().length < 8){
-                return res.json(MESSAGE_PASSWORD_ERROR);
-            }
-            if(password !== confirm_password){
-                return res.json(MESSAGE_CONFIRM_PASSWORD);
-            }
-            const email_exist = await EmployeeModel.getEmployeeEmail(email);
+    static async userRegistration(req, res){
 
+        try{
+            const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
+
+            if(validation_error.length){
+                return res.json({ success: false, errors: validation_error });
+            }
+            const { first_name, last_name, email, password, role, gender } = req.body;
+            const email_exist = await EmployeeModel.getEmployeeEmail(email);
+            
             if(email_exist.result){
                 return res.json(MESSAGE_EMAIL_EXIST);
             }
             const role_data = await EmployeeRoleTypeModel.getRoleById(role);
-
+            
             if(!role_data.result){
                 return res.json(CATCH_IN_ROLE);
             }
             const gender_data = await EmployeeGenderModel.getGenderById(gender);
-
+            
             if(!gender_data.result){
                 return res.json(CATCH_IN_GENDER);
             }
@@ -125,11 +115,11 @@ class EmployeeControllers {
 
             if(new_user.status){
                 return res.json(MESSAGE_REGISTRATION_MESSAGE);
-            }
+            } 
             else{
                 return res.json(MESSAGE_FAILED_REGISTRATION_MESSAGE);
             }
-        }
+        } 
         catch(error){
             return res.json(MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE);
         }
@@ -150,43 +140,44 @@ class EmployeeControllers {
      * updated at: September 19 2025 10:47 am  
      */
     static async userLogin(req, res) {
-
-        try{
-            const { email, password } = req.body;
-
-            if(!email || !password){
-                return res.json(MESSAGE_ALL_FIELD_ERROR);
+        try {
+            const validation_error = ValidationHelper.validateEmployeeLogin(req.body);
+    
+            if(validation_error.length){
+                return res.json({ success: false, errors: validation_error });
             }
+            const { email, password } = req.body;
             const user_data = await EmployeeModel.getEmployeeEmail(email);
-
+    
             if(!user_data.result){
                 return res.json(MESSAGE_EMAIL_NOT_FOUND);
             }
             const user = user_data.result;
             const match = await bcrypt.compare(password, user.password);
-
+    
             if(!match){
                 return res.json(MESSAGE_CONFIRM_PASSWORD);
             }
-
+    
             req.session.user = {
                 employee_id: user.id,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
                 role: user.employee_role_type_id,
-            };
-            
+            };            
+    
             return res.json({
                 success: true,
-                message: "Successfully logged in!",
+                message: "Success login",
                 user: req.session.user,
-            });            
+            });
         }
         catch(error){
             return res.json(MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE);
         }
     }
+    
 
     /**
      * Controller to handle user logout.
@@ -198,7 +189,7 @@ class EmployeeControllers {
      * created by: rogendher keith lachica
      * updated at: September 19 2025 11:45 pm  
      */  
-    static async logout(req, res) {
+    static async logout(req, res){
 
         try{
 
@@ -206,7 +197,7 @@ class EmployeeControllers {
                 return res.json(MESSAGE_NO_EMPLOYEE_SESSION);
             }
 
-            req.session.destroy(error => {
+            req.session.destroy(error =>{
                 if(error){
                     return res.json(MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE);
                 }

@@ -23,11 +23,11 @@ class EmployeeModel {
 
             if(get_all_email_result.length){
                 response_data.status = true;
-                response_data.result = get_all_email_result[0];
+                response_data.result = get_all_email_result[0]; 
             }
             else{
                 response_data.result = null;
-                response_data.error = "Email not found.";
+                response_data.error = "email not found in model";
             }
         }
         catch(error){
@@ -75,7 +75,7 @@ class EmployeeModel {
                 response_data.insert_employee_result = { id: insert_employee_data_result.insertId };
             }
             else{
-                response_data.error = "Insert failed.";
+                response_data.error = "insert employee data error in model";
             }
         }
         catch(error){

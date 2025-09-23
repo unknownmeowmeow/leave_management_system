@@ -3,7 +3,7 @@ import session from "express-session";
 import cors from "cors";
 import path from "path";
 import EmployeeRoutes from "./Routes/EmployeeRoutes.js";
-
+import TimeRoutes from "./Routes/TimeRoutes.js";
 import { MY_SECRET_SERVER_SESSION, EXPRESS_URL, FRONT_END_URL, CORS, SERVER_CONSOLE_LOG } from "./constant.js";
 
 const app = express();
@@ -14,7 +14,7 @@ app.use(express.urlencoded(EXPRESS_URL));
 app.use(session(MY_SECRET_SERVER_SESSION));
 
 app.use("/api/auth", EmployeeRoutes); 
-      
+app.use("/api/attendance", TimeRoutes)    
 
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
