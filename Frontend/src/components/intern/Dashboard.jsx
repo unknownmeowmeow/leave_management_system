@@ -31,38 +31,31 @@ export default function Dashboard() {
             const res = await axios.post("http://localhost:5000/api/attendance/timein", {}, {
                 withCredentials: true
             });
-
             alert(res.data.message);
         } 
         catch(error){
-            alert("Time In failed: " + (error.response?.data?.message));
+            alert((error.response?.data?.message));
         }
     };
 
     const handleTimeOut = async () => {
         try {
-            console.log("Sending Time OUT request...");
-
-            const res = await axios.post("http://localhost:5000/api/attendance/timeout", {}, {
-                withCredentials: true
-            });
-            console.log("check the response data", res.data);
+            const res = await axios.post("http://localhost:5000/api/attendance/timeout", 
+                {}, {withCredentials: true});
 
             if(res.data.success){
-                alert(res.data.message || "Time Out successful");
+                alert(res.data.message);
             } 
             else{
-                console.warn("Time Out failed with message:", res.data.message);
-                alert("Time Out failed: " + (res.data.message));
+                alert((res.data.message));
             }
         }
         catch(error){
-            console.error("Time OUT request error:", error);
+            console.error( error);
 
             const errorMessage = error.response?.data?.message || error.message;
-            console.log("Detailed error message:", errorMessage);
 
-            alert("Time Out failed: " + errorMessage);
+            alert(errorMessage);
         }
     };
 
