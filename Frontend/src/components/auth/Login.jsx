@@ -31,24 +31,44 @@ export default function Login() {
                     navigate("/admin");
                 } 
                 else if (role === 2) {
-                    navigate("/dashboard");
+                    navigate("/interndashboard");
                 } 
                 else if (role === 3) {
-                    navigate("/interndashboard");
+                    navigate("/dashboard");
                 }
                 else {
-                    setError("Unknown role. Cannot navigate.");
+                    if (response.data.errors) {
+
+                    setError(response.data.errors);
+                }
+                else if (response.data.message) {
+                    setError(response.data.message);
+                }
+                else {
+                    setError("An unknown error occurred.");
+                }
                 }
             } 
             else {
-                setError(response.data.message || "Login failed.");
+                if (response.data.errors) {
+
+                    setError(response.data.errors);
+                }
+                else if (response.data.message) {
+                    setError(response.data.message);
+                }
+                else {
+                    setError("An unknown error occurred.");
+                }
             }
-        } catch (error) {
-            console.error("Login error:", error);
-            setError(
-                error.response?.data?.message ||
-                "Server error in frontend login. Please try again."
-            );
+        } 
+        catch(error){
+            if(error.response && error.response.data && error.response.data.message){
+                setError(error.response.data.message);
+            }
+            else{
+                setError("Server Error in Login Frontend ");
+            }
         }
     };
 
@@ -67,7 +87,7 @@ export default function Login() {
                             className="form-control"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
+                            
                         />
                     </div>
 
@@ -79,7 +99,7 @@ export default function Login() {
                                 className="form-control"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                required
+                                
                             />
                             <button
                                 type="button"

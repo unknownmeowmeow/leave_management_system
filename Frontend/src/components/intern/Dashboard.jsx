@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 
 export default function Dashboard() {
     const header_container_style = {
@@ -24,15 +25,53 @@ export default function Dashboard() {
         margin: "0 10px",
     };
 
+    const handleTimeIn = async () => {
+
+        try {
+            const res = await axios.post("http://localhost:5000/api/attendance/timein", {}, {
+                withCredentials: true
+            });
+
+            alert(res.data.message);
+        } 
+        catch(error){
+            alert("Time In failed: " + (error.response?.data?.message));
+        }
+    };
+
+    const handleTimeOut = async () => {
+        try {
+            console.log("Sending Time OUT request...");
+
+            const res = await axios.post("http://localhost:5000/api/attendance/timeout", {}, {
+                withCredentials: true
+            });
+            console.log("check the response data", res.data);
+
+            if(res.data.success){
+                alert(res.data.message || "Time Out successful");
+            } 
+            else{
+                console.warn("Time Out failed with message:", res.data.message);
+                alert("Time Out failed: " + (res.data.message));
+            }
+        }
+        catch(error){
+            console.error("Time OUT request error:", error);
+
+            const errorMessage = error.response?.data?.message || error.message;
+            console.log("Detailed error message:", errorMessage);
+
+            alert("Time Out failed: " + errorMessage);
+        }
+    };
+
     return (
         <div style={header_container_style}>
-
-            <h1>welcome intern</h1>
-            <button style={button_style}>Time IN</button>
-            <button style={button_style}>Time Out</button>
-            <a href="/" style={link_style}>
-                Logout
-            </a>
+            <h1>Welcome Intern</h1>
+            <button style={button_style} onClick={handleTimeIn}>Time IN</button>
+            <button style={button_style} onClick={handleTimeOut}>Time Out</button>
+            <a href="/" style={link_style}>Logout</a>
         </div>
     );
 }

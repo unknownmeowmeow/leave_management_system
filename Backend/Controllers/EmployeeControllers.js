@@ -2,8 +2,8 @@ import bcrypt from "bcrypt";
 import EmployeeModel from "../Models/EmployeeModel.js";
 import EmployeeGenderModel from "../Models/EmployeeGenderModel.js";
 import EmployeeRoleTypeModel from "../Models/EmployeeRoleTypeModel.js";
-import {
-    MESSAGE_ALL_FIELD_ERROR, MESSAGE_FIRST_NAME_ERROR, MESSAGE_LAST_NAME_ERROR,
+import ValidationHelper from "../Helpers/ValidationHelpers.js";
+    MESSAGE_ALL_FIELD_ERROR, MESSAGE_CONFIRM_PASSWORD,
     MESSAGE_EMAIL_REGEX_ERROR, MESSAGE_CONFIRM_PASSWORD, MESSAGE_PASSWORD_ERROR,
     MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
     MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE, MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION,
@@ -12,13 +12,16 @@ import {
     CATCH_IN_GENDER, CATCH_IN_ROLE,
 } from "../constant.js";
 
+
 class EmployeeControllers {
     /**
      * Controller to get all roles and send as JSON response.
      * @param {Object} req - The Express request object.
      * @param {Object} res - The Express response object.
      * @returns {Promise<void>} Sends JSON response with roles or error message.
-     */
+     * created by: rogendher keith lachica
+     * updated at: September 19 2025 9:37 am  
+     */  
     static async getRoles(req, res) {
 
         try {
@@ -39,7 +42,9 @@ class EmployeeControllers {
     * @param {Object} req - The Express request object.
     * @param {Object} res - The Express response object.
     * @returns {Promise<void>} Sends JSON response with genders or error message.
-    */
+    * created by: rogendher keith lachica
+    * updated at: September 19 2025 9:17 am  
+    */  
     static async getGender(req, res) {
 
         try{
@@ -72,26 +77,16 @@ class EmployeeControllers {
      * @param {number} req.body.gender - Gender ID of the user.
      * @param {Object} res - The Express response object.
      * @returns {Promise<Object>} Sends JSON response indicating success or failure.
+     * created by: rogendher keith lachica
+     * updated at: September 19 2025 10:15 am    
      */
     static async userRegistration(req, res) {
-
-        try{
-            const { first_name, last_name, email, password, confirm_password, role, gender } = req.body;
-
-            if(!first_name || !last_name || !email || !password || !confirm_password || !role || !gender){
-                return res.json(MESSAGE_ALL_FIELD_ERROR);
-            }
-            if(!/^[a-zA-Z\s]+$/.test(first_name.trim())){
-                return res.json(MESSAGE_FIRST_NAME_INVALID_CHARACTER);
-            }
-            if(first_name.trim().length < 3){
-                return res.json(MESSAGE_FIRST_NAME_ERROR);
-            }
-            if(last_name.trim().length < 3){
-                return res.json(MESSAGE_LAST_NAME_ERROR);
-            }
-            if(!/^[a-zA-Z\s]+$/.test(last_name.trim())){
-                return res.json(MESSAGE_LAST_NAME_INVALID_CHARACTER);
+        
+        try {
+            const validation_errors = ValidationHelper.validateUserRegistration(req.body);
+            
+            if (validation_errors.length > 0) {
+                return res.json({ success: false, errors: validation_errors });
             }
             if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
                 return res.json(MESSAGE_EMAIL_REGEX_ERROR);
@@ -151,6 +146,8 @@ class EmployeeControllers {
      * @param {string} req.body.password - The user's password.
      * @param {Object} res - The Express response object.
      * @returns {Promise<Object>} Sends JSON response indicating success or failure.
+     * created by: rogendher keith lachica
+     * updated at: September 19 2025 10:47 am  
      */
     static async userLogin(req, res) {
 
@@ -198,7 +195,9 @@ class EmployeeControllers {
      * @param {Object} req - The Express request object.
      * @param {Object} res - The Express response object.
      * @returns {Promise<Object>} Sends JSON response indicating success or failure.
-     */
+     * created by: rogendher keith lachica
+     * updated at: September 19 2025 11:45 pm  
+     */  
     static async logout(req, res) {
 
         try{
