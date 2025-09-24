@@ -37,24 +37,65 @@ class TimeValidationHelper {
      * created by: rogendher keith lachica
      * updated at: September 23 2025 11:26 am  
      */
-    static calculateEmployeeWorkHour(time_in, time_out){
+    static calculateEmployeeWorkHour(time_in, time_out) {
         const start_time = new Date(time_in);
         const end_time = new Date(time_out);
 
         if(isNaN(start_time.getTime()) || isNaN(end_time.getTime()) || end_time < start_time){
-            console.error("error in time log");
             return 0;
         }
+        const day_of_week = start_time.getDay();
+        const is_weekend = (day_of_week === 0 || day_of_week === 6);
+    
         const milliseconds_worked = end_time - start_time;
         const hours_worked = milliseconds_worked / (1000 * 60 * 60);
+    
         const default_day = 24;
         const default_hour_work = 8 / default_day;
-        const default_day_coverter = hours_worked / default_day;
-        const difference_day_work = default_day_coverter - default_hour_work;
-
-        return Math.round(difference_day_work * 10000) / 10000;
+        const default_day_converter = hours_worked / default_day;
+        const difference_day_work = default_day_converter - default_hour_work;
+    
+        let calculated = Math.round(difference_day_work * 10000) / 10000;
+    
+        if(is_weekend && calculated <= 0) {
+            calculated = Math.abs(calculated) || 0.33; 
+        }
+    
+        return calculated;
     }
+     /**
+     * Computes the earned and deducted leave credits based on work hours.
+     *
+     * - Positive work hours: Earned credit = work_hour * 1.5
+     * - Negative work hours: Deducted credit = absolute value of work_hour
+     * - 0 hours: No changes
+     *
+     * @param {number} work_hour - The total hours worked difference from standard
+     * @param {number} current_credit - The current/latest credit before this calculation
+     * @returns {Object} - Object containing earned_credit, deducted_credit, latest_credit
+     * created by: rogendher keith lachica
+     * updated at: September 24 2025 11:10 pm  
+     */
+     static computeLeaveCreditFromWorkHour(work_hour, current_credit){
+        let earned_credit = 0;
+        let deducted_credit = 0;
+        let latest_credit = current_credit;
 
+        if(work_hour > 0){
+            earned_credit = work_hour * 1.5;
+            latest_credit = current_credit + earned_credit;
+        }
+        else if(work_hour < 0){
+            deducted_credit = Math.abs(work_hour);
+            latest_credit = current_credit - deducted_credit;
+        }
+
+        return {
+            earned_credit,
+            deducted_credit,
+            latest_credit
+        };
+    }
     /**
     * Validates the employee's time-out entry.
     *

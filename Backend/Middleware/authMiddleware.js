@@ -1,4 +1,4 @@
-import { SESSION_USER_NOT_FOUND } from "../Constant/Constants.js";
+import { SESSION_USER_NOT_FOUND  } from "../Constant/Constants.js";
 
 class AuthMiddleware {
     /**

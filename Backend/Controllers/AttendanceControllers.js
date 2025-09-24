@@ -1,13 +1,14 @@
 import AttendanceModel from "../Models/AttendanceModel.js";
 import TimeValidationHelper from "../Helpers/TimeValidationHelper.js";
+import LeaveCreditModel from "../Models/LeaveCreditModel.js";   
 import {
     ALREADY_TIME_IN,
     SUCCESS_TIME_IN,
     ERROR_IN_TIME_OUT_ID,
     ERROR_IN_TIME_OUT,
     SESSION_USER_NOT_FOUND,
-    ALREADY_TIME_OUT,
-    ERROR_IN_CATCH_GET_ALL_RECORD,
+    ALREADY_TIME_OUT,   
+    ERROR_IN_CATCH_GET_ALL_RECORD
 } from "../Constant/Constants.js";
 
 class AttendanceControllers{
@@ -59,12 +60,14 @@ class AttendanceControllers{
      * - Calculates total work hours between time-in and time-out.
      * - Validates the time-out data.
      * - Updates the attendance record in the database with time-out and work hours.
+     * - Computes leave credit (earned/deducted) based on work hours.
+     * - Inserts leave credit record.
      *
      * @param {Object} req Express request object.
      * @param {Object} res Express response object.
      * @returns {Object} JSON response indicating success or failure.
      * created by: Rogendher Keith Lachica
-     * updated at: September 23 2025 10:34 am
+     * updated at: September 24 2025 11:30 pm
      */
     static async EmployeetimeOut(req, res){
         const user = req.session.user;
@@ -111,6 +114,26 @@ class AttendanceControllers{
             if(!update_attendance.status){
                 return res.json({ success: false, message: update_attendance.error });
             }
+            const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
+            const current_credit = latest_credit_result.latest_credit || 0;
+
+            const {
+                earned_credit,
+                deducted_credit,
+                latest_credit
+            } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
+
+            await LeaveCreditModel.insertLeaveCredit({
+                employee_id,
+                leave_transaction_id: null,
+                attendance_id: id,
+                leave_type_id: null,
+                earned_credit,
+                used_credit: 0,
+                deducted_credit,
+                current_credit,
+                latest_credit
+            });
 
             return res.json({
                 success: true,
@@ -142,7 +165,7 @@ class AttendanceControllers{
         const employee_id = user.employee_id;
 
         try{
-            const response_data = await AttendanceModel.getAllEmployeeRecord(employee_id);
+            const response_data = await AttendanceModel.getAllEmployeesRecords(employee_id);
 
             if(response_data.error){
                 return res.json({ success: false, message: response_data.error });
@@ -164,7 +187,7 @@ class AttendanceControllers{
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 9:00 am
      */
-    static async AllEmployeesAttendanceRecord(req, res){
+    static async AllEmployeesAttendanceRecord(req, res) {
         const user = req.session.user;
 
         if(!user || !user.employee_id){

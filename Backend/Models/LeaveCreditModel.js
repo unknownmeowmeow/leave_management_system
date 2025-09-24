@@ -73,7 +73,7 @@ class LeaveCreditModel{
      * created by: rogendher keith lachica
      * updated at: September 24 2025 1:25 pm  
      */
-    static async getAllEmployeeCredits() {
+    static async getAllEmployeeCredits(){
         const response_data = { ...STATUS_QUERY };
     
         try{
@@ -111,6 +111,45 @@ class LeaveCreditModel{
     
         return response_data;
     }
+    
+    /**
+     * Retrieves the latest leave credit record for the given employee.
+     * 
+     * @param {number} employee_id - ID of the employee
+     * @returns {Promise<Object>} - Status, result, and error message if any.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25 2025 12:10 am
+     */
+        static async getLatestEmployeeLeaveCredit(employee_id) {
+            const response_data = { ...STATUS_QUERY };
+    
+            try{
+                const [get_all_latest_credit_result] = await db.execute(`
+                    SELECT latest_credit 
+                    FROM leave_credits 
+                    WHERE employee_id = ? 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                `, [employee_id]);
+    
+                if(get_all_latest_credit_result.length > 0){
+                    response_data.status = true;
+                    response_data.result = get_all_latest_credit_result[0];
+                }
+                else{
+                    response_data.status = false;
+                    response_data.result = null;
+                    response_data.error = "no latest leave credit found";
+                }
+            }
+            catch(error){
+                response_data.status = false;
+                response_data.result = null;
+                response_data.error = error.message;
+            }
+    
+            return response_data;
+        }
     
 }
 
