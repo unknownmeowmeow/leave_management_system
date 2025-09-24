@@ -29,19 +29,21 @@ export default function Dashboard() {
 
     useEffect(() => {
         const fetchRecords = async () => {
+
             try {
                 const response = await axios.post(
                     "http://localhost:5000/api/attendance/record",
                     {},
                     { withCredentials: true }
                 );
-                console.log("Attendance Records:", response.data.records);
-                if (response.data.success) {
+
+                if(response.data.success){
                     setRecords(response.data.records);
-                } else {
-                    alert(response.data.message);
+                } 
+                else{
                 }
-            } catch (error) {
+            } 
+            catch(error){
                 alert(error.response?.data?.message);
             }
         };
@@ -57,7 +59,8 @@ export default function Dashboard() {
                 { withCredentials: true }
             );
             alert(response.data.message);
-        } catch (error) {
+        } 
+        catch (error) {
             alert(error.response?.data?.message);
         }
     };

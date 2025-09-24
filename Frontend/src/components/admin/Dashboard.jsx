@@ -44,7 +44,7 @@ export default function Dashboard() {
             <a href="/employeecredit" style={linkStyle}>Employee Credit</a>
             <a href="/" style={linkStyle}>Leave File Application</a>
             <a href="/admin" style={linkStyle}>Employee Attendance</a>
-            <a href="/admin" style={linkStyle}>Employee Leave Record</a>
+            <a href="/recordleave" style={linkStyle}>Employee Leave Record</a>
 
             <h2 style={{ marginTop: "40px" }}>Employee Attendance Records</h2>
             <table

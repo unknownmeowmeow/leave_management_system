@@ -4,15 +4,23 @@ import axios from "axios";
 export default function Dashboard() {
     const [records, setRecords] = useState([]);
 
-    const header_container_style = {
+    // --- Styles ---
+    const containerStyle = {
+        maxWidth: "800px",
+        margin: "40px auto",
+        padding: "20px",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        backgroundColor: "#fafafa",
+        fontFamily: "Arial, sans-serif",
         textAlign: "center",
-        marginTop: "50px",
     };
 
-    const button_style = {
+    const buttonStyle = {
         padding: "10px 20px",
         fontSize: "16px",
-        margin: "0 10px",
+        margin: "10px",
         border: "1px solid #ccc",
         borderRadius: "5px",
         cursor: "pointer",
@@ -20,13 +28,33 @@ export default function Dashboard() {
         transition: "background-color 0.3s",
     };
 
-    const link_style = {
+    const linkStyle = {
         textDecoration: "none",
         color: "#007bff",
         fontSize: "16px",
         margin: "0 10px",
     };
 
+    const tableStyle = {
+        margin: "30px auto",
+        borderCollapse: "collapse",
+        width: "100%",
+    };
+
+    const thTdStyle = {
+        border: "1px solid #ccc",
+        padding: "10px",
+    };
+
+    const headerRowStyle = {
+        backgroundColor: "#e0e0e0",
+    };
+
+    const rowStyleAlt = {
+        backgroundColor: "#f9f9f9",
+    };
+
+    // --- Fetch records ---
     useEffect(() => {
         const fetchRecords = async () => {
             try {
@@ -35,20 +63,18 @@ export default function Dashboard() {
                     {},
                     { withCredentials: true }
                 );
-                console.log("Attendance Records:", response.data.records);
                 if (response.data.success) {
                     setRecords(response.data.records);
-                } else {
-                    alert(response.data.message);
                 }
             } catch (error) {
-                alert(error.response?.data?.message);
+                alert(error.response?.data?.message || "Failed to fetch records.");
             }
         };
 
         fetchRecords();
     }, []);
 
+    // --- Handlers ---
     const handleTimeIn = async () => {
         try {
             const response = await axios.post(
@@ -89,72 +115,62 @@ export default function Dashboard() {
     };
 
     return (
-        <div style={header_container_style}>
+        <div style={containerStyle}>
             <h1>Welcome Employee</h1>
-            <button style={button_style} onClick={handleTimeIn}>
-                Time IN
-            </button>
-            <button style={button_style} onClick={handleTimeOut}>
-                Time Out
-            </button>
-            <button style={button_style} onClick={handleLeave}>
-                File Leave
-            </button>
-            <a href="/" style={link_style}>
-                Logout
-            </a>
 
-            <h2 style={{ marginTop: "40px" }}>Your Attendance Records</h2>
-            <table
-                style={{
-                    margin: "0 auto",
-                    borderCollapse: "collapse",
-                    width: "80%",
-                }}
-            >
+            {/* Button Actions */}
+            <div style={{ marginBottom: "20px" }}>
+                <button style={buttonStyle} onClick={handleTimeIn}>Time IN</button>
+                <button style={buttonStyle} onClick={handleTimeOut}>Time OUT</button>
+                
+            </div>
+
+            {/* Navigation Links */}
+            <div style={{ marginBottom: "30px" }}>
+                <a href="/application" style={linkStyle}>Leave File</a>
+                <a href="/dashboard" style={linkStyle}>Dashboard</a>
+                <a href="/recordfile" style={linkStyle}>RecordFile</a>
+                <a href="/" style={linkStyle}>Logout</a>
+            </div>
+
+            {/* Attendance Table */}
+            <h2>Your Attendance Records</h2>
+            <table style={tableStyle}>
                 <thead>
-                    <tr style={{ backgroundColor: "#e0e0e0" }}>
-                        <th style={{ border: "1px solid #ccc", padding: "8px" }}>Date</th>
-                        <th style={{ border: "1px solid #ccc", padding: "8px" }}>Time In</th>
-                        <th style={{ border: "1px solid #ccc", padding: "8px" }}>Time Out</th>
+                    <tr style={headerRowStyle}>
+                        <th style={thTdStyle}>Date</th>
+                        <th style={thTdStyle}>Time In</th>
+                        <th style={thTdStyle}>Time Out</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {records.length === 0 && (
+                    {records.length === 0 ? (
                         <tr>
-                            <td colSpan="3" style={{ textAlign: "center", padding: "10px" }}>
+                            <td colSpan="3" style={{ ...thTdStyle, textAlign: "center" }}>
                                 No records found.
                             </td>
                         </tr>
-                    )}
-
-                    {records.length > 0 &&
+                    ) : (
                         records.map((record, index) => {
-                            let timeInDisplay = "N/A";
-                            let timeOutDisplay = "N/A";
-
-                            if (record.time_in) {
-                                timeInDisplay = new Date(record.time_in).toLocaleTimeString();
-                            }
-
-                            if (record.time_out) {
-                                timeOutDisplay = new Date(record.time_out).toLocaleTimeString();
-                            }
+                            const timeInDisplay = record.time_in
+                                ? new Date(record.time_in).toLocaleTimeString()
+                                : "N/A";
+                            const timeOutDisplay = record.time_out
+                                ? new Date(record.time_out).toLocaleTimeString()
+                                : "N/A";
+                            const dateDisplay = record.time_in
+                                ? new Date(record.time_in).toLocaleDateString()
+                                : "N/A";
 
                             return (
-                                <tr key={index}>
-                                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                                        {new Date(record.time_in).toLocaleDateString()}
-                                    </td>
-                                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                                        {timeInDisplay}
-                                    </td>
-                                    <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                                        {timeOutDisplay}
-                                    </td>
+                                <tr key={index} style={index % 2 ? rowStyleAlt : {}}>
+                                    <td style={thTdStyle}>{dateDisplay}</td>
+                                    <td style={thTdStyle}>{timeInDisplay}</td>
+                                    <td style={thTdStyle}>{timeOutDisplay}</td>
                                 </tr>
                             );
-                        })}
+                        })
+                    )}
                 </tbody>
             </table>
         </div>
