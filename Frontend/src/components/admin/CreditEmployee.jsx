@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const linkStyle = {
-    margin: "0 10px",
-    textDecoration: "none",
-    color: "blue",
-};
-
 export default function CreditEmployee() {
     const [creditsByEmployee, setCreditsByEmployee] = useState([]);
+
+    const link_style = {
+        margin: "0 10px",
+        textDecoration: "none",
+        color: "blue",
+    };
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -19,16 +19,13 @@ export default function CreditEmployee() {
 
                 if (response.data.success && Array.isArray(response.data.result)) {
                     setCreditsByEmployee(response.data.result);
-                }
-                else {
+                } else {
                     alert(response.data.error || "Failed to fetch credits");
-                    setCreditsByEmployee([]); 
+                    setCreditsByEmployee([]);
                 }
-            }
-            catch (error) {
-                console.error("Fetch credits error:", error);
+            } catch (error) {
                 alert(error.response?.data?.error || "Server error while fetching credits");
-                setCreditsByEmployee([]); 
+                setCreditsByEmployee([]);
             }
         };
 
@@ -42,12 +39,20 @@ export default function CreditEmployee() {
 
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
+            {/* Shared Header */}
+            <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
+                <h1>Welcome Admin</h1>
+               
+                <div>
+                    <a href="/" style={link_style}>Logout</a>
+                    <a href="/employeecredit" style={link_style}>Employee Credit</a>
+                    <a href="/adminleavefile" style={link_style}>Leave File Application</a>
+                    <a href="/adminrecordfile" style={link_style}>Employee Leave Record</a>
+                    <a href="/admin" style={link_style}>Employee Attendance</a>
+                </div>
+            </div>
+
             <h1>Employee Leave Credit Summary</h1>
-            <a href="/" style={linkStyle}>Logout</a>
-            <a href="/employeecredit" style={linkStyle}>Employee Credit</a>
-            <a href="/" style={linkStyle}>Leave File Application</a>
-            <a href="/admin" style={linkStyle}>Employee Attendance</a>
-            <a href="/admin" style={linkStyle}>Employee Leave Record</a>
 
             <table
                 style={{
@@ -68,7 +73,7 @@ export default function CreditEmployee() {
                 <tbody>
                     {creditsByEmployee.length === 0 ? (
                         <tr>
-                            <td colSpan="4" style={{ textAlign: "center", padding: "10px" }}>
+                            <td colSpan="5" style={{ textAlign: "center", padding: "10px" }}>
                                 No credit records found.
                             </td>
                         </tr>

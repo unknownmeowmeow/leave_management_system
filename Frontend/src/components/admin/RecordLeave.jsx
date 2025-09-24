@@ -1,104 +1,75 @@
 import React from "react";
 
 export default function RecordFile() {
-  const containerStyle = {
-    maxWidth: "800px",
-    margin: "40px auto",
-    padding: "20px",
-    fontFamily: "Arial, sans-serif",
-  };
+  
+    const container_style = {
+        maxWidth: "800px",
+        margin: "40px auto",
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+    };
 
-  const header_container_style = {
-    textAlign: "center",
-    marginTop: "30px",
-    marginBottom: "30px",
-  };
+    const heading_style = {
+        textAlign: "center",
+        marginBottom: "20px",
+    };
 
-  const button_style = {
-    padding: "10px 20px",
-    fontSize: "16px",
-    margin: "0 10px",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-    cursor: "pointer",
-    backgroundColor: "#f0f0f0",
-    transition: "background-color 0.3s",
-  };
+    const table_styling = {
+        width: "100%",
+        borderCollapse: "collapse",
+    };
 
-  const link_style = {
-    textDecoration: "none",
-    color: "#007bff",
-    fontSize: "16px",
-    margin: "0 10px",
-  };
+    const table_header_thread = {
+        border: "1px solid #ccc",
+        padding: "12px",
+        textAlign: "left",
+    };
 
-  const headingStyle = {
-    textAlign: "center",
-    marginBottom: "20px",
-  };
+    const header_row = {
+        backgroundColor: "#f0f0f0",
+    };
 
-  const tableStyle = {
-    width: "100%",
-    borderCollapse: "collapse",
-  };
+    const link_style = {
+        textDecoration: "none",
+        color: "#007bff",
+        fontSize: "16px",
+        margin: "0 10px",
+    };
 
-  const thTdStyle = {
-    border: "1px solid #ccc",
-    padding: "12px",
-    textAlign: "left",
-  };
+    return (
+        <div style={container_style}>
+  
+            <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
+                <h1>Welcome Admin</h1>
+                <div>
+                    <a href="/" style={link_style}>Logout</a>
+                    <a href="/employeecredit" style={link_style}>Employee Credit</a>
+                    <a href="/adminleavefile" style={link_style}>Leave File Application</a>
+                    <a href="/adminrecordfile" style={link_style}>Employee Leave Record</a>
+                    <a href="/admin" style={link_style}>Employee Attendance</a>
+                </div>
+            </div>
 
-  const headerRowStyle = {
-    backgroundColor: "#f0f0f0",
-  };
-
-  return (
-    <div style={containerStyle}>
-      <div style={header_container_style}>
-        <h1>Welcome Admin</h1>
-        <div style={{ marginBottom: "20px" }}>
-          <button style={button_style}>Time IN</button>
-          <button style={button_style}>Time OUT</button>
+            <h2 style={heading_style}>Approved Leave Records</h2>
+            <table style={table_styling}>
+                <thead>
+                    <tr style={header_row}>
+                        <th style={table_header_thread}>Employee Name</th>
+                        <th style={table_header_thread}>Leave Type</th>
+                        <th style={table_header_thread}>Start Date</th>
+                        <th style={table_header_thread}>End Date</th>
+                        <th style={table_header_thread}>Reason</th>
+                        <th style={table_header_thread}>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colSpan="6" style={{ ...table_header_thread, textAlign: "center" }}>
+                            No approved leaves found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div>
-          <a href="/" style={link_style}>
-            Logout
-          </a>
-          <a href="/employeecredit" style={link_style}>
-            Employee Credit
-          </a>
-          <a href="/application" style={link_style}>
-            Leave File Application
-          </a>
-          <a href="/admin" style={link_style}>
-            Employee Attendance
-          </a>
-          <a href="/recordleave" style={link_style}>
-            Employee Leave Record
-          </a>
-        </div>
-      </div>
-
-      <h2 style={headingStyle}>Approved Leave Records</h2>
-      <table style={tableStyle}>
-        <thead>
-          <tr style={headerRowStyle}>
-            <th style={thTdStyle}>Employee Name</th>
-            <th style={thTdStyle}>Leave Type</th>
-            <th style={thTdStyle}>Start Date</th>
-            <th style={thTdStyle}>End Date</th>
-            <th style={thTdStyle}>Reason</th>
-            <th style={thTdStyle}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td colSpan="6" style={{ ...thTdStyle, textAlign: "center" }}>
-              No approved leaves found.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
+    );
 }

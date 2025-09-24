@@ -13,7 +13,8 @@ import Footers from "./components/partial/Footer.jsx";
 import Logout from "./components/auth/Login.jsx";
 import InternDashboard from "./components/intern/Dashboard.jsx";
 import Credit from "./components/admin/CreditEmployee.jsx";
-import adminLeaveFileApplication from "./components/admin/LeaveFile.jsx";
+import AdminLeaveFileApplication from "./components/admin/LeaveFile.jsx";
+import AdminRecordFile from "./components/admin/RecordLeave.jsx";
 function App() {
   const main_content_style = { padding: "20px", minHeight: "80vh" };
 
@@ -23,7 +24,7 @@ function App() {
 
       <div style={main_content_style}>
         <Routes>
-          <Route path="/employeecredit" element ={<Credit />}>  </Route>
+          <Route path="/employeecredit" element={<Credit />} />
           <Route path="/" element={<Login />} />
           <Route path="/" element={<Logout />} />
           <Route path="/register" element={<Register />} />
@@ -31,7 +32,8 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/application" element={<LeaveFile />} />
           <Route path="/recordfile" element={<RecordFile />} />
-          <Route path="/adminleavefile" element={<adminLeaveFileApplication />} />
+          <Route path="/adminrecordfile" element={<AdminRecordFile />} />
+          <Route path="/adminleavefile" element={<AdminLeaveFileApplication />} />
           <Route path="/recordleave" element={<AdminRecordLeave />} />
           <Route path="/interndashboard" element={<InternDashboard />} />
           <Route path="*" element={<NotFound />} />

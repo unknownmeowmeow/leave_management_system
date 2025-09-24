@@ -114,9 +114,7 @@ const LeaveFile = () => {
                     Leave Type:
                     <select name="leaveType" style={inputStyle}>
                         <option value="">Select Leave Type</option>
-                        <option value="sick">Sick Leave</option>
-                        <option value="casual">Casual Leave</option>
-                        <option value="earned">Earned Leave</option>
+                       
                     </select>
                 </label>
 
