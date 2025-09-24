@@ -1,7 +1,7 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY } from "../constant.js";
+import { STATUS_QUERY } from "../Constant/Constants.js"
 
-class LeaveFileMode{
+class leaveTransactionModel{
     /**
      * Get a leave file by ID.
      * @param {number} id - The ID of the leave file to retrieve.
@@ -14,21 +14,21 @@ class LeaveFileMode{
         const response_data = { ...STATUS_QUERY };
 
         try {
-            const [get_all_email_result] = await db.execute(`
+            const [get_all_leave_file_result] = await db.execute(`
                     SELECT *    
                     FROM leave_transactions 
                     WHERE id = ?
                 `, [id]
             );
 
-            if(get_all_email_result && get_all_email_result.length){
-                response_data.status = true;
-                response_data.result = get_all_email_result[0];
+            if(!get_all_leave_file_result && get_all_leave_file_result.length === 0){
+                response_data.status = false;
+                response_data.result = null;
+                response_data.error = "failed to fetch email in login model";
             }
             else{
                 response_data.status = true;
-                response_data.result = null;
-                response_data.error = "failed to fetch email in login model";
+                response_data.result = get_all_leave_file_result[0];
             }
         }
         catch (error){
@@ -36,4 +36,4 @@ class LeaveFileMode{
         }
     }
 }
-export default LeaveFileMode;
+export default leaveTransactionModel;

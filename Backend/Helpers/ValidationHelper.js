@@ -6,11 +6,11 @@ class ValidationHelper{
      * created by: rogendher keith lachica
      * updated at: September 19 2025 3:35pm   
      */
-    static validateEmployeeRegistration(employee_data) {
+    static validateEmployeeRegistration(employee_data){
 
         try{
             const { first_name, last_name, email, password, confirm_password, role, gender } = employee_data;
-    
+
             if(!first_name || !last_name || !email || !password || !confirm_password || !role || !gender){
                 return ["All fields are required."];
             }
@@ -19,59 +19,62 @@ class ValidationHelper{
             const email_validation = email.trim().toLowerCase();
             const password_validation = password.trim();
             const confirm_password_validation = confirm_password.trim();
-    
+
             if(!/^[a-zA-Z\s]+$/.test(first_name_validation)){
                 return ["First name must contain only letters and spaces."];
             }
-    
+
             if(first_name_validation.length < 3){
                 return ["First name must be at least 3 letters"];
             }
-    
-            if(!/^[a-zA-Z\s]+$/.test(last_name_validation)){
+
+            if(!/^[a-zA-Z\s]+$/.test(last_name_validation)) {
                 return ["Last name must contain only letters and spaces."];
             }
-    
+
             if(last_name_validation.length < 3){
                 return ["Last name must be at least 3 letters"];
             }
-    
+
             if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email_validation)){
                 return ["Please enter a valid email address."];
             }
-    
+
             if(password_validation.length < 8){
                 return ["Password must be at least 8 characters"];
             }
-    
+
             if(password_validation !== confirm_password_validation){
                 return ["Password and confirm password do not match."];
             }
-    
+
             return [];
-        } 
+        }
         catch(error){
-            return ["An unexpected error occurred."];
+            return ["error in validation registrations"];
         }
     }
-    
 
-    static validateEmployeeLogin(employee_data){
+    /**
+     * created by: rogendher keith lachica
+     * updated at: September 20 2025 3:35pm   
+     */
+    static validateEmployeeLogin(employee_data) {
 
         try{
             const { email, password } = employee_data;
 
-            if( !email || !password ){
+            if(!email || !password){
                 return ["All fields are required."];
-            }   
+            }
             else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
                 return ["Please enter a valid email address."];
             }
 
             return [];
-        } 
+        }
         catch(error){
-            console.log("error in catch login");
+            return ["error in validation login"];
         }
     }
 }

@@ -4,7 +4,7 @@ import cors from "cors";
 import path from "path";
 import EmployeeRoutes from "./Routes/EmployeeRoutes.js";
 import TimeRoutes from "./Routes/TimeRoutes.js";
-import { MY_SECRET_SERVER_SESSION, EXPRESS_URL, FRONT_END_URL, CORS, SERVER_CONSOLE_LOG } from "./constant.js";
+import { MY_SECRET_SERVER_SESSION, EXPRESS_URL, FRONT_END_URL, CORS, SERVER_CONSOLE_LOG } from "./Constant/Constants.js";
 
 const app = express();
 

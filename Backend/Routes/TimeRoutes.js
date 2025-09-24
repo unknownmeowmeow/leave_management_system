@@ -5,7 +5,10 @@ import AuthMiddleware from '../Middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/timein', AuthMiddleware.requireLogin, AttendanceControllers.timeIn);
-router.post('/timeout', AuthMiddleware.requireLogin, AttendanceControllers.timeOut);
+router.post('/timein', AuthMiddleware.requireLogin, AttendanceControllers.EmployeetimeIn);
+router.post('/timeout', AuthMiddleware.requireLogin, AttendanceControllers.EmployeetimeOut);
+router.post('/record', AuthMiddleware.requireLogin, AttendanceControllers.EmployeeRecord);
+router.post('/records', AuthMiddleware.requireLogin, AttendanceControllers.AllEmployeesAttendanceRecord);
+
 
 export default router;

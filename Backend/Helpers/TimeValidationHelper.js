@@ -1,10 +1,12 @@
-class TimeValidationHelper{
+class TimeValidationHelper {
 
     /**
     * Gets the current date and time in the Asia/Manila timezone (Philippines),
     * formatted as a string in the format "YYYY-MM-DD HH:MM:SS".
     *
     * @returns {string} - The current local date and time in the Philippines.
+    * created by: rogendher keith lachica
+    * updated at: September 23 2025 9:55 am  
     */
     static checkEmployeeCurrentTime(){
 
@@ -16,13 +18,13 @@ class TimeValidationHelper{
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false 
+            hour12: false
         });
         const [date, time] = philippines_local_datetime.split(', ');
         const [month, day, year] = date.split('/');
-        
+
         return `${year}-${month}-${day} ${time}`;
-    }  
+    }
     /**
      * Calculates the difference in hours worked compared to the default 8 hours.
      * Positive result = Overtime
@@ -32,22 +34,24 @@ class TimeValidationHelper{
      * @param {Date} start_time - The start time as a JavaScript Date object
      * @param {Date} end_time - The end time as a JavaScript Date object
      * @returns {number} - Difference from 8 hours, rounded to 2 decimal places
+     * created by: rogendher keith lachica
+     * updated at: September 23 2025 11:26 am  
      */
-    static calculateEmployeeWorkHour(time_in, time_out) {
+    static calculateEmployeeWorkHour(time_in, time_out){
         const start_time = new Date(time_in);
         const end_time = new Date(time_out);
-    
+
         if(isNaN(start_time.getTime()) || isNaN(end_time.getTime()) || end_time < start_time){
-            console.error("Invalid date or end time is before start time.");
+            console.error("error in time log");
             return 0;
         }
         const milliseconds_worked = end_time - start_time;
         const hours_worked = milliseconds_worked / (1000 * 60 * 60);
         const default_day = 24;
-        const default_hour_work = 8 / default_day; 
-        const default_day_coverter = hours_worked / default_day; 
-        const difference_day_work = default_day_coverter - default_hour_work; 
-    
+        const default_hour_work = 8 / default_day;
+        const default_day_coverter = hours_worked / default_day;
+        const difference_day_work = default_day_coverter - default_hour_work;
+
         return Math.round(difference_day_work * 10000) / 10000;
     }
 
@@ -65,8 +69,10 @@ class TimeValidationHelper{
     * @returns {Object} - An object containing:
     *                     - is_valid: Boolean indicating if validation passed.
     *                     - error: Error message if validation failed, otherwise null.
+    * created by: rogendher keith lachica
+    * updated at: September 23 2025 1:45 pm  
     */
-    static validateEmployeeTimeOut({ id, time_out, work_hour }) {
+    static validateEmployeeTimeOut({ id, time_out, work_hour }){
         const result_validation = { is_valid: false, error: null };
 
         if(!id){

@@ -164,7 +164,7 @@ class AttendanceControllers{
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 9:00 am
      */
-    static async AllEmployeesAttendanceRecord(req, res) {
+    static async AllEmployeesAttendanceRecord(req, res){
         const user = req.session.user;
 
         if(!user || !user.employee_id){
