@@ -15,7 +15,8 @@ import RejectedLeave from "./components/admin/RejectedLeave.jsx";
 import NotFound from "./components/NotFound.jsx";
 import Footers from "./components/partial/Footer.jsx";
 import Logout from "./components/auth/Login.jsx";
-import InternDashboard from "./components/intern/Dashboard.jsx"
+import InternDashboard from "./components/intern/Dashboard.jsx";
+import Credit from "./components/admin/CreditEmployee.jsx";
 function App() {
   const main_content_style = { padding: "20px", minHeight: "80vh" };
 
@@ -25,6 +26,7 @@ function App() {
 
       <div style={main_content_style}>
         <Routes>
+          <Route path="/employeecredit" element ={<Credit />}>  </Route>
           <Route path="/" element={<Login />} />
           <Route path="/" element={<Logout />} />
           <Route path="/register" element={<Register />} />

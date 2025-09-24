@@ -75,35 +75,18 @@ export default function Dashboard() {
         }
     };
 
-    const handleLeave = async () => {
-        try {
-            const response = await axios.post(
-                "http://localhost:5000/api/attendance/leave",
-                {},
-                { withCredentials: true }
-            );
-            alert(response.data.message);
-        } catch (error) {
-            alert(error.response?.data?.message);
-        }
-    };
-
     return (
         <div style={header_container_style}>
-            <h1>Welcome Employee</h1>
+            <h1>Welcome Intern</h1>
             <button style={button_style} onClick={handleTimeIn}>
                 Time IN
             </button>
             <button style={button_style} onClick={handleTimeOut}>
                 Time Out
             </button>
-            <button style={button_style} onClick={handleLeave}>
-                File Leave
-            </button>
             <a href="/" style={link_style}>
                 Logout
             </a>
-
             <h2 style={{ marginTop: "40px" }}>Your Attendance Records</h2>
             <table
                 style={{
@@ -117,7 +100,7 @@ export default function Dashboard() {
                         <th style={{ border: "1px solid #ccc", padding: "8px" }}>Date</th>
                         <th style={{ border: "1px solid #ccc", padding: "8px" }}>Time In</th>
                         <th style={{ border: "1px solid #ccc", padding: "8px" }}>Time Out</th>
-                    </tr>e
+                    </tr>
                 </thead>
                 <tbody>
                     {records.length === 0 && (
