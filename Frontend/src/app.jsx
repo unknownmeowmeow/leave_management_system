@@ -7,11 +7,7 @@ import Dashboard from "./components/employee/Dashboard.jsx";
 import AdminDashboard from "./components/admin/Dashboard.jsx";
 import LeaveFile from "./components/employee/LeaveFile.jsx";
 import RecordFile from "./components/employee/RecordFile.jsx";
-import PendingLeave from "./components/admin/PendingLeave.jsx";
-import ApprovedLeave from "./components/admin/ApprovedLeave.jsx";
-import CancelledLeave from "./components/admin/CancelledLeave.jsx";
 import RecordLeave from "./components/admin/RecordLeave.jsx";
-import RejectedLeave from "./components/admin/RejectedLeave.jsx";
 import NotFound from "./components/NotFound.jsx";
 import Footers from "./components/partial/Footer.jsx";
 import Logout from "./components/auth/Login.jsx";
@@ -34,11 +30,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/application" element={<LeaveFile />} />
           <Route path="/recordfile" element={<RecordFile />} />
-          <Route path="/pendingleave" element={<PendingLeave />} />
-          <Route path="/approvedleave" element={<ApprovedLeave />} />
-          <Route path="/cancelledleave" element={<CancelledLeave />} />
           <Route path="/recordleave" element={<RecordLeave />} />
-          <Route path="/rejectedleave" element={<RejectedLeave />} />
           <Route path="/interndashboard" element={<InternDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
