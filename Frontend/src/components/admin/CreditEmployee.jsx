@@ -17,13 +17,15 @@ export default function CreditEmployee() {
                     withCredentials: true,
                 });
 
-                if (response.data.success && Array.isArray(response.data.result)) {
+                if(response.data.success && Array.isArray(response.data.result)){
                     setCreditsByEmployee(response.data.result);
-                } else {
+                }
+                else {
                     alert(response.data.error || "Failed to fetch credits");
                     setCreditsByEmployee([]);
                 }
-            } catch (error) {
+            } 
+            catch (error) {
                 alert(error.response?.data?.error || "Server error while fetching credits");
                 setCreditsByEmployee([]);
             }
@@ -39,7 +41,7 @@ export default function CreditEmployee() {
 
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
-            {/* Shared Header */}
+            
             <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
                 <h1>Welcome Admin</h1>
                

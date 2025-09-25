@@ -5,7 +5,9 @@ import path from "path";
 import EmployeeRoutes from "./Routes/EmployeeRoutes.js";
 import TimeRoutes from "./Routes/TimeRoutes.js";
 import { MY_SECRET_SERVER_SESSION, EXPRESS_URL, FRONT_END_URL, CORS, SERVER_CONSOLE_LOG } from "./Constant/Constants.js";
-
+import LeaveTypeRoutes from "./Routes/LeaveFile.js";
+import "./Helpers/YearlyLeaveCreditJob.js";
+import CreditRoutes from "./Routes/LeaveCreditRoutes.js";
 const app = express();
 
 app.use(cors(CORS));
@@ -15,6 +17,8 @@ app.use(session(MY_SECRET_SERVER_SESSION));
 
 app.use("/api/auth", EmployeeRoutes); 
 app.use("/api/attendance", TimeRoutes)    
+app.use("/", LeaveTypeRoutes);
+app.use("/api", CreditRoutes);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));

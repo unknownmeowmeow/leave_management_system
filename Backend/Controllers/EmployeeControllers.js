@@ -7,13 +7,13 @@ import {
     MESSAGE_CONFIRM_PASSWORD, MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
     MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE, MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION,
     MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE,
-    CATCH_IN_GENDER, CATCH_IN_ROLE, ERROR_IN_CATCH_GET_ALL_CREDIT_RECORD 
+    CATCH_IN_GENDER, CATCH_IN_ROLE, ERROR_IN_CATCH_GET_ALL_CREDIT_RECORD, SESSION_USER_NOT_FOUND 
 } from "../Constant/Constants.js"
 import LeaveTypeModel from "../Models/LeaveTypeModel.js";
 import LeaveCreditModel from "../Models/LeaveCreditModel.js";
 
 
-class EmployeeControllers {
+class EmployeeControllers{
     /**
      * Controller to get all roles and send as JSON response.
      * @param {Object} req - The Express request object.
@@ -22,7 +22,7 @@ class EmployeeControllers {
      * created by: rogendher keith lachica
      * updated at: September 19 2025 9:37 am  
      */
-    static async getRoles(req, res) {
+    static async getRoles(req, res){
 
         try{
             const response_data = await EmployeeRoleTypeModel.getAllRoles();
@@ -104,7 +104,8 @@ class EmployeeControllers {
             if(!gender_data.result){                 
                 return res.json(CATCH_IN_GENDER);             
             }             
-            const hash_password = await bcrypt.hash(password, 12);              
+            const hash_password = await bcrypt.hash(password, 12);  
+
             const new_user = await EmployeeModel.createUser({                 
                 first_name,                 
                 last_name,                 
@@ -141,9 +142,11 @@ class EmployeeControllers {
                         }                 
                     }             
                 }                 
+
                 return res.json(MESSAGE_REGISTRATION_MESSAGE);             
             }             
-            else{                 
+            else{            
+
                 return res.json(MESSAGE_FAILED_REGISTRATION_MESSAGE);             
             }         
         }         
@@ -152,7 +155,6 @@ class EmployeeControllers {
         }     
     }
     
-
     /**
      * Controller to handle user login.
      * Validates input, checks for existing email,

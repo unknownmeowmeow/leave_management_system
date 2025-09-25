@@ -14,7 +14,6 @@ class AuthMiddleware {
         if (!req.session || !req.session.user) {
             return res.json(SESSION_USER_NOT_FOUND);
         }
-
         next();
     }
 }

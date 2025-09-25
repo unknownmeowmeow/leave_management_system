@@ -1,5 +1,5 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY } from "../Constant/Constants.js"
+import { STATUS_QUERY, ERROR_IN_LEAVE_FILE_TRANSACTION_MODEL } from "../Constant/Constants.js"
 
 class leaveTransactionModel{
     /**
@@ -24,7 +24,7 @@ class leaveTransactionModel{
             if(!get_all_leave_file_result && get_all_leave_file_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "failed to fetch email in login model";
+                response_data.error = ERROR_IN_LEAVE_FILE_TRANSACTION_MODEL;
             }
             else{
                 response_data.status = true;

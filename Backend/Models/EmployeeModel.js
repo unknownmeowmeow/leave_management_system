@@ -26,7 +26,7 @@ class EmployeeModel{
             if(get_all_email_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "email not found in model";
+                response_data.error = ERROR_IN_FIND_EMAIL_MODEL;
             }
             else{
                 response_data.status = true;
@@ -78,7 +78,7 @@ class EmployeeModel{
             if(!insert_employee_data_result.insertId){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "insert employee data error in model";
+                response_data.error = ERROR_IN_CREATE_EMPLOYEE_MODEL;
             }
             else{
                 response_data.status = true;

@@ -1,5 +1,10 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY } from "../Constant/Constants.js";
+import { STATUS_QUERY, ATTENDANCE_TYPE_ID,
+    ERROR_IN_INSERTING_TIME_IN_MODEL, ERROR_IN_CHECK_TIME_IN_MODEL,
+    ERROR_IN_CHECK_TIME_OUT_MODEL, 
+    ERROR_IN_UPDATE_TIME_OUT_MODEL,
+    ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL 
+} from "../Constant/Constants.js";
 
 class AttendanceModel {
 
@@ -10,7 +15,7 @@ class AttendanceModel {
     * created by: rogendher keith lachica
     * updated at: September 23 2025 1:21 pm  
     */
-    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = 1 }) {
+    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID }) {
         const response_data = { ...STATUS_QUERY };
 
         try {
@@ -28,7 +33,7 @@ class AttendanceModel {
             if (!insert_attendance_result.insertId) {
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "inserting failed in time in model";
+                response_data.error = ERROR_IN_INSERTING_TIME_IN_MODEL;
             }
             else {
                 response_data.status = true;
@@ -62,7 +67,7 @@ class AttendanceModel {
             if(!get_latest_time_in_record_result.length){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "no time in record found";
+                response_data.error = ERROR_IN_CHECK_TIME_IN_MODEL;
             }
             else{
                 response_data.status = true;
@@ -97,7 +102,7 @@ class AttendanceModel {
             if(!get_latest_time_out_result.length){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "no time out record found";
+                response_data.error = ERROR_IN_CHECK_TIME_OUT_MODEL;
             }
             else{
                 response_data.status = true;
@@ -131,7 +136,7 @@ class AttendanceModel {
             if(update_time_out_result.affectedRows === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "error in model no affected row in updating time out";
+                response_data.error = ERROR_IN_UPDATE_TIME_OUT_MODEL;
             }
             else{
                 response_data.status = true;
@@ -170,7 +175,7 @@ class AttendanceModel {
             if(get_all_employee_attendance_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = "no attendance records found";
+                response_data.error = ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL;
             }
             else{
                 response_data.status = true;
@@ -182,7 +187,40 @@ class AttendanceModel {
         }
         return response_data;
     }
+    
+    static async getAllEmployeesRecord(employee_id) {
+        const response_data = { ...STATUS_QUERY };
 
+        try{
+            const [get_all_employee_attendance_result] = await db.execute(`
+                SELECT 
+                    attendances.employee_id, 
+                    attendances.time_in, 
+                    attendances.time_out, 
+                    employees.first_name, 
+                    employees.last_name
+                FROM attendances
+                LEFT JOIN employees 
+                ON attendances.employee_id = employees.id
+                WHERE attendances.employee_id = ?
+                ORDER BY attendances.updated_at DESC
+            `, [employee_id]);
+
+            if(get_all_employee_attendance_result.length === 0){
+                response_data.status = false;
+                response_data.result = null;
+                response_data.error = ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL;
+            }
+            else{
+                response_data.status = true;
+                response_data.result = get_all_employee_attendance_result;
+            }
+        }
+        catch(error){
+            response_data.error = error.message;
+        }
+        return response_data;
+    }
 }
 
 export default AttendanceModel;

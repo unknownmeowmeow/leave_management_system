@@ -1,144 +1,103 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const LeaveFile = () => {
-    // Main container styling
-    const containerStyle = {
-        maxWidth: "500px",
-        margin: "50px auto",
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-        backgroundColor: "#f9f9f9",
-        fontFamily: "Arial, sans-serif",
-    };
+    const [leaveTypes, setLeaveTypes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Header container styling
-    const header_container_style = {
-        textAlign: "center",
-        marginTop: "30px",
-        marginBottom: "30px",
-    };
+    useEffect(() => {
+        const fetchLeaveTypes = async () => {
+            try {
+                const res = await axios.get("http://localhost:5000/api/leave_types", {
+                    withCredentials: true,
+                });
 
-    const headingStyle = {
-        textAlign: "center",
-        marginBottom: "20px",
-    };
+                console.log("API Response:", res.data);
 
-    const formStyle = {
-        display: "flex",
-        flexDirection: "column",
-        gap: "15px",
-    };
+                if (res.data.success) {
+                    setLeaveTypes(res.data.data);
+                    setError(null);
+                } else {
+                    setError(res.data.message || "Unable to load leave types.");
+                    setLeaveTypes([]);
+                }
+            } catch (err) {
+                setError("Error fetching leave types.");
+                setLeaveTypes([]);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const labelStyle = {
-        display: "flex",
-        flexDirection: "column",
-        fontSize: "14px",
-    };
+        fetchLeaveTypes();
+    }, []);
 
-    const inputStyle = {
-        padding: "8px",
-        fontSize: "14px",
-        borderRadius: "4px",
-        border: "1px solid #ccc",
-    };
-
-    const buttonStyle = {
-        padding: "10px",
-        fontSize: "16px",
-        backgroundColor: "#007bff",
-        color: "#fff",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-    };
-
-    const button_style = {
-        padding: "10px 20px",
-        fontSize: "16px",
-        margin: "0 10px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-        cursor: "pointer",
-        backgroundColor: "#f0f0f0",
-        transition: "background-color 0.3s",
-    };
-
-    const link_style = {
-        textDecoration: "none",
-        color: "#007bff",
-        fontSize: "16px",
-        margin: "0 10px",
-    };
-
-    const successMessageStyle = {
-        backgroundColor: "#d4edda",
-        color: "#155724",
-        padding: "10px",
-        borderRadius: "4px",
-        marginBottom: "20px",
-        textAlign: "center",
-    };
+    if (loading) return <div>Loading leave types...</div>;
 
     return (
-        <div style={containerStyle}>
-            <div style={header_container_style}>
-                <h1>Welcome Employee</h1>
-                <div style={{ marginBottom: "20px" }}>
-                    <button style={button_style}>Time IN</button>
-                    <button style={button_style}>Time OUT</button>
-                </div>
-                <div>
-                    <a href="/application" style={link_style}>
-                        Leave File
-                    </a>
-                    <a href="/dashboard" style={link_style}>
-                        Dashboard
-                    </a>
-                    <a href="/recordfile" style={link_style}>
-                        RecordFile
-                    </a>
-                    <a href="/" style={link_style}>
-                        Logout
-                    </a>
-                </div>
+        <div style={{ maxWidth: "500px", margin: "50px auto", padding: "20px" }}>
+            <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Welcome Employee</h1>
+
+            <div style={{ marginBottom: "20px", textAlign: "center" }}>
+                <button style={{ marginRight: "10px" }}>Time IN</button>
+                <button>Time OUT</button>
             </div>
 
-            <div style={successMessageStyle}>Submitted Request Successfully</div>
+            <div style={{ marginBottom: "20px", textAlign: "center" }}>
+                <a href="/application" style={{ marginRight: "10px" }}>Leave File</a>
+                <a href="/dashboard" style={{ marginRight: "10px" }}>Dashboard</a>
+                <a href="/recordfile" style={{ marginRight: "10px" }}>RecordFile</a>
+                <a href="/">Logout</a>
+            </div>
 
-            <h2 style={headingStyle}>Leave Application Form</h2>
+            {error && <div style={{ color: "red", marginBottom: "15px" }}>{error}</div>}
 
-            <form style={formStyle}>
-                <label style={labelStyle}>
+            <h2 style={{ marginBottom: "20px" }}>Leave Application Form</h2>
+
+            <form>
+                <label style={{ display: "block", marginBottom: "10px" }}>
                     Leave Type:
-                    <select name="leaveType" style={inputStyle}>
+                    <select name="leaveType" style={{ width: "100%", padding: "8px" }}>
                         <option value="">Select Leave Type</option>
-                       
+                        {leaveTypes.map((type) => (
+                            <option key={type.id} value={type.id}>
+                                {type.name}
+                            </option>
+                        ))}
                     </select>
                 </label>
 
-                <label style={labelStyle}>
+                <label style={{ display: "block", marginBottom: "10px" }}>
                     Start Date:
-                    <input type="date" name="startDate" style={inputStyle} />
+                    <input type="date" name="startDate" style={{ width: "100%", padding: "8px" }} />
                 </label>
 
-                <label style={labelStyle}>
+                <label style={{ display: "block", marginBottom: "10px" }}>
                     End Date:
-                    <input type="date" name="endDate" style={inputStyle} />
+                    <input type="date" name="endDate" style={{ width: "100%", padding: "8px" }} />
                 </label>
 
-                <label style={labelStyle}>
+                <label style={{ display: "block", marginBottom: "20px" }}>
                     Reason:
                     <input
                         type="text"
                         name="reason"
                         placeholder="Enter your reason"
-                        style={inputStyle}
+                        style={{ width: "100%", padding: "8px" }}
                     />
                 </label>
 
-                <button type="submit" style={buttonStyle}>
+                <button
+                    type="submit"
+                    style={{
+                        padding: "10px 20px",
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                    }}
+                >
                     Submit
                 </button>
             </form>

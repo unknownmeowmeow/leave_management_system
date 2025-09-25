@@ -165,7 +165,7 @@ class AttendanceControllers{
         const employee_id = user.employee_id;
 
         try{
-            const response_data = await AttendanceModel.getAllEmployeesRecords(employee_id);
+            const response_data = await AttendanceModel.getAllEmployeesRecord(employee_id);
 
             if(response_data.error){
                 return res.json({ success: false, message: response_data.error });
@@ -207,6 +207,7 @@ class AttendanceControllers{
             return res.json(ERROR_IN_CATCH_GET_ALL_RECORD);
         }
     }
+
 }
 
 export default AttendanceControllers;

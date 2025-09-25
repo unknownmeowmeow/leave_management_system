@@ -1,5 +1,5 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY } from "../Constant/Constants.js";
+import { STATUS_QUERY, ERROR_IN_GRANT_TYPE_MODEL } from "../Constant/Constants.js";
 
 class LeaveTypeGrantModel{
     /**
@@ -19,7 +19,7 @@ class LeaveTypeGrantModel{
 
             if(!get_grant_type_result.length === 0){
                 response_data.status = false;
-                response_data.error = "grant type in model error";
+                response_data.error = ERROR_IN_GRANT_TYPE_MODEL;
             } 
             else{
                 response_data.status = true;
@@ -33,6 +33,7 @@ class LeaveTypeGrantModel{
         }
         return response_data;
     }
+
 }
 
 export default LeaveTypeGrantModel;
