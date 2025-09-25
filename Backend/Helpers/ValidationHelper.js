@@ -1,3 +1,5 @@
+import {THREE, EIGHT} from "../Constant/Constants.js";
+
 class ValidationHelper{
     /**
      * Validates user registration data.
@@ -24,7 +26,7 @@ class ValidationHelper{
                 return ["First name must contain only letters and spaces."];
             }
 
-            if(first_name_validation.length < 3){
+            if(first_name_validation.length < THREE){
                 return ["First name must be at least 3 letters."];
             }
 
@@ -32,7 +34,7 @@ class ValidationHelper{
                 return ["Last name must contain only letters and spaces."];
             }
 
-            if(last_name_validation.length < 3){
+            if(last_name_validation.length < THREE){
                 return ["Last name must be at least 3 letters."];
             }
 
@@ -40,7 +42,7 @@ class ValidationHelper{
                 return ["Please enter a valid email address."];
             }
 
-            if(password_validation.length < 8){
+            if(password_validation.length < EIGHT){
                 return ["Password must be at least 8 characters."];
             }
 

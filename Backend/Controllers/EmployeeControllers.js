@@ -7,7 +7,8 @@ import {
     MESSAGE_CONFIRM_PASSWORD, MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
     MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE, MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION,
     MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE,
-    CATCH_IN_GENDER, CATCH_IN_ROLE, ERROR_IN_CATCH_GET_ALL_CREDIT_RECORD, SESSION_USER_NOT_FOUND 
+    CATCH_IN_GENDER, CATCH_IN_ROLE, ERROR_IN_CATCH_GET_ALL_CREDIT_RECORD, SESSION_USER_NOT_FOUND,
+    ZERO_POINT_ZERO_ZERO, TWELVE, ZERO
 } from "../Constant/Constants.js"
 import LeaveTypeModel from "../Models/LeaveTypeModel.js";
 import LeaveCreditModel from "../Models/LeaveCreditModel.js";
@@ -104,7 +105,7 @@ class EmployeeControllers{
             if(!gender_data.result){                 
                 return res.json(CATCH_IN_GENDER);             
             }             
-            const hash_password = await bcrypt.hash(password, 12);  
+            const hash_password = await bcrypt.hash(password, TWELVE);  
 
             const new_user = await EmployeeModel.createUser({                 
                 first_name,                 
@@ -123,7 +124,7 @@ class EmployeeControllers{
 
                     if(carry_over_leave_types.status && carry_over_leave_types.result.length){                         
                         const total_base_value = carry_over_leave_types.result.reduce(                             
-                            (total, leave_type) => total + leave_type.base_value, 0                         
+                            (total, leave_type) => total + leave_type.base_value, ZERO                         
                         );          
 
                         for(const leave_type of carry_over_leave_types.result){   
@@ -134,8 +135,8 @@ class EmployeeControllers{
                                 attendance_id: null,                             
                                 leave_type_id: leave_type.id,                             
                                 earned_credit: leave_type.base_value,                             
-                                used_credit: 0.00,
-                                deducted_credit: 0.00,                            
+                                used_credit: ZERO_POINT_ZERO_ZERO,
+                                deducted_credit: ZERO_POINT_ZERO_ZERO,                            
                                 current_credit: leave_type.base_value,                             
                                 latest_credit: total_base_value,                         
                             });                   

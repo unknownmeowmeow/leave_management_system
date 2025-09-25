@@ -1,4 +1,8 @@
-class TimeValidationHelper {
+import { MULTIPLIER, DAY_ONE_OF_WEEK, DAY_LAST_DAY_OF_WEEK, MILISECOND_SIXTY_SECOND, 
+    MILISECOND_ONE_THOUSAND, DECIMAL_EIGHT_HOUR, ZERO, TWENTY_FOUR, EIGHT
+ } from "../Constant/Constants.js";
+
+class TimeValidationHelper{
 
     /**
     * Gets the current date and time in the Asia/Manila timezone (Philippines),
@@ -43,23 +47,23 @@ class TimeValidationHelper {
         const end_time = new Date(time_out);
 
         if(isNaN(start_time.getTime()) || isNaN(end_time.getTime()) || end_time < start_time){
-            return 0;
+            return ZERO;
         }
         const day_of_week = start_time.getDay();
-        const is_weekend = (day_of_week === 0 || day_of_week === 6);
+        const is_weekend = (day_of_week === DAY_ONE_OF_WEEK || day_of_week === DAY_LAST_DAY_OF_WEEK);
     
         const milliseconds_worked = end_time - start_time;
-        const hours_worked = milliseconds_worked / (1000 * 60 * 60);
+        const hours_worked = milliseconds_worked / (MILISECOND_ONE_THOUSAND * MILISECOND_SIXTY_SECOND * MILISECOND_SIXTY_SECOND);
     
-        const default_day = 24;
-        const default_hour_work = 8 / default_day;
+        const default_day = TWENTY_FOUR;
+        const default_hour_work = EIGHT / default_day;
         const default_day_converter = hours_worked / default_day;
         const difference_day_work = default_day_converter - default_hour_work;
     
-        let calculated = Math.round(difference_day_work * 10000) / 10000;
+        let calculated = Math.round(difference_day_work * MILISECOND_ONE_THOUSAND) / MILISECOND_ONE_THOUSAND;
     
-        if(is_weekend && calculated <= 0) {
-            calculated = Math.abs(calculated) || 0.33; 
+        if(is_weekend && calculated <= ZERO) {
+            calculated = Math.abs(calculated) || DECIMAL_EIGHT_HOUR; 
         }
     
         return calculated;
@@ -79,15 +83,15 @@ class TimeValidationHelper {
      * updated at: September 24 2025 11:10 pm  
      */
      static computeLeaveCreditFromWorkHour(work_hour, current_credit){
-        let earned_credit = 0;
-        let deducted_credit = 0;
+        let earned_credit = ZERO;
+        let deducted_credit = ZERO;
         let latest_credit = current_credit;
 
-        if(work_hour > 0){
-            earned_credit = work_hour * 1.5;
+        if(work_hour > ZERO){
+            earned_credit = work_hour * MULTIPLIER;
             latest_credit = current_credit + earned_credit;
         }
-        else if(work_hour < 0){
+        else if(work_hour < ZERO){
             deducted_credit = Math.abs(work_hour);
             latest_credit = current_credit - deducted_credit;
         }

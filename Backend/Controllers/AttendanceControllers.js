@@ -8,7 +8,8 @@ import {
     ERROR_IN_TIME_OUT,
     SESSION_USER_NOT_FOUND,
     ALREADY_TIME_OUT,   
-    ERROR_IN_CATCH_GET_ALL_RECORD
+    ERROR_IN_CATCH_GET_ALL_RECORD, 
+    TWO, ZERO, MESSAGE_SUCCESS_IN_EMPLOYEE_TIME_OUT
 } from "../Constant/Constants.js";
 
 import WorkTimeValidationHelper from "../Helpers/WorkTimeValidationHelper.js";
@@ -80,7 +81,7 @@ class AttendanceControllers{
 
         try{
             const employee_id = user.employee_id;
-            const attendance_type_id = 2;
+            const attendance_type_id = TWO;
             const record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
             const active_record_time_in = record.result;
             const check_time_out = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
@@ -117,7 +118,7 @@ class AttendanceControllers{
                 return res.json({ success: false, message: update_attendance.error });
             }
             const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
-            const current_credit = latest_credit_result.latest_credit || 0;
+            const current_credit = latest_credit_result.latest_credit || ZERO;
 
             const {
                 earned_credit,
@@ -131,7 +132,7 @@ class AttendanceControllers{
                 attendance_id: id,
                 leave_type_id: null,
                 earned_credit,
-                used_credit: 0,
+                used_credit: ZERO,
                 deducted_credit,
                 current_credit,
                 latest_credit
@@ -139,7 +140,7 @@ class AttendanceControllers{
 
             return res.json({
                 success: true,
-                message: `Time out Successfully`,
+                message: MESSAGE_SUCCESS_IN_EMPLOYEE_TIME_OUT,
                 time_out,
                 work_hour,
             });

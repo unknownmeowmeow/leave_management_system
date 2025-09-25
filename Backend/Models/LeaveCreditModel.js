@@ -2,7 +2,7 @@ import db from "../Configs/Database.js";
 import {
     STATUS_QUERY, ERROR_IN_INSERT_CREDIT_MODEL, ERROR_IN_GET_ALL_CREDIT_MODEL,
     ERROR_IN_GET_EMPLOYEE_CREDIT_MODEL, ROLE_TYPE_INTERN, ROLE_TYPE_EMPLOYEE,
-    INSERT_YEARLY_CREDIT_MODEL
+    INSERT_YEARLY_CREDIT_MODEL, ZERO_POINT_ZERO_ZERO
 } from "../Constant/Constants.js";
 
 class LeaveCreditModel {
@@ -27,11 +27,11 @@ class LeaveCreditModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 10:20 pm  
      */
-    static async insertLeaveCredit({ employee_id,leave_transaction_id,
-        attendance_id = null,leave_type_id = null,
+    static async insertLeaveCredit({ 
+        employee_id,leave_transaction_id, attendance_id = null,leave_type_id = null,
         earned_credit,
-        used_credit = 0, deducted_credit,
-        current_credit,latest_credit = 0 }){
+        used_credit = ZERO, deducted_credit,
+        current_credit,latest_credit = ZERO }){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -83,7 +83,7 @@ class LeaveCreditModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 01:10 am
      */
-    static async insertYearlyCredit(employee_id, leave_type_id, credit_value) {
+    static async insertYearlyCredit(employee_id, leave_type_id, credit_value){
         const response = { status: false, result: null, error: null };
 
         try {
@@ -94,14 +94,16 @@ class LeaveCreditModel {
                     earned_work_hour_credit, deducted_work_hour_credit, used_work_hour_credit,
                     earned_credit, deducted_credit, used_credit, current_credit, latest_credit,
                     created_at, updated_at
-                ) VALUES (?, NULL, NULL, ?, 0.00, 0.00, 0.00, ?, 0.00, 0.00, ?, ?, NOW(), NOW())
-            `, [employee_id, leave_type_id, credit_value, credit_value, credit_value]);
+                 ) VALUES (?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [ employee_id, leave_type_id, ZERO_POINT_ZERO_ZERO, ZERO_POINT_ZERO_ZERO, 
+            ZERO_POINT_ZERO_ZERO, credit_value, ZERO_POINT_ZERO_ZERO, ZERO_POINT_ZERO_ZERO, 
+            credit_value, credit_value]);
 
-            if (!insert_yearly_credit_result.insertId) {
+            if(!insert_yearly_credit_result.insertId){
                 response.status = false;
                 response.error = INSERT_YEARLY_CREDIT_MODEL;
             } 
-            else {
+            else{
                 response.status = true;
                 response.result = { id: insert_yearly_credit_result.insertId };
             }
@@ -149,7 +151,7 @@ class LeaveCreditModel {
                 ORDER BY leave_credits.employee_id DESC
             `, [ROLE_TYPE_INTERN, ROLE_TYPE_EMPLOYEE]);
 
-            if(get_all_employee_credit_result.length === 0){
+            if(get_all_employee_credit_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_GET_ALL_CREDIT_MODEL;
@@ -189,9 +191,9 @@ class LeaveCreditModel {
                     LIMIT 1
                 `, [employee_id]);
 
-            if(get_all_latest_credit_result.length > 0){
+            if(get_all_latest_credit_result.length > ZERO){
                 response_data.status = true;
-                response_data.result = get_all_latest_credit_result[0];
+                response_data.result = get_all_latest_credit_result[ZERO];
             }
             else{
                 response_data.status = false;

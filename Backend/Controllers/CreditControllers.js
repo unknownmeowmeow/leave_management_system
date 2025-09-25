@@ -1,7 +1,9 @@
 import LeaveCreditModel from "../Models/LeaveCreditModel.js";
 import LeaveType from "../Models/LeaveTypeModel.js";
 import EmployeeModel from "../Models/EmployeeRoleTypeModel.js";
-import { GET_ROLE_EMPLOYEE } from "../Constant/Constants.js";
+import { GET_ROLE_EMPLOYEE, MESSAGE_RESULT_IN_LEAVE_CREDIT, ZERO
+
+ } from "../Constant/Constants.js";
 
 class CreditControllers {
     /**
@@ -33,7 +35,7 @@ class CreditControllers {
 
             for(const employee of employees){
                 for(const leave_type of leave_types){
-                    const credit_value = parseFloat(leave_type.base_value) || 0;
+                    const credit_value = parseFloat(leave_type.base_value) || ZERO;
                     const insert_result = await LeaveCreditModel.insertYearlyCredit(
                         employee.id,
                         leave_type.id,
@@ -45,7 +47,7 @@ class CreditControllers {
 
             return res.json({
                 success: true,
-                result: `leave credits inserted.`,
+                result: MESSAGE_RESULT_IN_LEAVE_CREDIT,
                 details: results,
             });
         } 
