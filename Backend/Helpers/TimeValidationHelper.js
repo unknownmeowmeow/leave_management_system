@@ -59,7 +59,7 @@ class TimeValidationHelper{
         const default_hour_work = EIGHT / default_day;
         const default_day_converter = hours_worked / default_day;
         const difference_day_work = default_day_converter - default_hour_work;
-    
+        
         let calculated = Math.round(difference_day_work * MILISECOND_ONE_THOUSAND) / MILISECOND_ONE_THOUSAND;
     
         if(is_weekend && calculated <= ZERO) {

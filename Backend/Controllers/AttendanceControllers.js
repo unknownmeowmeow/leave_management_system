@@ -33,7 +33,6 @@ class AttendanceControllers{
         if(!user){
             return res.json(SESSION_USER_NOT_FOUND);
         }
-
         try{
             const employee_id = user.employee_id;
             const check_time_in = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
@@ -119,12 +118,7 @@ class AttendanceControllers{
             }
             const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
             const current_credit = latest_credit_result.latest_credit || ZERO;
-
-            const {
-                earned_credit,
-                deducted_credit,
-                latest_credit
-            } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
+            const { earned_credit,deducted_credit,latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
 
             await LeaveCreditModel.insertLeaveCredit({
                 employee_id,
@@ -162,12 +156,11 @@ class AttendanceControllers{
     static async EmployeeRecord(req, res){
         const user = req.session.user;
 
-        if(!user || !user.employee_id){
+        if(!user){
             return res.json(SESSION_USER_NOT_FOUND);
         }
-        const employee_id = user.employee_id;
-
         try{
+            const employee_id = user.employee_id;
             const response_data = await AttendanceModel.getAllEmployeesRecord(employee_id);
 
             if(response_data.error){
@@ -193,10 +186,9 @@ class AttendanceControllers{
     static async AllEmployeesAttendanceRecord(req, res) {
         const user = req.session.user;
 
-        if(!user || !user.employee_id){
+        if(!user){
             return res.json(SESSION_USER_NOT_FOUND);
         }
-
         try{
             const response_data = await AttendanceModel.getAllEmployeesRecords();
 
