@@ -59,7 +59,7 @@ class ValidationHelper{
      * created by: rogendher keith lachica
      * updated at: September 20 2025 3:35pm   
      */
-    static validateEmployeeLogin(employee_data) {
+    static validateEmployeeLogin(employee_data){
 
         try{
             const { email, password } = employee_data;

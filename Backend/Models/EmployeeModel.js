@@ -2,15 +2,19 @@ import db from "../Configs/Database.js";
 import { STATUS_QUERY } from "../Constant/Constants.js"
 
 class EmployeeModel{
-    
+
     /**
-     * Get an employee record by email.
-     * @param {string} email - The email of the employee to retrieve.
+     * Retrieves an employee record by email.
+     *
+     * - Queries the `employees` table for the given email.
+     * - Returns employee details if found, or an error if not.
+     *
+     * @param {string} email The email of the employee to retrieve.
      * @returns {Promise<Object>} An object containing the query status, result, and error if any.
-     * @property {boolean} status - Indicates success or failure of the query.
-     * @property {Object|null} result - The retrieved employee record or null if not found.
-     * @property {string|null} error - Error message if the query fails or data is not found.
-     * created by: rogendher keith lachica
+     * @property {boolean} status Indicates success or failure of the query.
+     * @property {Object|null} result The retrieved employee record or null if not found.
+     * @property {string|null} error Error message if the query fails or data is not found.
+     * created by: Rogendher Keith Lachica
      * updated at: September 20 2025 10:38 pm  
      */
     static async getEmployeeEmail(email){
@@ -41,19 +45,24 @@ class EmployeeModel{
     }
 
     /**
-     * Create a new user record.
-     * @param {Object} userData - The user data to insert.
-     * @param {string} userData.first_name - The first name of the user.
-     * @param {string} userData.last_name - The last name of the user.
-     * @param {string} userData email - The email of the user.
-     * @param {number} userData.role - The role ID of the user.
-     * @param {number} userData.gender - The gender ID of the user.
-     * @param {string} userData.password - The hashed password of the user.
+     * Creates a new employee record.
+     *
+     * - Inserts employee data into the `employees` table.
+     * - Accepts role, gender, name, email, and hashed password.
+     * - Automatically sets creation and update timestamps.
+     *
+     * @param {Object} userData The user data to insert.
+     * @param {string} userData.first_name The first name of the user.
+     * @param {string} userData.last_name The last name of the user.
+     * @param {string} userData.email The email of the user.
+     * @param {number} userData.role The role ID of the user.
+     * @param {number} userData.gender The gender ID of the user.
+     * @param {string} userData.password The hashed password of the user.
      * @returns {Promise<Object>} An object containing the query status, inserted ID result, and error if any.
-     * @property {boolean} status - Indicates success or failure of the insert operation.
-     * @property {Object|null} insert_employee_result - The inserted record ID if successful.
-     * @property {string|null} error - Error message if the insert fails.
-     * created by: rogendher keith lachica
+     * @property {boolean} status Indicates success or failure of the insert operation.
+     * @property {Object|null} insert_employee_result The inserted record ID if successful.
+     * @property {string|null} error Error message if the insert fails.
+     * created by: Rogendher Keith Lachica
      * updated at: September 21 2025 11:38 pm  
      */
     static async createUser({ first_name, last_name, email, role, gender, password }){
@@ -92,4 +101,4 @@ class EmployeeModel{
     }
 }
 
-export default EmployeeModel;
+export default EmployeeModel; 

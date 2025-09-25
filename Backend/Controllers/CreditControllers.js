@@ -7,8 +7,12 @@ class CreditControllers {
     /**
      * Automatically inserts yearly leave credits for employees with role type 3.
      * Triggered by cron or manual API call.
+     * 
      * @param {Object} req - Express request object
      * @param {Object} res - Express response object
+     * @returns {Promise<Object>} JSON response indicating success or failure.
+     * created by: rogendher keith lachica
+     * updated at: September 25 2025 10:00 am
      */
     static async runYearlyCreditInsertion(req, res) {
         

@@ -60,3 +60,5 @@ export const GRANT_TYPE_ID_REWARDED = 1;
 export const GRANT_TYPE_ID_SPECIAL = 3;
 export const ERROR_IN_LEAVE_DEFAULT_MODEL = "No active default leave types found.";
 export const GET_ROLE_EMPLOYEE = 3;
+export const INSERT_YEARLY_CREDIT_MODEL = "Failed to insert yearly leave credit.";
+export const GET_ROLE_BY_EMPLOYEE = "No employees found for the given role.";
