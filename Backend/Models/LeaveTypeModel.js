@@ -2,7 +2,9 @@ import db from "../Configs/Database.js";
 import {
     STATUS_QUERY, ERROR_IN_CARRY_OVER_LEAVE_TYPE_MODEL,
     LEAVE_STATUS, IS_CARRIED_OVER, ERROR_IN_LEAVE_DEFAULT_MODEL, GRANT_TYPE_ID_DEFAULT,
-    GRANT_TYPE_ID_SPECIAL, GRANT_TYPE_ID_REWARDED
+    GRANT_TYPE_ID_SPECIAL, GRANT_TYPE_ID_REWARDED, LEAVE_TYPE_ID_MODEL_SICK_LEAVE, 
+    LEAVE_TYPE_ID_MODEL_VACATION_LEAVE, GET_YEARLY_LEAVE_TYPE_ADDING_ID_1, GET_YEARLY_LEAVE_TYPE_ADDING_ID_2,
+    GET_YEARLY_LEAVE_TYPE_ADDING_ID_6
 } from "../Constant/Constants.js";
 
 class LeaveTypeModel{
@@ -24,8 +26,9 @@ class LeaveTypeModel{
             const [get_all_carry_over_leave_type_result] = await db.execute(`
                     SELECT id, base_value 
                     FROM leave_types 
-                    WHERE is_carried_over = ? AND is_active = ?
-                `, [IS_CARRIED_OVER.yes, LEAVE_STATUS.active]
+                    WHERE is_carried_over = ? AND is_active = ? AND id IN (?, ?)
+                `, [IS_CARRIED_OVER.yes, LEAVE_STATUS.active, 
+                    LEAVE_TYPE_ID_MODEL_VACATION_LEAVE, LEAVE_TYPE_ID_MODEL_SICK_LEAVE]
             );
 
             if(get_all_carry_over_leave_type_result.length === 0){
@@ -63,8 +66,8 @@ class LeaveTypeModel{
         try{
             const [get_all_yearly_leave_type_result] = await db.execute(`
                 SELECT * FROM leave_types 
-                WHERE id IN (1, 2, 6)
-            `);
+                WHERE id IN (?, ?, ?)
+            `,[GET_YEARLY_LEAVE_TYPE_ADDING_ID_1, GET_YEARLY_LEAVE_TYPE_ADDING_ID_2, GET_YEARLY_LEAVE_TYPE_ADDING_ID_6]);
 
             if(!get_all_yearly_leave_type_result.length){
                 response_data.status = false;

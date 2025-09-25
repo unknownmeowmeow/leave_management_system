@@ -25,7 +25,7 @@ class ValidationHelper{
             }
 
             if(first_name_validation.length < 3){
-                return ["First name must be at least 3 letters"];
+                return ["First name must be at least 3 letters."];
             }
 
             if(!/^[a-zA-Z\s]+$/.test(last_name_validation)) {
@@ -33,7 +33,7 @@ class ValidationHelper{
             }
 
             if(last_name_validation.length < 3){
-                return ["Last name must be at least 3 letters"];
+                return ["Last name must be at least 3 letters."];
             }
 
             if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email_validation)){
@@ -41,7 +41,7 @@ class ValidationHelper{
             }
 
             if(password_validation.length < 8){
-                return ["Password must be at least 8 characters"];
+                return ["Password must be at least 8 characters."];
             }
 
             if(password_validation !== confirm_password_validation){
@@ -51,11 +51,14 @@ class ValidationHelper{
             return [];
         }
         catch(error){
-            return ["error in validation registrations"];
+            return ["Error in validation registrations."];
         }
     }
 
     /**
+     * Validates user login data.
+     * @param {object} employee_data - The data object from the request body.
+     * @returns {string[]} An array with a single error message, or an empty array if validation passes.
      * created by: rogendher keith lachica
      * updated at: September 20 2025 3:35pm   
      */
@@ -74,7 +77,7 @@ class ValidationHelper{
             return [];
         }
         catch(error){
-            return ["error in validation login"];
+            return ["Error in validation login."];
         }
     }
 }

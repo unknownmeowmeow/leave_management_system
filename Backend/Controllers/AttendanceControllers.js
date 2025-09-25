@@ -11,6 +11,8 @@ import {
     ERROR_IN_CATCH_GET_ALL_RECORD
 } from "../Constant/Constants.js";
 
+import WorkTimeValidationHelper from "../Helpers/WorkTimeValidationHelper.js";
+
 class AttendanceControllers{
     /**
      * Handles employee time-in process.
@@ -98,7 +100,7 @@ class AttendanceControllers{
             }
             const time_out = TimeValidationHelper.checkEmployeeCurrentTime();
             const work_hour = TimeValidationHelper.calculateEmployeeWorkHour(time_in, time_out);
-            const validation_check_time = TimeValidationHelper.validateEmployeeTimeOut({ id, time_out, work_hour });
+            const validation_check_time = WorkTimeValidationHelper.validateEmployeeTimeOut({ id, time_out, work_hour });
 
             if(!validation_check_time.is_valid){
                 return res.json({ success: false, message: validation_check_time.error });
