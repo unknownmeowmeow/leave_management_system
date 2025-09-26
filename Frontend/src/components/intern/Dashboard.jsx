@@ -90,6 +90,12 @@ export default function Dashboard() {
             <a href="/" style={link_style}>
                 Logout
             </a>
+            <a href="/interndashboard" style={link_style}>
+                Intern Dashboard
+            </a>
+            <a href="/InternRecord" style={link_style}>
+                Intern Record
+            </a>
             <h2 style={{ marginTop: "40px" }}>Your Attendance Records</h2>
             <table
                 style={{

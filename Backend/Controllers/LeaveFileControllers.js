@@ -2,7 +2,8 @@ import {
     SUCCESS_LEAVE_FILE_CONTROLLERS,
     ERROR_IN_GET_EMPLOYEE,
     ERROR_IN_GET_EMPLOYEE_CREDIT_MODEL,
-    ERROR_IN_INSERT_TRANSACTION
+    ERROR_IN_INSERT_TRANSACTION, ERROR_IN_MESSAGE_CATCH_IN_LEAVE_FILE,
+    ERROR_IN_UPDATE_CREDIT_RESPONSE, MESSAGE_NO_EMPLOYEE_SESSION, ERROR_IN_CATCH_MESSAGE_IN_LEAVE_FILE
 } from "../Constant/Constants.js";
 
 import TimeValidationHelper from "../Helpers/TimeValidationHelper.js";
@@ -21,9 +22,9 @@ class LeaveController {
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 9:10 am
      */
-    static async applyLeave(req, res) {
-
-        try {
+    static async applyLeave(req, res){
+        
+        try{
             const employee_id = req.session?.user?.employee_id;
             const { leave_type, start_date, end_date, reason } = req.body;
     
@@ -39,7 +40,7 @@ class LeaveController {
                 return res.json({ success: false, message });
             }
             const employee_response = await EmployeeModel.getById(employee_id);
-
+            
             if(!employee_response.status || !employee_response.result){
                 return res.json({ success: false, message: ERROR_IN_GET_EMPLOYEE });
             }
@@ -47,15 +48,17 @@ class LeaveController {
             const role_type = employee.employee_role_type_id;
             const year = new Date().getFullYear();
             let credit_calculation = null;
+            let leave_credit_id = null;
     
-
             if(role_type === 3){
-                const credit_response = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
-                
+                const credit_response = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
+    
                 if(!credit_response.status || !credit_response.result){
                     return res.json({ success: false, message: ERROR_IN_GET_EMPLOYEE_CREDIT_MODEL });
                 }
-                const latest_credit = parseFloat(credit_response.result.latest_credit || 0);
+                const latest_credit_of_employee = credit_response.result;
+                leave_credit_id = latest_credit_of_employee.id;
+                const latest_credit = parseFloat(latest_credit_of_employee.latest_credit || 0);
     
                 if(duration > latest_credit){
                     return res.json({
@@ -63,10 +66,11 @@ class LeaveController {
                         message: `Insufficient leave credit. Available: ${latest_credit} days.`
                     });
                 }
+    
                 credit_calculation = TimeValidationHelper.calculateDeductedCredit(duration, latest_credit);
             }
             const rewarded_by_id = req.user?.id || null;
-    
+
             const transaction_response = await LeaveTransactionModel.insertTransaction({
                 employee_id,
                 leave_type_id: leave_type,
@@ -75,7 +79,7 @@ class LeaveController {
                 end_date,
                 reason,
                 total_leave: duration,
-                leave_transaction_status_id: 2,
+                leave_transaction_status_id: 1,     
                 is_weekend: 0,
                 is_active: 1,
                 filed_date: new Date(),
@@ -86,22 +90,20 @@ class LeaveController {
                 return res.json({ success: false, message: ERROR_IN_INSERT_TRANSACTION });
             }
             const leave_transaction_id = transaction_response.result.leave_id;
-    
-        
-            if(role_type === 3 && credit_calculation){
+
+            if (role_type === 3 && credit_calculation && leave_credit_id) {
                 const update_credit_response = await LeaveCreditModel.updateLatest_credit({
-                    employee_id,
+                    leave_credit_id, 
                     leave_transaction_id,
                     leave_type_id: leave_type,
                     used_credit: credit_calculation.used_credit,
                     latest_credit: credit_calculation.latest_credit,
                     current_credit: credit_calculation.current_credit,
-                    deducted_credit: credit_calculation.deducted_credit,
-                    created_at: new Date()
+                    deducted_credit: credit_calculation.deducted_credit
                 });
     
                 if(!update_credit_response.status){
-                    return res.json({ success: false, message: "Failed to deduct credit" });
+                    return res.json({ success: false, message: ERROR_IN_UPDATE_CREDIT_RESPONSE });
                 }
             }
     
@@ -111,11 +113,12 @@ class LeaveController {
         catch(error){
             return res.json({
                 success: false,
-                message: "Error occurred in leave filing.",
+                message: ERROR_IN_MESSAGE_CATCH_IN_LEAVE_FILE,
                 error: error.message
             });
         }
     }
+    
     
 
     /**
@@ -146,26 +149,26 @@ class LeaveController {
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 9:20 am
      */
-    static async getLatestCredit(req, res) {
+    static async getLatestCredit(req, res){
 
         try{
             const employee_id = req.session?.user?.employee_id;
     
             if(!employee_id){
-                return res.json({ success: false, message: "Employee not authenticated." });
+                return res.json(MESSAGE_NO_EMPLOYEE_SESSION);
             }
-            const credit_response = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
+            const credit_response = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
     
             if(!credit_response.status || !credit_response.result){
                 return res.json({ success: false, message: ERROR_IN_GET_EMPLOYEE_CREDIT_MODEL });
             }
     
-            return res.json({ success: true, latest_credit: parseFloat(credit_response.result.latest_credit || 0) 
+            return res.json({ success: true, latest_credit: parseFloat(credit_response.result.latest_credit) 
             });
     
         } 
         catch(error){
-            return res.json({ success: false, message: "Failed to fetch leave credit.", error: error.message });
+            return res.json(ERROR_IN_CATCH_MESSAGE_IN_LEAVE_FILE);
         }
     }
     

@@ -21,6 +21,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/auth", EmployeeRoutes); 
 app.use("/api/attendance", TimeRoutes)    
 app.use("/", LeaveTypeRoutes);
+app.use("/api/leave", adminRoutes);
 app.use("/api", CreditRoutes);
 app.use("/api", leaveFileRoutes);
 app.set("view engine", "ejs");

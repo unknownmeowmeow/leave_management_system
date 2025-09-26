@@ -6,13 +6,7 @@ export default function RecordFile() {
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
 
-    const container_style = {
-        maxWidth: "1000px",
-        margin: "40px auto",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-    };
-
+    const container_style = { maxWidth: "1000px", margin: "40px auto", padding: "20px", fontFamily: "Arial, sans-serif" };
     const heading_style = { textAlign: "center", marginBottom: "20px" };
     const table_styling = { width: "100%", borderCollapse: "collapse" };
     const table_header_thread = { border: "1px solid #ccc", padding: "12px", textAlign: "left" };
@@ -22,53 +16,48 @@ export default function RecordFile() {
 
     const statusStyle = (status) => {
         switch (status) {
-            case "approved":
-                return { color: "green", fontWeight: "bold" };
-            case "rejected":
-                return { color: "red", fontWeight: "bold" };
+            case "approved": return { color: "green", fontWeight: "bold" };
+            case "rejected": return { color: "red", fontWeight: "bold" };
             case "pending":
-            case "requested":
-                return { color: "orange", fontWeight: "bold" };
-            case "cancelled":
-                return { color: "gray", fontWeight: "bold" };
-            default:
-                return {};
+            case "requested": return { color: "orange", fontWeight: "bold" };
+            case "cancelled": return { color: "gray", fontWeight: "bold" };
+            default: return {};
         }
     };
 
-    // Fetch leave transactions
+    const displayMessage = (msg) => (typeof msg === "string" ? msg : JSON.stringify(msg, null, 2));
+
     const fetchLeaves = async () => {
         try {
             const res = await axios.get("http://localhost:5000/api/admin/leave_transactions", { withCredentials: true });
             if (res.data.success) setLeaves(res.data.data || []);
-            else setError(res.data.message || "Failed to fetch leaves.");
+            else setError(displayMessage(res.data.message));
         } catch (err) {
-            setError(err.response?.data?.message || "Server error.");
+            setError(displayMessage(err.response?.data?.message || "Server error."));
         }
     };
 
-    useEffect(() => {
-        fetchLeaves();
-    }, []);
+    useEffect(() => { fetchLeaves(); }, []);
 
-    // Update leave status
-    const updateStatus = async (leave_id, status) => {
+    // Numeric IDs directly sent to backend (2 = approved, 4 = rejected)
+    const updateStatus = async (leave_id, status_id) => {
         try {
             const res = await axios.post(
                 "http://localhost:5000/api/admin/update_leave_status",
-                { leave_id, status },
+                { leave_id, status_id },
                 { withCredentials: true }
             );
+
             if (res.data.success) {
-                setMessage(`Leave ${status} successfully.`);
+                setMessage("Leave updated successfully.");
                 setError(null);
-                fetchLeaves(); // refresh list
+                fetchLeaves();
             } else {
-                setError(res.data.message || "Failed to update leave.");
+                setError(displayMessage(res.data.message));
                 setMessage(null);
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Server error.");
+            setError(displayMessage(err.response?.data?.message || "Server error."));
             setMessage(null);
         }
     };
@@ -92,8 +81,8 @@ export default function RecordFile() {
                 </div>
             </div>
 
-            {error && <div style={{ color: "red", marginBottom: "15px" }}>{error}</div>}
-            {message && <div style={{ color: "green", marginBottom: "15px" }}>{message}</div>}
+            {error && <div style={{ color: "red", marginBottom: "15px" }}>{displayMessage(error)}</div>}
+            {message && <div style={{ color: "green", marginBottom: "15px" }}>{displayMessage(message)}</div>}
 
             <h2 style={heading_style}>Leave Records</h2>
             <table style={table_styling}>
@@ -104,7 +93,7 @@ export default function RecordFile() {
                         <th style={table_header_thread}>Start Date</th>
                         <th style={table_header_thread}>End Date</th>
                         <th style={table_header_thread}>Reason</th>
-                        <th style={table_header_thread}>Grant Type ID</th>
+                        <th style={table_header_thread}>Grant Type</th>
                         <th style={table_header_thread}>Status</th>
                         <th style={table_header_thread}>Actions</th>
                     </tr>
@@ -112,9 +101,7 @@ export default function RecordFile() {
                 <tbody>
                     {leaves.length === 0 ? (
                         <tr>
-                            <td colSpan="7" style={{ ...table_header_thread, textAlign: "center" }}>
-                                No leave records found.
-                            </td>
+                            <td colSpan="8" style={{ ...table_header_thread, textAlign: "center" }}>No leave records found.</td>
                         </tr>
                     ) : (
                         leaves.map((leave) => (
@@ -125,16 +112,12 @@ export default function RecordFile() {
                                 <td style={table_header_thread}>{formatDate(leave.end_date)}</td>
                                 <td style={table_header_thread}>{leave.reason || "-"}</td>
                                 <td style={table_header_thread}>{leave.grant_type_name || "-"}</td>
-
-
-                                <td style={{ ...table_header_thread, ...statusStyle(leave.status) }}>
-                                    {leave.status}
-                                </td>
+                                <td style={{ ...table_header_thread, ...statusStyle(leave.status) }}>{leave.status}</td>
                                 <td style={table_header_thread}>
                                     {(leave.status === "pending" || leave.status === "requested") && (
                                         <>
-                                            <button style={button_style} onClick={() => updateStatus(leave.id, "approved")}>Approve</button>
-                                            <button style={button_style} onClick={() => updateStatus(leave.id, "rejected")}>Reject</button>
+                                            <button style={button_style} onClick={() => updateStatus(leave.id, 2)}>Approve</button>
+                                            <button style={button_style} onClick={() => updateStatus(leave.id, 4)}>Reject</button>
                                         </>
                                     )}
                                 </td>

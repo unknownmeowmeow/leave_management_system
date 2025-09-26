@@ -9,4 +9,6 @@ router.get("/leave_transactions", AuthMiddleware.requireLogin, LeaveController.g
 
 router.post("/update_leave_status", AuthMiddleware.requireLogin, LeaveController.updateLeaveStatus);
 
+router.get("/leave_transaction", AuthMiddleware.requireLogin, LeaveController.getAllEmployeeLeaveTransaction);
+
 export default router;

@@ -15,6 +15,7 @@ import InternDashboard from "./components/intern/Dashboard.jsx";
 import Credit from "./components/admin/CreditEmployee.jsx";
 import AdminLeaveFileApplication from "./components/admin/LeaveFile.jsx";
 import AdminRecordFile from "./components/admin/RecordLeave.jsx";
+import InternRecord from "./components/intern/RecordFile.jsx";
 function App() {
   const main_content_style = { padding: "20px", minHeight: "80vh" };
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/adminleavefile" element={<AdminLeaveFileApplication />} />
           <Route path="/recordleave" element={<AdminRecordLeave />} />
           <Route path="/interndashboard" element={<InternDashboard />} />
+          <Route path="/InternRecord" element={<InternRecord />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

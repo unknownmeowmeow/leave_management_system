@@ -11,7 +11,6 @@ import {
     ERROR_IN_CATCH_GET_ALL_RECORD, 
     TWO, ZERO, MESSAGE_SUCCESS_IN_EMPLOYEE_TIME_OUT
 } from "../Constant/Constants.js";
-
 import WorkTimeValidationHelper from "../Helpers/WorkTimeValidationHelper.js";
 
 class AttendanceControllers{
@@ -183,7 +182,7 @@ class AttendanceControllers{
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 9:00 am
      */
-    static async AllEmployeesAttendanceRecord(req, res) {
+    static async AllEmployeesAttendanceRecord(req, res){
         const user = req.session.user;
 
         if(!user){

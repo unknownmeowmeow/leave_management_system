@@ -170,7 +170,7 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 19 2025 10:47 am  
      */
-    static async userLogin(req, res) {
+    static async userLogin(req, res){
 
         try{
             const validation_error = ValidationHelper.validateEmployeeLogin(req.body);

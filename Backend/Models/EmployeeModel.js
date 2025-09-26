@@ -1,8 +1,9 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY, ZERO, TWO, THREE, ERROR_IN_GET_ID 
+import {
+    STATUS_QUERY, ZERO, TWO, THREE, ERROR_IN_GET_ID
 } from "../Constant/Constants.js"
 
-class EmployeeModel{
+class EmployeeModel {
 
     /**
      * Retrieves an employee record by email.
@@ -35,7 +36,7 @@ class EmployeeModel{
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_email_result[ZERO]; 
+                response_data.result = get_all_email_result[ZERO];
             }
         }
         catch(error){
@@ -81,7 +82,7 @@ class EmployeeModel{
                     created_at, 
                     updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-            `, [ role, gender, first_name, last_name, email, password ]
+            `, [role, gender, first_name, last_name, email, password]
             );
 
             if(!insert_employee_data_result.insertId){
@@ -112,7 +113,7 @@ class EmployeeModel{
      * created by: Rogendher Keith Lachica  
      * updated at: September 25, 2025 - 4:30 PM
      */
-    static async getAllEmployeeByRoleId() {
+    static async getAllEmployeeByRoleId(){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -123,14 +124,14 @@ class EmployeeModel{
             `, [TWO, THREE]);
 
             if(get_all_employee_role_id_result.length === ZERO){
-                response_data.status = true; 
+                response_data.status = true;
                 response_data.result = [];
-            } 
+            }
             else{
                 response_data.status = true;
                 response_data.result = get_all_employee_role_id_result;
             }
-        } 
+        }
         catch(error){
             response_data.status = false;
             response_data.result = null;
@@ -155,26 +156,26 @@ class EmployeeModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 5:00 pm
      */
-    static async getById(employee_id) {
+    static async getById(employee_id){
         const response_data = { ...STATUS_QUERY };
 
         try{
-            const [employee_result] = await db.execute(`
+            const [get_employee_by_id_result] = await db.execute(`
                 SELECT *
                 FROM employees
                 WHERE id = ?
             `, [employee_id]);
 
-            if(employee_result.length === ZERO){
+            if(get_employee_by_id_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_GET_ID;
-            } 
+            }
             else{
                 response_data.status = true;
-                response_data.result = employee_result[ZERO];
+                response_data.result = get_employee_by_id_result[ZERO];
             }
-        } 
+        }
         catch(error){
             response_data.status = false;
             response_data.result = null;

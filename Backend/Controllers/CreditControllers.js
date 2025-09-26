@@ -16,7 +16,7 @@ class CreditControllers {
      * created by: rogendher keith lachica
      * updated at: September 25 2025 10:00 am
      */
-    static async runYearlyCreditInsertion(req, res) {
+    static async runYearlyCreditInsertion(req, res){
         
         try{
             const leave_type_response = await LeaveType.GetYearlyLeaveTypeAdding();

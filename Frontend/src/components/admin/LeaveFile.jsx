@@ -27,9 +27,11 @@ export default function LeaveFile() {
                     withCredentials: true,
                 });
                 if (empRes.data.status) setEmployees(empRes.data.result);
-            } catch (error) {
+            } 
+            catch (error) {
                 setServerMessage("Failed to load data from server.");
-            } finally {
+            } 
+            finally {
                 setLoading(false);
             }
         };

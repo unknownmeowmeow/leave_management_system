@@ -6,7 +6,7 @@ import { STATUS_QUERY, ATTENDANCE_TYPE_ID,
     ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL, ZERO
 } from "../Constant/Constants.js";
 
-class AttendanceModel {
+class AttendanceModel{
 
     /**
     * Inserts a time-in record for an employee.
@@ -15,7 +15,7 @@ class AttendanceModel {
     * created by: rogendher keith lachica
     * updated at: September 23 2025 1:21 pm  
     */
-    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID }) {
+    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID }){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -53,7 +53,7 @@ class AttendanceModel {
     * created by: rogendher keith lachica
     * updated at: September 23 2025 1:42 pm  
     */
-    static async checkEmployeeLatestTimeIn(employee_id) {
+    static async checkEmployeeLatestTimeIn(employee_id){
         const response_data = { ...STATUS_QUERY };
 
         try{

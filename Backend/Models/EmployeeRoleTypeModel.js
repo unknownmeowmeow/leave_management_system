@@ -56,20 +56,20 @@ class EmployeeRoleTypeModel {
         const response_data = { ...STATUS_QUERY };
 
         try{
-            const [employees] = await db.execute(`
+            const [get_role_by_id_employee_result] = await db.execute(`
                 SELECT id 
                 FROM employees 
                 WHERE employee_role_type_id = ?
             `, [role_id]);
 
-            if(employees.length === ZERO){
+            if(get_role_by_id_employee_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = [];
                 response_data.error = GET_ROLE_BY_EMPLOYEE;
             } 
             else{
                 response_data.status = true;
-                response_data.result = employees;
+                response_data.result = get_role_by_id_employee_result;
             }
         } 
         catch(error){
