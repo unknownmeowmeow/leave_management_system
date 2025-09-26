@@ -4,7 +4,6 @@ import axios from "axios";
 export default function Dashboard() {
     const [records, setRecords] = useState([]);
 
-    // --- Styles ---
     const containerStyle = {
         maxWidth: "800px",
         margin: "40px auto",
@@ -122,7 +121,7 @@ export default function Dashboard() {
             <div style={{ marginBottom: "20px" }}>
                 <button style={buttonStyle} onClick={handleTimeIn}>Time IN</button>
                 <button style={buttonStyle} onClick={handleTimeOut}>Time OUT</button>
-                
+
             </div>
 
             {/* Navigation Links */}

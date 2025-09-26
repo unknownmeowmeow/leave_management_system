@@ -37,13 +37,13 @@ export default function Dashboard() {
                     { withCredentials: true }
                 );
 
-                if(response.data.success){
+                if (response.data.success) {
                     setRecords(response.data.records);
-                } 
-                else{
                 }
-            } 
-            catch(error){
+                else {
+                }
+            }
+            catch (error) {
                 alert(error.response?.data?.message);
             }
         };
@@ -59,7 +59,7 @@ export default function Dashboard() {
                 { withCredentials: true }
             );
             alert(response.data.message);
-        } 
+        }
         catch (error) {
             alert(error.response?.data?.message);
         }

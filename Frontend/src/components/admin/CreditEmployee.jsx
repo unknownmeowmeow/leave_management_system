@@ -17,14 +17,14 @@ export default function CreditEmployee() {
                     withCredentials: true,
                 });
 
-                if(response.data.success && Array.isArray(response.data.result)){
+                if (response.data.success && Array.isArray(response.data.result)) {
                     setCreditsByEmployee(response.data.result);
                 }
                 else {
                     alert(response.data.error || "Failed to fetch credits");
                     setCreditsByEmployee([]);
                 }
-            } 
+            }
             catch (error) {
                 alert(error.response?.data?.error || "Server error while fetching credits");
                 setCreditsByEmployee([]);
@@ -41,10 +41,10 @@ export default function CreditEmployee() {
 
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
-            
+
             <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
                 <h1>Welcome Admin</h1>
-               
+
                 <div>
                     <a href="/" style={link_style}>Logout</a>
                     <a href="/employeecredit" style={link_style}>Employee Credit</a>

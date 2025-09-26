@@ -1,6 +1,7 @@
 import express from "express";
 import EmployeeControllers from "../Controllers/EmployeeControllers.js";
-
+import LeaveFile from "../Controllers/LeaveFileControllers.js"
+import AuthMiddleware from "../Middleware/authMiddleware.js";
 const router = express.Router();
 
 /**
@@ -50,6 +51,7 @@ router.get("/gender", EmployeeControllers.getGender);
  * @param {Object} res - Express response object
  * @returns {Object} JSON response with credit records or error
  */
-router.get("/credits", EmployeeControllers.getAllEmployeeCredits);
+router.get("/credits", AuthMiddleware.requireLogin, EmployeeControllers.getAllEmployeeCredits);
+
 
 export default router;

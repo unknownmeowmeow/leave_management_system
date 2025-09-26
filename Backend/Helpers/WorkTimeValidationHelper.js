@@ -3,6 +3,7 @@ import {VALIDATION_EMPLOYEE_TIMEOUT_ERROR, VALIDATION_EMPLOYEE_ID_ERROR,
 } from "../Constant/Constants.js";
 
 class WorkTimeValidationHelper{
+    
     /**
     * Validates the employee's time-out entry.
     *

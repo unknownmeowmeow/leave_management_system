@@ -2,7 +2,7 @@ import db from "../Configs/Database.js";
 import {
     STATUS_QUERY, ERROR_IN_INSERT_CREDIT_MODEL, ERROR_IN_GET_ALL_CREDIT_MODEL,
     ERROR_IN_GET_EMPLOYEE_CREDIT_MODEL, ROLE_TYPE_INTERN, ROLE_TYPE_EMPLOYEE,
-    INSERT_YEARLY_CREDIT_MODEL, ZERO_POINT_ZERO_ZERO
+    INSERT_YEARLY_CREDIT_MODEL, ZERO_POINT_ZERO_ZERO, ZERO
 } from "../Constant/Constants.js";
 
 class LeaveCreditModel {
@@ -27,14 +27,11 @@ class LeaveCreditModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 10:20 pm  
      */
-    static async insertLeaveCredit({ 
-        employee_id,leave_transaction_id, attendance_id = null,leave_type_id = null,
-        earned_credit,
-        used_credit = ZERO, deducted_credit,
-        current_credit,latest_credit = ZERO }){
+    static async insertLeaveCredit({ employee_id, leave_transaction_id, attendance_id = null, leave_type_id = null,
+        earned_credit, used_credit = ZERO, deducted_credit, current_credit, latest_credit = ZERO }) {
         const response_data = { ...STATUS_QUERY };
 
-        try{
+        try {
             const [insert_employee_credit_result] = await db.execute(`
                 INSERT INTO leave_credits (
                     employee_id, 
@@ -83,10 +80,10 @@ class LeaveCreditModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 01:10 am
      */
-    static async insertYearlyCredit(employee_id, leave_type_id, credit_value){
+    static async insertYearlyCredit(employee_id, leave_type_id, credit_value) {
         const response = { status: false, result: null, error: null };
 
-        try {
+        try{
 
             const [insert_yearly_credit_result] = await db.execute(`
                 INSERT INTO leave_credits (
@@ -94,10 +91,11 @@ class LeaveCreditModel {
                     earned_work_hour_credit, deducted_work_hour_credit, used_work_hour_credit,
                     earned_credit, deducted_credit, used_credit, current_credit, latest_credit,
                     created_at, updated_at
-                 ) VALUES (?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-        `, [ employee_id, leave_type_id, ZERO_POINT_ZERO_ZERO, ZERO_POINT_ZERO_ZERO, 
-            ZERO_POINT_ZERO_ZERO, credit_value, ZERO_POINT_ZERO_ZERO, ZERO_POINT_ZERO_ZERO, 
-            credit_value, credit_value]);
+                 ) 
+                    VALUES (?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        `, [employee_id, leave_type_id, ZERO_POINT_ZERO_ZERO, ZERO_POINT_ZERO_ZERO,
+                ZERO_POINT_ZERO_ZERO, credit_value, ZERO_POINT_ZERO_ZERO, ZERO_POINT_ZERO_ZERO,
+                credit_value, credit_value]);
 
             if(!insert_yearly_credit_result.insertId){
                 response.status = false;
@@ -117,7 +115,6 @@ class LeaveCreditModel {
         return response;
     }
 
-
     /**
      * Retrieve summarized leave credit totals per employee.
      *
@@ -129,7 +126,7 @@ class LeaveCreditModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm  
      */
-    static async getAllEmployeeCredits(){
+    static async getAllEmployeeCredits() {
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -179,7 +176,7 @@ class LeaveCreditModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 12:10 am
      */
-    static async getLatestEmployeeLeaveCredit(employee_id){
+    static async getLatestEmployeeLeaveCredit(employee_id) {
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -191,19 +188,76 @@ class LeaveCreditModel {
                     LIMIT 1
                 `, [employee_id]);
 
-            if(get_all_latest_credit_result.length > ZERO){
-                response_data.status = true;
-                response_data.result = get_all_latest_credit_result[ZERO];
-            }
-            else{
+            if(!get_all_latest_credit_result.length){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_GET_EMPLOYEE_CREDIT_MODEL;
+            }
+            else{
+                response_data.status = true;
+                response_data.result = get_all_latest_credit_result;
             }
         }
         catch(error){
             response_data.status = false;
             response_data.result = null;
+            response_data.error = error.message;
+        }
+
+        return response_data;
+    }
+
+    static async insertLeaveCredit({ employee_id, leave_transaction_id, leave_type_id, used_credit, latest_credit }) {
+        const response_data = { ...STATUS_QUERY };
+    
+        try{
+            const [insert_result] = await db.execute(`
+                INSERT INTO leave_credits (
+                    employee_id,
+                    leave_transaction_id,
+                    leave_type_id,
+                    used_credit,
+                    latest_credit
+                ) VALUES (?, ?, ?, ?, ?)
+            `, [employee_id, leave_transaction_id, leave_type_id, used_credit, latest_credit]);
+    
+            if(!insert_result.insertId){
+                response_data.status = false;
+                response_data.error = "Insert failed, no insertId returned.";
+            } 
+            else {
+                response_data.status = true;
+                response_data.result = { leave_credit_id: insert_result.insertId };
+            }
+    
+        } 
+        catch(error){
+            response_data.status = false;
+            response_data.error = error.message;
+        }
+    
+        return response_data;
+    }
+    
+
+    static async updateLatest_credit({ employee_id, leave_transaction_id, leave_type_id, used_credit, latest_credit, current_credit, deducted_credit}) {
+        const response_data = { ...STATUS_QUERY };
+
+        try {
+            const [update_result] = await db.execute(`
+                UPDATE leave_credits
+                SET used_credit = ?, deducted_credit = ?, current_credit = ?, latest_credit = ?, leave_transaction_id = ?,  leave_type_id = ?, updated_at = NOW()
+                WHERE employee_id = ?
+                ORDER BY id DESC
+                LIMIT 1
+            `, [ used_credit, deducted_credit, current_credit, latest_credit, leave_transaction_id, leave_type_id, employee_id]);
+
+            response_data.status = update_result.affectedRows > ZERO;
+            response_data.result = update_result;
+
+        } 
+        catch(error){
+            response_data.status = false;
             response_data.error = error.message;
         }
 

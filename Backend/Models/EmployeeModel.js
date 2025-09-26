@@ -1,5 +1,6 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY } from "../Constant/Constants.js"
+import { STATUS_QUERY, ZERO, TWO, THREE, ERROR_IN_GET_ID 
+} from "../Constant/Constants.js"
 
 class EmployeeModel{
 
@@ -27,14 +28,14 @@ class EmployeeModel{
                 WHERE email = ?
             `, [email]);
 
-            if(get_all_email_result.length === 0){
+            if(get_all_email_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_FIND_EMAIL_MODEL;
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_email_result[0]; 
+                response_data.result = get_all_email_result[ZERO]; 
             }
         }
         catch(error){
@@ -79,8 +80,7 @@ class EmployeeModel{
                     password, 
                     created_at, 
                     updated_at
-                )
-                 VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+                ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
             `, [ role, gender, first_name, last_name, email, password ]
             );
 
@@ -99,6 +99,92 @@ class EmployeeModel{
         }
         return response_data;
     }
+    /**
+     * Retrieves all employees where role type is 2 or 3 (e.g., Full-Time or Part-Time).
+     *
+     * - Returns list of employees with employee_role_type_id IN (2,3)
+     * - Returns an array of employees if found, or empty if none.
+     *
+     * @returns {Promise<Object>} An object with query status, result, and error if any.
+     * @property {boolean} status - Query success status.
+     * @property {Array|null} result - Array of employee records.
+     * @property {string|null} error - Error message if query fails.
+     * created by: Rogendher Keith Lachica  
+     * updated at: September 25, 2025 - 4:30 PM
+     */
+    static async getAllEmployeeByRoleId() {
+        const response_data = { ...STATUS_QUERY };
+
+        try{
+            const [get_all_employee_role_id_result] = await db.execute(`
+                SELECT id, first_name, last_name, email, employee_role_type_id
+                FROM employees
+                WHERE employee_role_type_id IN (?, ?)
+            `, [TWO, THREE]);
+
+            if(get_all_employee_role_id_result.length === ZERO){
+                response_data.status = true; 
+                response_data.result = [];
+            } 
+            else{
+                response_data.status = true;
+                response_data.result = get_all_employee_role_id_result;
+            }
+        } 
+        catch(error){
+            response_data.status = false;
+            response_data.result = null;
+            response_data.error = ERROR_IN_GET_EMPLOYEES_BY_ROLE_TYPE || error.message;
+        }
+
+        return response_data;
+    }
+    // ... existing methods ...
+
+    /**
+     * Retrieves an employee record by ID.
+     *
+     * - Queries the `employees` table for the given employee ID.
+     * - Returns employee details if found, or an error if not.
+     *
+     * @param {number} employee_id The ID of the employee to retrieve.
+     * @returns {Promise<Object>} An object containing the query status, result, and error if any.
+     * @property {boolean} status Indicates success or failure of the query.
+     * @property {Object|null} result The retrieved employee record or null if not found.
+     * @property {string|null} error Error message if the query fails or data is not found.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 26 2025 5:00 pm
+     */
+    static async getById(employee_id) {
+        const response_data = { ...STATUS_QUERY };
+
+        try{
+            const [employee_result] = await db.execute(`
+                SELECT *
+                FROM employees
+                WHERE id = ?
+            `, [employee_id]);
+
+            if(employee_result.length === ZERO){
+                response_data.status = false;
+                response_data.result = null;
+                response_data.error = ERROR_IN_GET_ID;
+            } 
+            else{
+                response_data.status = true;
+                response_data.result = employee_result[ZERO];
+            }
+        } 
+        catch(error){
+            response_data.status = false;
+            response_data.result = null;
+            response_data.error = error.message;
+        }
+
+        return response_data;
+    }
+
+
 }
 
 export default EmployeeModel; 

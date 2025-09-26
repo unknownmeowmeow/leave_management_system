@@ -1,6 +1,6 @@
-import { SESSION_USER_NOT_FOUND  } from "../Constant/Constants.js";
+import { SESSION_USER_NOT_FOUND } from "../Constant/Constants.js";
 
-class AuthMiddleware{
+class AuthMiddleware {
     /**
      * Middleware to require user login by checking session.
      * @param {object} req - The request object.
@@ -9,11 +9,12 @@ class AuthMiddleware{
      * created by: rogendher keith lachica
      * updated at: September 19 2025 4:35pm
      */
-    static requireLogin(req, res, next){
-        
+    static requireLogin(req, res, next) {
         if (!req.session || !req.session.user) {
             return res.json(SESSION_USER_NOT_FOUND);
         }
+
+        req.user = req.session.user;
         next();
     }
 }

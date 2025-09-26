@@ -172,7 +172,7 @@ class EmployeeControllers{
      */
     static async userLogin(req, res) {
 
-        try {
+        try{
             const validation_error = ValidationHelper.validateEmployeeLogin(req.body);
 
             if(validation_error.length){

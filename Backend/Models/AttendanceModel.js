@@ -3,7 +3,7 @@ import { STATUS_QUERY, ATTENDANCE_TYPE_ID,
     ERROR_IN_INSERTING_TIME_IN_MODEL, ERROR_IN_CHECK_TIME_IN_MODEL,
     ERROR_IN_CHECK_TIME_OUT_MODEL, 
     ERROR_IN_UPDATE_TIME_OUT_MODEL,
-    ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL 
+    ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL, ZERO
 } from "../Constant/Constants.js";
 
 class AttendanceModel {
@@ -18,7 +18,7 @@ class AttendanceModel {
     static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID }) {
         const response_data = { ...STATUS_QUERY };
 
-        try {
+        try{
             const [insert_attendance_result] = await db.execute(`
                 INSERT INTO attendances (
                     employee_id, 
@@ -30,17 +30,17 @@ class AttendanceModel {
                 VALUES (?, ?, NOW(), NOW(), NOW())
             `, [employee_id, attendance_type_id]);
 
-            if (!insert_attendance_result.insertId) {
+            if(!insert_attendance_result.insertId){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_INSERTING_TIME_IN_MODEL;
             }
-            else {
+            else{
                 response_data.status = true;
                 response_data.result = { id: insert_attendance_result.insertId };
             }
         }
-        catch (error) {
+        catch(error){
             response_data.error = error.message;
         }
         return response_data;
@@ -56,7 +56,7 @@ class AttendanceModel {
     static async checkEmployeeLatestTimeIn(employee_id) {
         const response_data = { ...STATUS_QUERY };
 
-        try {
+        try{
             const [get_latest_time_in_record_result] = await db.execute(`
                 SELECT id, time_in 
                 FROM attendances
@@ -71,7 +71,7 @@ class AttendanceModel {
             }
             else{
                 response_data.status = true;
-                response_data.result = get_latest_time_in_record_result[0];
+                response_data.result = get_latest_time_in_record_result[ZERO];
             }
         }
         catch(error){
@@ -88,10 +88,10 @@ class AttendanceModel {
     * created by: rogendher keith lachica
     * updated at: September 23 2025 2:53 pm  
     */
-    static async checkLatestEmployeeTimeOut(employee_id) {
+    static async checkLatestEmployeeTimeOut(employee_id){
         const response_data = { ...STATUS_QUERY };
 
-        try {
+        try{
             const [get_latest_time_out_result] = await db.execute(`
                 SELECT id, time_out 
                 FROM attendances
@@ -106,10 +106,10 @@ class AttendanceModel {
             }
             else{
                 response_data.status = true;
-                response_data.result = get_latest_time_out_result[0];
+                response_data.result = get_latest_time_out_result[ZERO];
             }
         }
-        catch (error) {
+        catch (error){
             response_data.error = error.message;
         }
 
@@ -123,7 +123,7 @@ class AttendanceModel {
     * created by: rogendher keith lachica
     * updated at: September 23 2025 3:15 pm  
     */
-    static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id }) {
+    static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id }){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -133,7 +133,7 @@ class AttendanceModel {
                 WHERE id = ?
             `, [time_out, work_hour, attendance_type_id, id]);
 
-            if(update_time_out_result.affectedRows === 0){
+            if(update_time_out_result.affectedRows === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_UPDATE_TIME_OUT_MODEL;
@@ -155,7 +155,7 @@ class AttendanceModel {
     * created by: rogendher keith lachica
     * updated at: September 24 2025 1:26 pm  
     */
-    static async getAllEmployeesRecords() {
+    static async getAllEmployeesRecords(){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -172,7 +172,7 @@ class AttendanceModel {
                 ORDER BY attendances.updated_at DESC
             `);
 
-            if(get_all_employee_attendance_result.length === 0){
+            if(get_all_employee_attendance_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL;
@@ -187,8 +187,15 @@ class AttendanceModel {
         }
         return response_data;
     }
-    
-    static async getAllEmployeesRecord(employee_id) {
+    /**
+    * Retrieves all attendance records for a specific employee.
+    *
+    * @param {number} employee_id - Employee ID.
+    * @returns {Promise<Object>} JSON response with status, result, and error if any.
+    * created by: rogendher keith lachica
+    * updated at: September 24 2025 1:26 pm
+    */
+    static async getAllEmployeesRecord(employee_id){
         const response_data = { ...STATUS_QUERY };
 
         try{
@@ -206,7 +213,7 @@ class AttendanceModel {
                 ORDER BY attendances.updated_at DESC
             `, [employee_id]);
 
-            if(get_all_employee_attendance_result.length === 0){
+            if(get_all_employee_attendance_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL;

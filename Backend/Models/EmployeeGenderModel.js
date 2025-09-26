@@ -1,5 +1,5 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY, ERROR_IN_MODEL_GENDER } from "../Constant/Constants.js";
+import { STATUS_QUERY, ERROR_IN_MODEL_GENDER, ZERO } from "../Constant/Constants.js";
 
 class EmployeeGenderModel{
 
@@ -23,14 +23,14 @@ class EmployeeGenderModel{
                 WHERE id = ?
             `, [id]);
 
-            if(get_gender_by_id_result.length === 0){
+            if(get_gender_by_id_result.length === ZERO){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = ERROR_IN_MODEL_GENDER;
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_gender_by_id_result[0];
+                response_data.result = get_gender_by_id_result[ZERO];
             }
         }
         catch(error){

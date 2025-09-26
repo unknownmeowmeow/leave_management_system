@@ -3,213 +3,261 @@ import axios from "axios";
 
 export default function LeaveFile() {
     const [leaveTypes, setLeaveTypes] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [serverMessage, setServerMessage] = useState(null);
+
     const [formData, setFormData] = useState({
-        leaveType: "",
-        startDate: "",
-        endDate: "",
+        employee_id: "",
+        leave_type: "",
+        start_date: "",
+        end_date: "",
         reason: "",
     });
-    const [submitStatus, setSubmitStatus] = useState(null);
 
     useEffect(() => {
-        const fetchLeaveTypes = async () => {
+        const fetchData = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/api/leave_types_admin", {
+                const leaveRes = await axios.get("http://localhost:5000/api/leave_types_admin", {
                     withCredentials: true,
                 });
-                if (res.data.success) {
-                    setLeaveTypes(res.data.data);
-                    setError(null);
-                } else {
-                    setError(res.data.message || "Unable to load leave types.");
-                    setLeaveTypes([]);
-                }
-            } catch {
-                setError("Error fetching leave types.");
-                setLeaveTypes([]);
+                if (leaveRes.data.success) setLeaveTypes(leaveRes.data.data);
+
+                const empRes = await axios.get("http://localhost:5000/api/employeesbyrole", {
+                    withCredentials: true,
+                });
+                if (empRes.data.status) setEmployees(empRes.data.result);
+            } catch (error) {
+                setServerMessage("Failed to load data from server.");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchLeaveTypes();
+        fetchData();
     }, []);
 
+    // Handle input changes
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubmitStatus(null);
-
-        if (!formData.leaveType || !formData.startDate || !formData.endDate || !formData.reason) {
-            setSubmitStatus({ success: false, message: "Please fill out all fields." });
-            return;
-        }
+        setServerMessage(null);
 
         try {
-            const response = await axios.post("http://localhost:5000/api/submit_leave", formData, {
+            const response = await axios.post("http://localhost:5000/api/apply", formData, {
                 withCredentials: true,
             });
 
+            console.log("Response data:", response.data); // debug output
+
+            // Extract message string safely
+            let msg = "";
+
+            if (typeof response.data.message === "string") {
+                msg = response.data.message;
+            } else if (
+                typeof response.data.message === "object" &&
+                response.data.message !== null
+            ) {
+                msg = response.data.message.message || JSON.stringify(response.data.message);
+            } else {
+                msg = "Unknown response from server.";
+            }
+
+            setServerMessage(msg);
+
             if (response.data.success) {
-                setSubmitStatus({ success: true, message: "Leave application submitted successfully!" });
+                // Reset form on success
                 setFormData({
-                    leaveType: "",
-                    startDate: "",
-                    endDate: "",
+                    employee_id: "",
+                    leave_type: "",
+                    start_date: "",
+                    end_date: "",
                     reason: "",
                 });
-            } else {
-                setSubmitStatus({ success: false, message: response.data.message || "Submission failed." });
             }
-        } catch {
-            setSubmitStatus({ success: false, message: "An error occurred during submission." });
+        } catch (error) {
+            const msg = error?.response?.data?.message || "Server error occurred.";
+            setServerMessage(msg);
         }
     };
 
-    const link_style = {
-        textDecoration: "none",
-        color: "#007bff",
-        fontSize: "16px",
-        margin: "0 10px",
-    };
-
     return (
-        <div style={{ maxWidth: "700px", margin: "40px auto", fontFamily: "Segoe UI, Arial, sans-serif" }}>
+        <div
+            style={{ maxWidth: "700px", margin: "40px auto", fontFamily: "Segoe UI, Arial, sans-serif" }}
+        >
             <div style={{ textAlign: "center", marginBottom: "30px" }}>
                 <h1>Welcome Admin</h1>
                 <div>
-                    <a href="/" style={link_style}>Logout</a>
-                    <a href="/employeecredit" style={link_style}>Employee Credit</a>
-                    <a href="/adminleavefile" style={link_style}>Leave File Application</a>
-                    <a href="/adminrecordfile" style={link_style}>Employee Leave Record</a>
-                    <a href="/admin" style={link_style}>Employee Attendance</a>
+                    <a href="/" style={linkStyle}>
+                        Logout
+                    </a>
+                    <a href="/employeecredit" style={linkStyle}>
+                        Employee Credit
+                    </a>
+                    <a href="/adminleavefile" style={linkStyle}>
+                        Leave File Application
+                    </a>
+                    <a href="/adminrecordfile" style={linkStyle}>
+                        Employee Leave Record
+                    </a>
+                    <a href="/admin" style={linkStyle}>
+                        Employee Attendance
+                    </a>
                 </div>
             </div>
 
-            <div style={{
-                backgroundColor: "#f9f9f9",
-                padding: "30px",
-                borderRadius: "8px",
-                boxShadow: "0 0 10px rgba(0,0,0,0.1)"
-            }}>
-                <h2 style={{ marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" }}>
-                    Leave Application Form
-                </h2>
+            <div style={formWrapperStyle}>
+                <h2 style={formHeaderStyle}>Leave Application Form</h2>
 
-                {loading && <div>Loading leave types...</div>}
-                {error && <div style={{ color: "red", marginBottom: "15px" }}>{error}</div>}
-                {submitStatus && (
-                    <div style={{ color: submitStatus.success ? "green" : "red", marginBottom: "15px" }}>
-                        {submitStatus.message}
-                    </div>
+                {loading && <div>Loading data...</div>}
+
+                {serverMessage && typeof serverMessage === "string" && (
+                    <div style={messageBoxStyle}>{serverMessage}</div>
                 )}
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: "20px" }}>
-                        <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
-                            Leave Type:
-                        </label>
-                        <select
-                            name="leaveType"
-                            value={formData.leaveType}
-                            onChange={handleChange}
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                fontSize: "16px"
-                            }}
-                        >
-                            <option value="">Select Leave Type</option>
-                            {leaveTypes.map((type) => (
-                                <option key={type.id} value={type.id}>{type.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                {!loading && (
+                    <form onSubmit={handleSubmit}>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Employee:</label>
+                            <select
+                                name="employee_id"
+                                value={formData.employee_id}
+                                onChange={handleChange}
+                                style={selectStyle}
+                            >
+                                <option value="">Select Employee</option>
+                                {employees.map((emp) => (
+                                    <option key={emp.id} value={emp.id}>
+                                        {emp.first_name} {emp.last_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div style={{ marginBottom: "20px" }}>
-                        <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
-                            Start Date:
-                        </label>
-                        <input
-                            type="date"
-                            name="startDate"
-                            value={formData.startDate}
-                            onChange={handleChange}
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                fontSize: "16px"
-                            }}
-                        />
-                    </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Leave Type:</label>
+                            <select
+                                name="leave_type"
+                                value={formData.leave_type}
+                                onChange={handleChange}
+                                style={selectStyle}
+                            >
+                                <option value="">Select Leave Type</option>
+                                {leaveTypes.map((type) => (
+                                    <option key={type.id} value={type.id}>
+                                        {type.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div style={{ marginBottom: "20px" }}>
-                        <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
-                            End Date:
-                        </label>
-                        <input
-                            type="date"
-                            name="endDate"
-                            value={formData.endDate}
-                            onChange={handleChange}
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                fontSize: "16px"
-                            }}
-                        />
-                    </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Start Date:</label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                value={formData.start_date}
+                                onChange={handleChange}
+                                style={inputStyle}
+                            />
+                        </div>
 
-                    <div style={{ marginBottom: "25px" }}>
-                        <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
-                            Reason:
-                        </label>
-                        <input
-                            type="text"
-                            name="reason"
-                            value={formData.reason}
-                            onChange={handleChange}
-                            placeholder="Enter your reason"
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                borderRadius: "4px",
-                                border: "1px solid #ccc",
-                                fontSize: "16px"
-                            }}
-                        />
-                    </div>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>End Date:</label>
+                            <input
+                                type="date"
+                                name="end_date"
+                                value={formData.end_date}
+                                onChange={handleChange}
+                                style={inputStyle}
+                            />
+                        </div>
 
-                    <button
-                        type="submit"
-                        style={{
-                            padding: "12px 24px",
-                            backgroundColor: "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            transition: "background-color 0.3s ease"
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = "#0056b3"}
-                        onMouseOut={(e) => e.target.style.backgroundColor = "#007bff"}
-                    >
-                        Submit
-                    </button>
-                </form>
+                        <div style={inputGroupStyle}>
+                            <label style={labelStyle}>Reason:</label>
+                            <input
+                                type="text"
+                                name="reason"
+                                value={formData.reason}
+                                onChange={handleChange}
+                                placeholder="Enter your reason"
+                                style={inputStyle}
+                            />
+                        </div>
+
+                        <button type="submit" style={submitButtonStyle}>
+                            Submit
+                        </button>
+                    </form>
+                )}
             </div>
         </div>
     );
 }
+
+// Styles
+const linkStyle = {
+    textDecoration: "none",
+    color: "#007bff",
+    fontSize: "16px",
+    margin: "0 10px",
+};
+
+const formWrapperStyle = {
+    backgroundColor: "#f9f9f9",
+    padding: "30px",
+    borderRadius: "8px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+};
+
+const formHeaderStyle = {
+    marginBottom: "20px",
+    borderBottom: "1px solid #ccc",
+    paddingBottom: "10px",
+};
+
+const messageBoxStyle = {
+    marginBottom: "20px",
+    padding: "10px",
+    borderRadius: "4px",
+    backgroundColor: "#f0f0f0",
+    color: "#333",
+    fontWeight: "bold",
+};
+
+const inputGroupStyle = {
+    marginBottom: "20px",
+};
+
+const labelStyle = {
+    display: "block",
+    fontWeight: "bold",
+    marginBottom: "5px",
+};
+
+const inputStyle = {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    fontSize: "16px",
+};
+
+const selectStyle = {
+    ...inputStyle,
+};
+
+const submitButtonStyle = {
+    padding: "12px 24px",
+    backgroundColor: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    fontSize: "16px",
+    cursor: "pointer",
+};

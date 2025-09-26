@@ -16,6 +16,7 @@ class LeaveTypeController{
      * updated at: September 20 2025
      */
     static async getAllDefaultLeaveType(req, res){
+        
         try{
             const user = req.session?.user;
     

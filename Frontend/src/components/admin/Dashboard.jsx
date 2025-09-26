@@ -36,7 +36,7 @@ export default function Dashboard() {
         <div style={{ textAlign: "center", marginTop: "50px" }}>
             <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
                 <h1>Welcome Admin</h1>
-               
+
                 <div>
                     <a href="/" style={link_style}>Logout</a>
                     <a href="/employeecredit" style={link_style}>Employee Credit</a>
