@@ -27,11 +27,9 @@ export default function LeaveFile() {
                     withCredentials: true,
                 });
                 if (empRes.data.status) setEmployees(empRes.data.result);
-            } 
-            catch (error) {
+            } catch (error) {
                 setServerMessage("Failed to load data from server.");
-            } 
-            finally {
+            } finally {
                 setLoading(false);
             }
         };
@@ -39,12 +37,10 @@ export default function LeaveFile() {
         fetchData();
     }, []);
 
-    // Handle input changes
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerMessage(null);
@@ -54,26 +50,20 @@ export default function LeaveFile() {
                 withCredentials: true,
             });
 
-            console.log("Response data:", response.data); // debug output
-
-            // Extract message string safely
             let msg = "";
-
             if (typeof response.data.message === "string") {
                 msg = response.data.message;
-            } else if (
-                typeof response.data.message === "object" &&
-                response.data.message !== null
-            ) {
+            } 
+            else if(typeof response.data.message === "object" && response.data.message !== null) {
                 msg = response.data.message.message || JSON.stringify(response.data.message);
-            } else {
+            } 
+            else {
                 msg = "Unknown response from server.";
             }
 
             setServerMessage(msg);
 
             if (response.data.success) {
-                // Reset form on success
                 setFormData({
                     employee_id: "",
                     leave_type: "",
@@ -89,27 +79,15 @@ export default function LeaveFile() {
     };
 
     return (
-        <div
-            style={{ maxWidth: "700px", margin: "40px auto", fontFamily: "Segoe UI, Arial, sans-serif" }}
-        >
+        <div style={{ maxWidth: "700px", margin: "40px auto", fontFamily: "Segoe UI, Arial, sans-serif" }}>
             <div style={{ textAlign: "center", marginBottom: "30px" }}>
                 <h1>Welcome Admin</h1>
                 <div>
-                    <a href="/" style={linkStyle}>
-                        Logout
-                    </a>
-                    <a href="/employeecredit" style={linkStyle}>
-                        Employee Credit
-                    </a>
-                    <a href="/adminleavefile" style={linkStyle}>
-                        Leave File Application
-                    </a>
-                    <a href="/adminrecordfile" style={linkStyle}>
-                        Employee Leave Record
-                    </a>
-                    <a href="/admin" style={linkStyle}>
-                        Employee Attendance
-                    </a>
+                    <a href="/" style={linkStyle}>Logout</a>
+                    <a href="/employeecredit" style={linkStyle}>Employee Credit</a>
+                    <a href="/adminleavefile" style={linkStyle}>Leave File Application</a>
+                    <a href="/adminrecordfile" style={linkStyle}>Employee Leave Record</a>
+                    <a href="/admin" style={linkStyle}>Employee Attendance</a>
                 </div>
             </div>
 
@@ -151,50 +129,27 @@ export default function LeaveFile() {
                             >
                                 <option value="">Select Leave Type</option>
                                 {leaveTypes.map((type) => (
-                                    <option key={type.id} value={type.id}>
-                                        {type.name}
-                                    </option>
+                                    <option key={type.id} value={type.id}>{type.name}</option>
                                 ))}
                             </select>
                         </div>
 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Start Date:</label>
-                            <input
-                                type="date"
-                                name="start_date"
-                                value={formData.start_date}
-                                onChange={handleChange}
-                                style={inputStyle}
-                            />
+                            <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} style={inputStyle} />
                         </div>
 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>End Date:</label>
-                            <input
-                                type="date"
-                                name="end_date"
-                                value={formData.end_date}
-                                onChange={handleChange}
-                                style={inputStyle}
-                            />
+                            <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} style={inputStyle} />
                         </div>
 
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Reason:</label>
-                            <input
-                                type="text"
-                                name="reason"
-                                value={formData.reason}
-                                onChange={handleChange}
-                                placeholder="Enter your reason"
-                                style={inputStyle}
-                            />
+                            <input type="text" name="reason" value={formData.reason} onChange={handleChange} placeholder="Enter your reason" style={inputStyle} />
                         </div>
 
-                        <button type="submit" style={submitButtonStyle}>
-                            Submit
-                        </button>
+                        <button type="submit" style={submitButtonStyle}>Submit</button>
                     </form>
                 )}
             </div>
@@ -202,64 +157,12 @@ export default function LeaveFile() {
     );
 }
 
-// Styles
-const linkStyle = {
-    textDecoration: "none",
-    color: "#007bff",
-    fontSize: "16px",
-    margin: "0 10px",
-};
-
-const formWrapperStyle = {
-    backgroundColor: "#f9f9f9",
-    padding: "30px",
-    borderRadius: "8px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-};
-
-const formHeaderStyle = {
-    marginBottom: "20px",
-    borderBottom: "1px solid #ccc",
-    paddingBottom: "10px",
-};
-
-const messageBoxStyle = {
-    marginBottom: "20px",
-    padding: "10px",
-    borderRadius: "4px",
-    backgroundColor: "#f0f0f0",
-    color: "#333",
-    fontWeight: "bold",
-};
-
-const inputGroupStyle = {
-    marginBottom: "20px",
-};
-
-const labelStyle = {
-    display: "block",
-    fontWeight: "bold",
-    marginBottom: "5px",
-};
-
-const inputStyle = {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-};
-
-const selectStyle = {
-    ...inputStyle,
-};
-
-const submitButtonStyle = {
-    padding: "12px 24px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    fontSize: "16px",
-    cursor: "pointer",
-};
+const linkStyle = { textDecoration: "none", color: "#007bff", fontSize: "16px", margin: "0 10px" };
+const formWrapperStyle = { backgroundColor: "#f9f9f9", padding: "30px", borderRadius: "8px", boxShadow: "0 0 10px rgba(0,0,0,0.1)" };
+const formHeaderStyle = { marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" };
+const messageBoxStyle = { marginBottom: "20px", padding: "10px", borderRadius: "4px", backgroundColor: "#f0f0f0", color: "#333", fontWeight: "bold" };
+const inputGroupStyle = { marginBottom: "20px" };
+const labelStyle = { display: "block", fontWeight: "bold", marginBottom: "5px" };
+const inputStyle = { width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "16px" };
+const selectStyle = { ...inputStyle };
+const submitButtonStyle = { padding: "12px 24px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", fontSize: "16px", cursor: "pointer" };

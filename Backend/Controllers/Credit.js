@@ -1,11 +1,8 @@
-import LeaveCreditModel from "../Models/LeaveCreditModel.js";
-import LeaveType from "../Models/LeaveTypeModel.js";
-import EmployeeModel from "../Models/EmployeeRoleTypeModel.js";
-import { GET_ROLE_EMPLOYEE, MESSAGE_RESULT_IN_LEAVE_CREDIT, ZERO
+import LeaveCreditModel from "../Models/LeaveCredit.js";
+import LeaveType from "../Models/LeaveType.js";
+import EmployeeModel from "../Models/EmployeeRoleType.js";
 
- } from "../Constant/Constants.js";
-
-class CreditControllers {
+class Credit{
     /**
      * Automatically inserts yearly leave credits for employees with role type 3.
      * Triggered by cron or manual API call.
@@ -24,7 +21,7 @@ class CreditControllers {
             if(!leave_type_response.status){
                 return res.json({ success: false, error: leave_type_response.error });
             }
-            const employee_type_response = await EmployeeModel.getRoleByIdEmployee(GET_ROLE_EMPLOYEE);
+            const employee_type_response = await EmployeeModel.getRoleByIdEmployee(3);
             
             if(!employee_type_response.status){
                 return res.json({ success: false, error: employee_type_response.error });
@@ -35,7 +32,7 @@ class CreditControllers {
 
             for(const employee of employees){
                 for(const leave_type of leave_types){
-                    const credit_value = parseFloat(leave_type.base_value) || ZERO;
+                    const credit_value = parseFloat(leave_type.base_value) || 0;
                     const insert_result = await LeaveCreditModel.insertYearlyCredit(
                         employee.id,
                         leave_type.id,
@@ -47,7 +44,7 @@ class CreditControllers {
 
             return res.json({
                 success: true,
-                result: MESSAGE_RESULT_IN_LEAVE_CREDIT,
+                result: `leave credits inserted.`,
                 details: results,
             });
         } 
@@ -57,4 +54,4 @@ class CreditControllers {
     }
 }
 
-export default CreditControllers;
+export default Credit;

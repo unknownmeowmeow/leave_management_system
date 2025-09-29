@@ -1,6 +1,6 @@
 import express from "express";
-import LeaveTypeController from "../Controllers/LeaveTypeControllers.js";
-import LeaveController from "../Controllers/LeaveFileControllers.js";
+import LeaveTypeController from "../Controllers/LeaveType.js";
+import LeaveController from "../Controllers/LeaveFile.js";
 import AuthMiddleware from "../Middleware/authMiddleware.js";
 
 const router = express.Router();

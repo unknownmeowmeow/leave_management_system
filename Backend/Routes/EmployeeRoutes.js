@@ -1,6 +1,5 @@
 import express from "express";
-import EmployeeControllers from "../Controllers/EmployeeControllers.js";
-import LeaveFile from "../Controllers/LeaveFileControllers.js"
+import EmployeeControllers from "../Controllers/Employee.js";
 import AuthMiddleware from "../Middleware/authMiddleware.js";
 const router = express.Router();
 

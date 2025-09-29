@@ -32,16 +32,18 @@ export default function EmployeeApply() {
         setError(null);
         setMessage(null);
         try {
-            // Submit leave application (approval pending)
+
             const res = await axios.post("http://localhost:5000/api/leave/apply", form, { withCredentials: true });
             if (res.data.success) {
                 setMessage(typeof res.data.message === "string" ? res.data.message : JSON.stringify(res.data.message));
                 setForm({ leave_type: "", start_date: "", end_date: "", reason: "" });
 
-                // Refresh latest credit only after approval
+
                 const resCredit = await axios.get("http://localhost:5000/api/leave/latest_credit", { withCredentials: true });
+                console.log(resCredit.data.latest_credit);
                 if (resCredit.data.success) setLatestCredit(resCredit.data.latest_credit);
-            } else {
+            } 
+            else {
                 setError(typeof res.data.message === "string" ? res.data.message : JSON.stringify(res.data.message));
             }
         } catch (err) {

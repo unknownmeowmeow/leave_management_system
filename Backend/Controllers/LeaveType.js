@@ -1,5 +1,4 @@
-import LeaveTypeModel from "../Models/LeaveTypeModel.js";
-import { SESSION_USER_NOT_FOUND, ERROR_IN_LEAVE_TYPE_CATCH } from "../Constant/Constants.js";
+import LeaveTypeModel from "../Models/LeaveType.js";
 
 class LeaveTypeController{
     /**
@@ -21,7 +20,7 @@ class LeaveTypeController{
             const user = req.session?.user;
     
             if(!user){
-                return res.json(SESSION_USER_NOT_FOUND); 
+                return res.json({ success: false, message: "User session not found." }); 
             }
             const result = await LeaveTypeModel.getAllLeaveDefaultType(); 
     
@@ -32,7 +31,7 @@ class LeaveTypeController{
             return res.json({ success: true, data: result.result });
         } 
         catch(error){ 
-            return res.json(ERROR_IN_LEAVE_TYPE_CATCH);        
+            return res.json({ success: false, message: "Error in default Leave type Controllers" });        
         }
     }
     /**
@@ -54,7 +53,7 @@ class LeaveTypeController{
             const user = req.session?.user;
     
             if(!user){
-                return res.json(SESSION_USER_NOT_FOUND);
+                return res.json({ success: false, message: "User session not found." });
             }
             const result = await LeaveTypeModel.getAllSpecialAndRewardedLeaveType();
     
@@ -65,7 +64,7 @@ class LeaveTypeController{
             return res.json({ success: true, data: result.result });
         } 
         catch(error){
-            return res.json(ERROR_IN_LEAVE_TYPE_CATCH);
+            return res.json({ success: false, message: "Error in special  and rewarded Leave type Controllers" });
         }
     }
 }

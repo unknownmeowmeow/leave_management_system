@@ -1,7 +1,5 @@
 import db from "../Configs/Database.js";
-import {
-    ERROR_IN_ROLE_MODEL
-} from "../Constant/Constants.js";
+
 
 class LeaveTypeRuleModel{
 
@@ -14,7 +12,7 @@ class LeaveTypeRuleModel{
      * updated at: September 26 2025 10:30 am
      */
     static async getRuleById(rule_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data = { status: false, result: null, error: null };
 
         try{
             const [get_rule_id_result] = await db.execute(`
@@ -24,7 +22,7 @@ class LeaveTypeRuleModel{
             `, [rule_id]);
 
             if(get_rule_id_result.length === 0){
-                response_data.error = ERROR_IN_ROLE_MODEL;
+                response_data.error = "Rule not found.";
             } 
             else{
                 response_data.status = true;

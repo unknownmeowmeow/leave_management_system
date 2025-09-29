@@ -1,9 +1,6 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY, ATTENDANCE_TYPE_ID,
-    ERROR_IN_INSERTING_TIME_IN_MODEL, ERROR_IN_CHECK_TIME_IN_MODEL,
-    ERROR_IN_CHECK_TIME_OUT_MODEL, 
-    ERROR_IN_UPDATE_TIME_OUT_MODEL,
-    ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL, ZERO
+import { ATTENDANCE_TYPE_ID,
+    LIMIT
 } from "../Constant/Constants.js";
 
 class AttendanceModel{
@@ -16,7 +13,7 @@ class AttendanceModel{
     * updated at: September 23 2025 1:21 pm  
     */
     static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID }){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [insert_attendance_result] = await db.execute(`
@@ -33,7 +30,7 @@ class AttendanceModel{
             if(!insert_attendance_result.insertId){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_INSERTING_TIME_IN_MODEL;
+                response_data.error = "inserting failed in time in model";
             }
             else{
                 response_data.status = true;
@@ -54,24 +51,25 @@ class AttendanceModel{
     * updated at: September 23 2025 1:42 pm  
     */
     static async checkEmployeeLatestTimeIn(employee_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_latest_time_in_record_result] = await db.execute(`
                 SELECT id, time_in 
                 FROM attendances
                 WHERE employee_id = ? AND DATE(time_in) = CURRENT_DATE()
-                ORDER BY id DESC LIMIT 1
+                ORDER BY id DESC 
+                LIMIT ${LIMIT}
             `, [employee_id]);
 
             if(!get_latest_time_in_record_result.length){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_CHECK_TIME_IN_MODEL;
+                response_data.error = "no time in record found in model";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_latest_time_in_record_result[ZERO];
+                response_data.result = get_latest_time_in_record_result[0];
             }
         }
         catch(error){
@@ -89,24 +87,24 @@ class AttendanceModel{
     * updated at: September 23 2025 2:53 pm  
     */
     static async checkLatestEmployeeTimeOut(employee_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_latest_time_out_result] = await db.execute(`
                 SELECT id, time_out 
                 FROM attendances
                 WHERE employee_id = ? AND DATE(time_out) = CURRENT_DATE()
-                ORDER BY id DESC LIMIT 1
+                ORDER BY id DESC 
             `, [employee_id]);
 
             if(!get_latest_time_out_result.length){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_CHECK_TIME_OUT_MODEL;
+                response_data.error = "no time out record found in model";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_latest_time_out_result[ZERO];
+                response_data.result = get_latest_time_out_result[0];
             }
         }
         catch (error){
@@ -124,7 +122,7 @@ class AttendanceModel{
     * updated at: September 23 2025 3:15 pm  
     */
     static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id }){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [update_time_out_result] = await db.execute(`
@@ -133,10 +131,10 @@ class AttendanceModel{
                 WHERE id = ?
             `, [time_out, work_hour, attendance_type_id, id]);
 
-            if(update_time_out_result.affectedRows === ZERO){
+            if(update_time_out_result.affectedRows === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_UPDATE_TIME_OUT_MODEL;
+                response_data.error = "no affected row in updatetime out attendance in model";
             }
             else{
                 response_data.status = true;
@@ -156,7 +154,7 @@ class AttendanceModel{
     * updated at: September 24 2025 1:26 pm  
     */
     static async getAllEmployeesRecords(){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_employee_attendance_result] = await db.execute(`
@@ -172,10 +170,10 @@ class AttendanceModel{
                 ORDER BY attendances.updated_at DESC
             `);
 
-            if(get_all_employee_attendance_result.length === ZERO){
+            if(get_all_employee_attendance_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL;
+                response_data.error = "no attendance records found in model";
             }
             else{
                 response_data.status = true;
@@ -196,7 +194,7 @@ class AttendanceModel{
     * updated at: September 24 2025 1:26 pm
     */
     static async getAllEmployeesRecord(employee_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_employee_attendance_result] = await db.execute(`
@@ -213,10 +211,10 @@ class AttendanceModel{
                 ORDER BY attendances.updated_at DESC
             `, [employee_id]);
 
-            if(get_all_employee_attendance_result.length === ZERO){
+            if(get_all_employee_attendance_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_GET_ALL_EMPLOYEE_RECORDS_MODEL;
+                response_data.error =  "no employee attendance records found in model";
             }
             else{
                 response_data.status = true;

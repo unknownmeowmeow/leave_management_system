@@ -9,13 +9,13 @@ export default function RecordFile() {
     const container_style = { maxWidth: "1000px", margin: "40px auto", padding: "20px", fontFamily: "Arial, sans-serif" };
     const heading_style = { textAlign: "center", marginBottom: "20px" };
     const table_styling = { width: "100%", borderCollapse: "collapse" };
-    const table_header_thread = { border: "1px solid #ccc", padding: "12px", textAlign: "left" };
+    const table_cell = { border: "1px solid #ccc", padding: "12px", textAlign: "left" };
     const header_row = { backgroundColor: "#f0f0f0" };
     const link_style = { textDecoration: "none", color: "#007bff", fontSize: "16px", margin: "0 10px" };
     const button_style = { margin: "0 5px", padding: "5px 10px", cursor: "pointer" };
 
     const statusStyle = (status) => {
-        switch (status) {
+        switch ((status || "").toLowerCase()) {
             case "approved": return { color: "green", fontWeight: "bold" };
             case "rejected": return { color: "red", fontWeight: "bold" };
             case "pending":
@@ -31,7 +31,7 @@ export default function RecordFile() {
         try {
             const res = await axios.get("http://localhost:5000/api/admin/leave_transactions", { withCredentials: true });
             if (res.data.success) setLeaves(res.data.data || []);
-            else setError(displayMessage(res.data.message));
+            else setError(displayMessage(res.data.message || "Failed to fetch leave records."));
         } catch (err) {
             setError(displayMessage(err.response?.data?.message || "Server error."));
         }
@@ -39,7 +39,6 @@ export default function RecordFile() {
 
     useEffect(() => { fetchLeaves(); }, []);
 
-    // Numeric IDs directly sent to backend (2 = approved, 4 = rejected)
     const updateStatus = async (leave_id, status_id) => {
         try {
             const res = await axios.post(
@@ -88,33 +87,37 @@ export default function RecordFile() {
             <table style={table_styling}>
                 <thead>
                     <tr style={header_row}>
-                        <th style={table_header_thread}>Employee Name</th>
-                        <th style={table_header_thread}>Leave Type</th>
-                        <th style={table_header_thread}>Start Date</th>
-                        <th style={table_header_thread}>End Date</th>
-                        <th style={table_header_thread}>Reason</th>
-                        <th style={table_header_thread}>Grant Type</th>
-                        <th style={table_header_thread}>Status</th>
-                        <th style={table_header_thread}>Actions</th>
+                        <th style={table_cell}>Employee Name</th>
+                        <th style={table_cell}>Leave Type</th>
+                        <th style={table_cell}>Start Date</th>
+                        <th style={table_cell}>End Date</th>
+                        <th style={table_cell}>Reason</th>
+                        <th style={table_cell}>Grant Type</th>
+                        <th style={table_cell}>Rewarded By</th>
+                        <th style={table_cell}>Approved By</th>
+                        <th style={table_cell}>Status</th>
+                        <th style={table_cell}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {leaves.length === 0 ? (
                         <tr>
-                            <td colSpan="8" style={{ ...table_header_thread, textAlign: "center" }}>No leave records found.</td>
+                            <td colSpan="10" style={{ ...table_cell, textAlign: "center" }}>No leave records found.</td>
                         </tr>
                     ) : (
                         leaves.map((leave) => (
                             <tr key={leave.id}>
-                                <td style={table_header_thread}>{leave.employee_name}</td>
-                                <td style={table_header_thread}>{leave.leave_type}</td>
-                                <td style={table_header_thread}>{formatDate(leave.start_date)}</td>
-                                <td style={table_header_thread}>{formatDate(leave.end_date)}</td>
-                                <td style={table_header_thread}>{leave.reason || "-"}</td>
-                                <td style={table_header_thread}>{leave.grant_type_name || "-"}</td>
-                                <td style={{ ...table_header_thread, ...statusStyle(leave.status) }}>{leave.status}</td>
-                                <td style={table_header_thread}>
-                                    {(leave.status === "pending" || leave.status === "requested") && (
+                                <td style={table_cell}>{leave.employee_name}</td>
+                                <td style={table_cell}>{leave.leave_type}</td>
+                                <td style={table_cell}>{formatDate(leave.start_date)}</td>
+                                <td style={table_cell}>{formatDate(leave.end_date)}</td>
+                                <td style={table_cell}>{leave.reason || "-"}</td>
+                                <td style={table_cell}>{leave.grant_type_name || "-"}</td>
+                                <td style={table_cell}>{leave.rewarded_by || "-"}</td>
+                                <td style={table_cell}>{leave.approved_by || "-"}</td>
+                                <td style={{ ...table_cell, ...statusStyle(leave.status) }}>{leave.status || "-"}</td>
+                                <td style={table_cell}>
+                                    {(leave.status?.toLowerCase() === "pending" || leave.status?.toLowerCase() === "requested") && (
                                         <>
                                             <button style={button_style} onClick={() => updateStatus(leave.id, 2)}>Approve</button>
                                             <button style={button_style} onClick={() => updateStatus(leave.id, 4)}>Reject</button>

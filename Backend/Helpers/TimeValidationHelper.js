@@ -1,23 +1,5 @@
-import {
-    MULTIPLIER,
-    DAY_ONE_OF_WEEK,
-    DAY_LAST_DAY_OF_WEEK,
-    MILISECOND_SIXTY_SECOND,
-    MILISECOND_ONE_THOUSAND,
-    DECIMAL_EIGHT_HOUR,
-    ZERO,
-    TWENTY_FOUR,
-    EIGHT,
-    MESSAGE_ALL_FIELD_ERROR,
-    ERROR_CANNOT_BEFORE_END_DATE,
-    ERROR_IN_WEEKEND,
-    INVALID_DATE_FORMAT,
-    NOTICE_DAY_UNKNOWN,
-    THREE,
-    ERROR_IN_PREVIOUS_YEAR
-} from "../Constant/Constants.js";
 
-import LeaveTypeModel from "../Models/LeaveTypeModel.js";
+import LeaveTypeModel from "../Models/LeaveType.js";
 
 class TimeValidationHelper{
 
@@ -59,20 +41,20 @@ class TimeValidationHelper{
         const end_time = new Date(time_out);
 
         if(isNaN(start_time.getTime()) || isNaN(end_time.getTime()) || end_time < start_time){
-            return ZERO;
+            return 0;
         }
         const day_of_week = start_time.getDay();
-        const is_weekend = (day_of_week === DAY_ONE_OF_WEEK || day_of_week === DAY_LAST_DAY_OF_WEEK);
+        const is_weekend = (day_of_week === 0 || day_of_week === 6);
         const milliseconds_worked = end_time - start_time;
-        const hours_worked = milliseconds_worked / (MILISECOND_ONE_THOUSAND * MILISECOND_SIXTY_SECOND * MILISECOND_SIXTY_SECOND);
-        const default_day = TWENTY_FOUR;
-        const default_hour_work = EIGHT / default_day;
+        const hours_worked = milliseconds_worked / ( 1000 * 60 * 60);
+        const default_day = 24;
+        const default_hour_work = 8 / default_day;
         const default_day_converter = hours_worked / default_day;
         const difference_day_work = default_day_converter - default_hour_work;
-        let calculated = Math.round(difference_day_work * MILISECOND_ONE_THOUSAND) / MILISECOND_ONE_THOUSAND;
+        let calculated = Math.round(difference_day_work *  1000) /  1000;
 
-        if(is_weekend && calculated <= ZERO){
-            calculated = Math.abs(calculated) || DECIMAL_EIGHT_HOUR;
+        if(is_weekend && calculated <= 0){
+            calculated = Math.abs(calculated) || 0.33;
         }
 
         return calculated;
@@ -88,15 +70,15 @@ class TimeValidationHelper{
      * updated at: September 26 2025 9:45 am
      */
     static computeLeaveCreditFromWorkHour(work_hour, current_credit){
-        let earned_credit = ZERO;
-        let deducted_credit = ZERO;
+        let earned_credit = 0;
+        let deducted_credit = 0;
         let latest_credit = current_credit;
 
-        if(work_hour > ZERO){
-            earned_credit = work_hour * MULTIPLIER;
+        if(work_hour > 0){
+            earned_credit = work_hour * 1.50;
             latest_credit = current_credit + earned_credit;
         } 
-        else if(work_hour < ZERO){
+        else if(work_hour < 0){
             deducted_credit = Math.abs(work_hour);
             latest_credit = current_credit - deducted_credit;
         }
@@ -123,8 +105,8 @@ class TimeValidationHelper{
     
         return {
             used_credit: duration,       
-            latest_credit: latest_credit - duration, 
-            current_credit: latest_credit,           
+            latest_credit: new_latest_credit, 
+            current_credit: new_latest_credit,           
             deducted_credit: duration,              
         };
         
@@ -146,25 +128,25 @@ class TimeValidationHelper{
     static async validateLeaveApplication({ employee_id, leave_type, start_date, end_date, reason }){
         
         if(!employee_id || !leave_type || !start_date || !end_date || !reason){
-            return { is_valid: false, message: MESSAGE_ALL_FIELD_ERROR };
+            return { is_valid: false, message:  { success: false, message: "All Fields are Required"} };
         }
     
         const start_date_day = new Date(start_date);
         const end_date_day = new Date(end_date);
     
         if(isNaN(start_date_day.getTime()) || isNaN(end_date_day.getTime())){
-            return { is_valid: false, message: INVALID_DATE_FORMAT };
+            return { is_valid: false, message: "invalid date format." };
         }
         const start_day = start_date_day.getDay();
         const end_day = end_date_day.getDay();
 
-        if([DAY_ONE_OF_WEEK, DAY_LAST_DAY_OF_WEEK].includes(start_day) ||
-            [DAY_ONE_OF_WEEK, DAY_LAST_DAY_OF_WEEK].includes(end_day)){
-            return { is_valid: false, message: ERROR_IN_WEEKEND };
+        if([0, 6].includes(start_day) ||
+            [0, 6].includes(end_day)){
+            return { is_valid: false, message:  "Leave cannot start or end on a weekend." };
         }
-        const milliseconds_per_day = MILISECOND_ONE_THOUSAND * MILISECOND_SIXTY_SECOND * MILISECOND_SIXTY_SECOND * TWENTY_FOUR;
+        const milliseconds_per_day =  1000 * 60 * 60 * 24;
         const today_only = new Date();
-        today_only.setHours(ZERO, ZERO, ZERO, ZERO);
+        today_only.setHours(0, 0, 0, 0);
         let adjusted_end_date = end_date_day;
     
         if(start_date_day < today_only && end_date_day > today_only){
@@ -174,20 +156,20 @@ class TimeValidationHelper{
         const duration_ms = adjusted_end_date - start_date_day;
         const total_leave_day = duration_ms / milliseconds_per_day;
     
-        if(total_leave_day < ZERO){
-            return { is_valid: false, message: ERROR_CANNOT_BEFORE_END_DATE };
+        if(total_leave_day < 0){
+            return { is_valid: false, message: "end date cannot be before start date." };
         }
         const leave_type_response = await LeaveTypeModel.getLeaveTypeById(leave_type);
         
         if(!leave_type_response.status || !leave_type_response.result){
-            return { is_valid: false, message: ERROR_IN_PREVIOUS_YEAR };
+            return { is_valid: false, message: "This can't be carried over from the previous year" };
         }
         const leave_type_data = leave_type_response.result;
     
-        if(leave_type_data.is_carried_over === ZERO){
+        if(leave_type_data.is_carried_over === 0){
             const now = new Date();
             const year = now.getFullYear();
-            const january_start = new Date(year, ZERO, 1);
+            const january_start = new Date(year, 0, 1);
             const december_end = new Date(year, 11, 31, 23, 59, 59, 999);
     
             if(start_date_day < january_start || start_date_day > december_end ||
@@ -198,13 +180,13 @@ class TimeValidationHelper{
                 };
             }
         }
-        const notice_day = Number(leave_type_data.notice_day) || ZERO;
+        const notice_day = Number(leave_type_data.notice_day) || 0;
         const rule_id = leave_type_data.leave_type_rule_id;
         const start_only = new Date(start_date_day.getFullYear(), start_date_day.getMonth(), start_date_day.getDate());
         const end_only = new Date(end_date_day.getFullYear(), end_date_day.getMonth(), end_date_day.getDate());
         const diff_days = Math.ceil((start_only.getTime() - today_only.getTime()) / milliseconds_per_day);
     
-        if(notice_day === ZERO && rule_id === THREE &&
+        if(notice_day === 0 && rule_id === 3 &&
             (start_only.getTime() !== today_only.getTime() || end_only.getTime() !== today_only.getTime())){
             return{
                 is_valid: false,
@@ -212,36 +194,43 @@ class TimeValidationHelper{
             };
         }
     
-        if(notice_day > ZERO && diff_days < notice_day){
+        if(notice_day > 0 && diff_days < notice_day){
             return {
                 is_valid: false,
                 message: `This leave type requires a notice period of at least ${notice_day} days.`
             };
         }
     
-        if(notice_day < ZERO){
+        if(notice_day < 0){
             const allowed_past_date = new Date(today_only);
             allowed_past_date.setDate(today_only.getDate() + notice_day);
-            const start_ok = start_only >= allowed_past_date && start_only <= today_only;
-            const end_ok = end_only >= allowed_past_date && end_only <= today_only;
+            const start_date = start_only >= allowed_past_date && start_only <= today_only;
+            const end_date = end_only >= allowed_past_date && end_only <= today_only;
     
-            if(!start_ok || !end_ok){
+            if(!start_date || !end_date){
                 return{
                     is_valid: false,
                     message: `This leave type allows Past date leave only within ${Math.abs(notice_day)} days from today.`
                 };
             }
         }
-    
-        if(notice_day === ZERO && rule_id !== THREE && diff_days < ZERO){
+        
+        if(start_only.getTime() === end_only.getTime()){
             return {
                 is_valid: false,
-                message: NOTICE_DAY_UNKNOWN
+                message: "Start date and End date cannot be the same."
+            };
+        }
+
+        if(notice_day === 0 && rule_id !== 3 && diff_days < 0){
+            return {
+                is_valid: false,
+                message: `This leave type cannot be applied for past dates.`
             };
         }
         const max_days_allowed = Number(leave_type_data.base_value);
 
-        if(!isNaN(max_days_allowed) && max_days_allowed > ZERO){
+        if(!isNaN(max_days_allowed) && max_days_allowed > 0){
             if (total_leave_day > max_days_allowed) {
                 return{is_valid: false,message: `Leave exceeds max allowed (${max_days_allowed} days).`};
             }

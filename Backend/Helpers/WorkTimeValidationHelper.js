@@ -1,7 +1,3 @@
-import {VALIDATION_EMPLOYEE_TIMEOUT_ERROR, VALIDATION_EMPLOYEE_ID_ERROR,
-    VALIDATION_EMPLOYEE_WORK_HOUR_ERROR
-} from "../Constant/Constants.js";
-
 class WorkTimeValidationHelper{
     
     /**
@@ -25,13 +21,13 @@ class WorkTimeValidationHelper{
         const result_validation = { is_valid: false, error: null };
 
         if(!id){
-            result_validation.error = VALIDATION_EMPLOYEE_ID_ERROR;
+            result_validation.error = "Attendance ID is required.";
         }
         else if(!time_out){
-            result_validation.error = VALIDATION_EMPLOYEE_TIMEOUT_ERROR;
+            result_validation.error = "Time out is required.";
         }
         else if(work_hour === undefined || work_hour === null || isNaN(work_hour)){
-            result_validation.error = VALIDATION_EMPLOYEE_WORK_HOUR_ERROR;
+            result_validation.error = "Work hour must be a valid number.";
         }
         else{
             result_validation.is_valid = true;

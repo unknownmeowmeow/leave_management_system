@@ -1,12 +1,6 @@
 import db from "../Configs/Database.js";
-import {
-    STATUS_QUERY,
-    ERROR_IN_GET_ROLE_BY_ID_MODEL,
-    GET_ROLE_BY_EMPLOYEE,
-    ZERO
-} from "../Constant/Constants.js";
 
-class EmployeeRoleTypeModel {
+class EmployeeRoleTypeModel{
     /**
      * Retrieves a role record by its ID.
      *
@@ -16,7 +10,7 @@ class EmployeeRoleTypeModel {
      * updated at: September 19, 2025 1:04 PM  
      */
     static async getRoleById(role_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data = { status: false, result: null, error: null };
 
         try{
             const [get_role_by_id_result] = await db.execute(`
@@ -25,14 +19,14 @@ class EmployeeRoleTypeModel {
                 WHERE id = ?
             `, [role_id]);
 
-            if(get_role_by_id_result.length === ZERO){
+            if(get_role_by_id_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_GET_ROLE_BY_ID_MODEL;
+                response_data.error = "role record not found in model";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_role_by_id_result[ZERO];
+                response_data.result = get_role_by_id_result[0];
             }
         } 
         catch(error){
@@ -53,7 +47,7 @@ class EmployeeRoleTypeModel {
      * updated at: September 25, 2025 12:55 AM
      */
     static async getRoleByIdEmployee(role_id) {
-        const response_data = { ...STATUS_QUERY };
+        const response_data = { status: false, result: null, error: null };
 
         try{
             const [get_role_by_id_employee_result] = await db.execute(`
@@ -62,10 +56,10 @@ class EmployeeRoleTypeModel {
                 WHERE employee_role_type_id = ?
             `, [role_id]);
 
-            if(get_role_by_id_employee_result.length === ZERO){
+            if(get_role_by_id_employee_result.length === 0){
                 response_data.status = false;
                 response_data.result = [];
-                response_data.error = GET_ROLE_BY_EMPLOYEE;
+                response_data.error = "No employees found for the given role in model.";
             } 
             else{
                 response_data.status = true;

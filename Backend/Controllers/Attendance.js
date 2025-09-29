@@ -1,16 +1,6 @@
-import AttendanceModel from "../Models/AttendanceModel.js";
+import AttendanceModel from "../Models/Attendance.js";
 import TimeValidationHelper from "../Helpers/TimeValidationHelper.js";
-import LeaveCreditModel from "../Models/LeaveCreditModel.js";   
-import {
-    ALREADY_TIME_IN,
-    SUCCESS_TIME_IN,
-    ERROR_IN_TIME_OUT_ID,
-    ERROR_IN_TIME_OUT,
-    SESSION_USER_NOT_FOUND,
-    ALREADY_TIME_OUT,   
-    ERROR_IN_CATCH_GET_ALL_RECORD, 
-    TWO, ZERO, MESSAGE_SUCCESS_IN_EMPLOYEE_TIME_OUT
-} from "../Constant/Constants.js";
+import LeaveCreditModel from "../Models/LeaveCredit.js";   
 import WorkTimeValidationHelper from "../Helpers/WorkTimeValidationHelper.js";
 
 class AttendanceControllers{
@@ -30,21 +20,21 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json(SESSION_USER_NOT_FOUND);
+            return res.json({ success: false, message: "User session not found." });
         }
         try{
             const employee_id = user.employee_id;
             const check_time_in = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
 
             if(check_time_in.status && check_time_in.result){
-                return res.json(ALREADY_TIME_IN);
+                return res.json("Already time in today.");
             }
             const result = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id });
 
             if(!result.status){
                 return res.json({ success: false, message: result.error });
             }
-            return res.json(SUCCESS_TIME_IN);
+            return res.json( { success: true, message: "Time IN recorded successfully" });
         } 
         catch(error){
             return res.json({ success: false, message: error.message });
@@ -74,28 +64,28 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json(SESSION_USER_NOT_FOUND);
+            return res.json({ success: false, message: "User session not found." });
         }
 
         try{
             const employee_id = user.employee_id;
-            const attendance_type_id = TWO;
+            const attendance_type_id = 2;
             const record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
             const active_record_time_in = record.result;
             const check_time_out = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
 
             if(check_time_out.status && check_time_out.result){
-                return res.json(ALREADY_TIME_OUT);
+                return res.json({ success: false, message: "Already time out today." });
             }
 
             if(!record.status || !active_record_time_in){
-                return res.json(ERROR_IN_TIME_OUT);
+                return res.json({ success: false, message: "No time-in record found for today." });
             }
             const id = active_record_time_in.id;
             const time_in = active_record_time_in.time_in;
 
             if(!id || !time_in){
-                return res.json(ERROR_IN_TIME_OUT_ID);
+                return res.json( { success: false, message: "Invalid or missing id or time_in." });
             }
             const time_out = TimeValidationHelper.checkEmployeeCurrentTime();
             const work_hour = TimeValidationHelper.calculateEmployeeWorkHour(time_in, time_out);
@@ -115,17 +105,17 @@ class AttendanceControllers{
             if(!update_attendance.status){
                 return res.json({ success: false, message: update_attendance.error });
             }
-            const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
-            const current_credit = latest_credit_result.latest_credit || ZERO;
+            const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
+            const current_credit = latest_credit_result.latest_credit || 0;
             const { earned_credit,deducted_credit,latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
 
-            await LeaveCreditModel.insertLeaveCredit({
+            await LeaveCreditModel.updateLeaveCreditFromWorkHour({
                 employee_id,
                 leave_transaction_id: null,
                 attendance_id: id,
                 leave_type_id: null,
                 earned_credit,
-                used_credit: ZERO,
+                used_credit: 0,
                 deducted_credit,
                 current_credit,
                 latest_credit
@@ -133,7 +123,7 @@ class AttendanceControllers{
 
             return res.json({
                 success: true,
-                message: MESSAGE_SUCCESS_IN_EMPLOYEE_TIME_OUT,
+                message: `Time out Successfully`,
                 time_out,
                 work_hour,
             });
@@ -156,7 +146,7 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json(SESSION_USER_NOT_FOUND);
+            return res.json({ success: false, message: "User session not found." });
         }
         try{
             const employee_id = user.employee_id;
@@ -169,7 +159,7 @@ class AttendanceControllers{
             return res.json({ success: true, records: response_data.result });
         } 
         catch(error){
-            return res.json(ERROR_IN_CATCH_GET_ALL_RECORD);
+            return res.json({ success: false, message: "Error in Catch in Get All Record" });
         }
     }
 
@@ -186,7 +176,7 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json(SESSION_USER_NOT_FOUND);
+            return res.json({ success: false, message: "User session not found." });
         }
         try{
             const response_data = await AttendanceModel.getAllEmployeesRecords();
@@ -198,7 +188,7 @@ class AttendanceControllers{
             return res.json({ success: true, records: response_data.result });
         } 
         catch(error){
-            return res.json(ERROR_IN_CATCH_GET_ALL_RECORD);
+            return res.json({ success: false, message: "Error in Catch in Get All Record" });
         }
     }
 

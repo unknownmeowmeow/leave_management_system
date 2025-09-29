@@ -1,5 +1,5 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY, ERROR_IN_GRANT_TYPE_MODEL, ZERO } from "../Constant/Constants.js";
+
 
 class LeaveTypeGrantModel{
 
@@ -16,7 +16,7 @@ class LeaveTypeGrantModel{
      * updated at: September 25 2025
      */
     static async getGrantTypeName(name){
-        const response_data = { ...STATUS_QUERY };
+        const response_data = { status: false, result: null, error: null };
 
         try{
             const [get_grant_type_result] = await db.execute(`
@@ -25,13 +25,13 @@ class LeaveTypeGrantModel{
                 WHERE name = ?
             `, [name]);
 
-            if(!get_grant_type_result.length === ZERO){
+            if(!get_grant_type_result.length === 0){
                 response_data.status = false;
-                response_data.error = ERROR_IN_GRANT_TYPE_MODEL;
+                response_data.error = "grant type in model error";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_grant_type_result[ZERO];
+                response_data.result = get_grant_type_result[0];
                 
             }
         } 

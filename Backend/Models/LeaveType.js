@@ -1,10 +1,9 @@
 import db from "../Configs/Database.js";
 import {
-    STATUS_QUERY, ERROR_IN_CARRY_OVER_LEAVE_TYPE_MODEL,
-    LEAVE_STATUS, IS_CARRIED_OVER, ERROR_IN_LEAVE_DEFAULT_MODEL, GRANT_TYPE_ID_DEFAULT,
-    GRANT_TYPE_ID_SPECIAL, GRANT_TYPE_ID_REWARDED, LEAVE_TYPE_ID_MODEL_SICK_LEAVE, TWO,
-    LEAVE_TYPE_ID_MODEL_VACATION_LEAVE, GET_YEARLY_LEAVE_TYPE_ADDING_ID_1, GET_YEARLY_LEAVE_TYPE_ADDING_ID_2,ERROR_IN_UPDATE_LEAVE_STATUS,
-    GET_YEARLY_LEAVE_TYPE_ADDING_ID_6, ZERO, ERROR_IN_GET_LEAVE_TYPE_BY_ID_MODEL, ERROR_IN_GET_ALL_RECORD_LEAVE, ERROR_IN_GET_ALL_LEAVE
+  
+    LEAVE_STATUS, IS_CARRIED_OVER, GRANT_TYPE_ID_DEFAULT,
+    GRANT_TYPE_ID_SPECIAL, GRANT_TYPE_ID_REWARDED, LEAVE_TYPE_ID_MODEL_SICK_LEAVE, 
+    LEAVE_TYPE_ID_MODEL_VACATION_LEAVE
 } from "../Constant/Constants.js";
 
 class LeaveTypeModel{
@@ -20,7 +19,7 @@ class LeaveTypeModel{
      * updated at: September 26 2025 10:20 am
      */
     static async getAllCarryOverLeaveTypes(){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_carry_over_leave_type_result] = await db.execute(`
@@ -31,10 +30,10 @@ class LeaveTypeModel{
                     LEAVE_TYPE_ID_MODEL_VACATION_LEAVE, LEAVE_TYPE_ID_MODEL_SICK_LEAVE]
             );
 
-            if(get_all_carry_over_leave_type_result.length === ZERO){
+            if(get_all_carry_over_leave_type_result.length === 0){
                 response_data.status = false;
                 response_data.result = [];
-                response_data.error = ERROR_IN_CARRY_OVER_LEAVE_TYPE_MODEL;
+                response_data.error = "No carry over leave type found";
             }
             else{
                 response_data.status = true;
@@ -61,18 +60,18 @@ class LeaveTypeModel{
      * updated at: September 26 2025 10:20 am
      */
     static async GetYearlyLeaveTypeAdding(){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_yearly_leave_type_result] = await db.execute(`
                 SELECT * FROM leave_types 
                 WHERE id IN (?, ?, ?)
-            `, [GET_YEARLY_LEAVE_TYPE_ADDING_ID_1, GET_YEARLY_LEAVE_TYPE_ADDING_ID_2, GET_YEARLY_LEAVE_TYPE_ADDING_ID_6]);
+            `, [1, 2, 6]);
 
             if(!get_all_yearly_leave_type_result.length){
                 response_data.status = false;
                 response_data.result = [];
-                response_data.error = ERROR_IN_CARRY_OVER_LEAVE_TYPE_MODEL;
+                response_data.error = "No carry over leave type found";
             }
             else{
                 response_data.status = true;
@@ -98,7 +97,7 @@ class LeaveTypeModel{
      * updated at: September 26 2025 10:21 am
      */
     static async getAllLeaveDefaultType(){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_leave_type_by_id_result] = await db.execute(`
@@ -111,7 +110,7 @@ class LeaveTypeModel{
 
             if(!get_all_leave_type_by_id_result.length){
                 response_data.status = false;
-                response_data.error = ERROR_IN_LEAVE_DEFAULT_MODEL;
+                response_data.error = "No active default leave types found.";
             }
             else{
                 response_data.status = true;
@@ -137,7 +136,7 @@ class LeaveTypeModel{
      * updated at: September 26 2025 10:21 am
      */
     static async getAllSpecialAndRewardedLeaveType(){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_special_and_rewarded_result] = await db.execute(`
@@ -151,7 +150,7 @@ class LeaveTypeModel{
 
             if(!get_all_special_and_rewarded_result.length){
                 response_data.status = false;
-                response_data.error = ERROR_IN_LEAVE_DEFAULT_MODEL;
+                response_data.error = "No active special and rewarded leave types found.";
             }
             else{
                 response_data.status = true;
@@ -175,7 +174,7 @@ class LeaveTypeModel{
      * updated at: September 26 2025 10:22 am
      */
     static async getLeaveTypeById(leave_type_id) {
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try {
             const [get_leave_type_result] = await db.execute(`
@@ -186,10 +185,10 @@ class LeaveTypeModel{
                 WHERE id = ? AND is_active = ?
             `, [leave_type_id, LEAVE_STATUS.active]);
 
-            if(get_leave_type_result.length === ZERO){
+            if(get_leave_type_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_GET_LEAVE_TYPE_BY_ID_MODEL;
+                response_data.error = "error in get all leave type by id";
             } 
             else{
                 response_data.status = true;
@@ -204,12 +203,12 @@ class LeaveTypeModel{
         return response_data;
     }
  
-    static async getAllLeaves(){
-        const response_data = { ...STATUS_QUERY };
+    static async getAllLeaves() {
+        const response_data = { status: false, result: null, error: null };
     
         try {
             const [get_all_employee_leave_result] = await db.execute(`
-               SELECT 
+                SELECT 
                     leave_transactions.id,
                     CONCAT(employees.first_name, ' ', employees.last_name) AS employee_name,
                     leave_types.name AS leave_type,
@@ -217,36 +216,43 @@ class LeaveTypeModel{
                     leave_transactions.start_date,
                     leave_transactions.end_date,
                     leave_transactions.reason,
-                    leave_transaction_statuses.name AS status
+                    leave_transaction_statuses.name AS status,
+                    CONCAT(rewarder.first_name, ' ', rewarder.last_name) AS rewarded_by,
+                    CONCAT(approver.first_name, ' ', approver.last_name) AS approved_by
                 FROM leave_transactions
                 JOIN employees 
-                ON employees.id = leave_transactions.employee_id
+                    ON employees.id = leave_transactions.employee_id
                 JOIN leave_types 
-                ON leave_types.id = leave_transactions.leave_type_id
+                    ON leave_types.id = leave_transactions.leave_type_id
                 JOIN leave_type_grant_types
-                ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
+                    ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
                 LEFT JOIN leave_transaction_statuses 
-                ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                    ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                LEFT JOIN employees AS rewarder
+                    ON rewarder.id = leave_transactions.rewarded_by_id
+                LEFT JOIN employees AS approver
+                    ON approver.id = leave_transactions.approved_by_id
                 ORDER BY leave_transactions.id DESC;
             `);
     
-            if(!get_all_employee_leave_result.length){
+            if (!get_all_employee_leave_result.length) {
                 response_data.status = false;
                 response_data.result = [];
-                response_data.error = ERROR_IN_GET_ALL_LEAVE;
+                response_data.error = "No leave transactions found.";
             } 
             else{
                 response_data.status = true;
                 response_data.result = get_all_employee_leave_result;
             }
         } 
-        catch(error){
+        catch (error) {
             response_data.status = false;
             response_data.error = error.message;
         }
     
         return response_data;
     }
+    
     
 
     /**
@@ -260,7 +266,7 @@ class LeaveTypeModel{
      * updated at: September 26 2025 10:23 am
      */
     static async updateLeaveStatus(leave_id, status_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
     
         try{
             const [update_leave_status_result] = await db.execute(`
@@ -271,7 +277,7 @@ class LeaveTypeModel{
     
             if(update_leave_status_result.affectedRows === 0){
                 response_data.status = false;
-                response_data.error = ERROR_IN_UPDATE_LEAVE_STATUS;
+                response_data.error = "Leave transaction not found or status unchanged.";
             } 
             else{
                 response_data.status = true;
@@ -293,8 +299,8 @@ class LeaveTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 10:23 am
      */
-    static async getAllByEmployeeRecordLeaves(employee_id, status = TWO){
-        const response_data = { ...STATUS_QUERY };
+    static async getAllByEmployeeRecordLeaves(employee_id, status = 2){
+        const response_data =  { status: false, result: null, error: null };
     
         try{
             const [get_all_employee_record_leave_result] = await db.execute(`
@@ -319,7 +325,7 @@ class LeaveTypeModel{
             if(!get_all_employee_record_leave_result.length){
                 response_data.status = false;
                 response_data.result = [];
-                response_data.error = ERROR_IN_GET_ALL_RECORD_LEAVE;
+                response_data.error = "No leave transactions found.";
             } 
             else{
                 response_data.status = true;

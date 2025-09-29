@@ -1,17 +1,10 @@
 import bcrypt from "bcrypt";
-import EmployeeModel from "../Models/EmployeeModel.js";
-import EmployeeGenderModel from "../Models/EmployeeGenderModel.js";
-import EmployeeRoleTypeModel from "../Models/EmployeeRoleTypeModel.js";
+import EmployeeModel from "../Models/Employee.js";
+import EmployeeGenderModel from "../Models/EmployeeGender.js";
+import EmployeeRoleTypeModel from "../Models/EmployeeRoleType.js";
 import ValidationHelper from '../Helpers/ValidationHelper.js';
-import {
-    MESSAGE_CONFIRM_PASSWORD, MESSAGE_EMAIL_EXIST, MESSAGE_REGISTRATION_MESSAGE, MESSAGE_FAILED_REGISTRATION_MESSAGE,
-    MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE, MESSAGE_EMAIL_NOT_FOUND, MESSAGE_NO_EMPLOYEE_SESSION,
-    MESSAGE_IN_SUCCESS_LOGOUT, MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE, MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE,
-    CATCH_IN_GENDER, CATCH_IN_ROLE, ERROR_IN_CATCH_GET_ALL_CREDIT_RECORD, SESSION_USER_NOT_FOUND,
-    ZERO_POINT_ZERO_ZERO, TWELVE, ZERO
-} from "../Constant/Constants.js"
-import LeaveTypeModel from "../Models/LeaveTypeModel.js";
-import LeaveCreditModel from "../Models/LeaveCreditModel.js";
+import LeaveTypeModel from "../Models/LeaveType.js";
+import LeaveCreditModel from "../Models/LeaveCredit.js";
 
 
 class EmployeeControllers{
@@ -34,7 +27,7 @@ class EmployeeControllers{
             res.json({ success: true, roles: response_data.result });
         }
         catch{
-            res.json(CATCH_IN_ROLE);
+            res.json({ success: false, message: "Failed to fetch roles"});
         }
     }
 
@@ -57,7 +50,7 @@ class EmployeeControllers{
             res.json({ success: true, genders: response_data.result });
         }
         catch{
-            res.json(CATCH_IN_GENDER);
+            res.json({ success: false, message: "Failed to fetch in gender registration" });
         }
     }
 
@@ -93,19 +86,19 @@ class EmployeeControllers{
             const email_exist = await EmployeeModel.getEmployeeEmail(email); 
 
             if(email_exist.result){                 
-                return res.json(MESSAGE_EMAIL_EXIST);             
+                return res.json({ success: false, message: "Email Already Exists in Registration" });             
             }             
             const role_data = await EmployeeRoleTypeModel.getRoleById(role); 
 
             if(!role_data.result){                 
-                return res.json(CATCH_IN_ROLE);             
+                return res.json({ success: false, message: "Failed to fetch roles"});             
             }             
             const gender_data = await EmployeeGenderModel.getGenderById(gender);  
 
             if(!gender_data.result){                 
-                return res.json(CATCH_IN_GENDER);             
+                return res.json({ success: false, message: "Failed to fetch in gender registration" });             
             }             
-            const hash_password = await bcrypt.hash(password, TWELVE);  
+            const hash_password = await bcrypt.hash(password, 12);  
 
             const new_user = await EmployeeModel.createUser({                 
                 first_name,                 
@@ -124,7 +117,7 @@ class EmployeeControllers{
 
                     if(carry_over_leave_types.status && carry_over_leave_types.result.length){                         
                         const total_base_value = carry_over_leave_types.result.reduce(                             
-                            (total, leave_type) => total + leave_type.base_value, ZERO                         
+                            (total, leave_type) => total + leave_type.base_value, 0                         
                         );          
 
                         for(const leave_type of carry_over_leave_types.result){   
@@ -135,8 +128,8 @@ class EmployeeControllers{
                                 attendance_id: null,                             
                                 leave_type_id: leave_type.id,                             
                                 earned_credit: leave_type.base_value,                             
-                                used_credit: ZERO_POINT_ZERO_ZERO,
-                                deducted_credit: ZERO_POINT_ZERO_ZERO,                            
+                                used_credit: 0.00,
+                                deducted_credit: 0.00,                            
                                 current_credit: leave_type.base_value,                             
                                 latest_credit: total_base_value,                         
                             });                   
@@ -144,15 +137,15 @@ class EmployeeControllers{
                     }             
                 }                 
 
-                return res.json(MESSAGE_REGISTRATION_MESSAGE);             
+                return res.json({ success: true, message: "Registration Successful" });             
             }             
             else{            
 
-                return res.json(MESSAGE_FAILED_REGISTRATION_MESSAGE);             
+                return res.json({ success: false, message:"Registration Failed in backend" });             
             }         
         }         
         catch(error){             
-            return res.json(MESSAGE_FAILED_CATCH_IN_REGISTRATION_MESSAGE);         
+            return res.json({ success: false, message: "Server Error in Registration"});         
         }     
     }
     
@@ -182,13 +175,13 @@ class EmployeeControllers{
             const user_data = await EmployeeModel.getEmployeeEmail(email);
 
             if(!user_data.result){
-                return res.json(MESSAGE_EMAIL_NOT_FOUND);
+                return res.json({ success: false, message: "Email not Found" });
             }
             const user = user_data.result;
             const match = await bcrypt.compare(password, user.password);
 
             if(!match){
-                return res.json(MESSAGE_CONFIRM_PASSWORD);
+                return res.json({ success: false, message: "Password do not Match" });
             }
 
             req.session.user = {
@@ -206,7 +199,7 @@ class EmployeeControllers{
             });
         }
         catch(error){
-            return res.json(MESSAGE_FAILED_CATCH_IN_LOGIN_MESSAGE);
+            return res.json({ success: false, message: "Server error during Login." });
         }
     }
 
@@ -225,20 +218,20 @@ class EmployeeControllers{
         try{
 
             if(!req.session.user){
-                return res.json(MESSAGE_NO_EMPLOYEE_SESSION);
+                return res.json({ success: false, message: "No Employee Session Found in Log out."});
             }
 
             req.session.destroy(error => {
                 if(error){
-                    return res.json(MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE);
+                    return res.json({ success: false, message: "Server error during Logout." });
                 }
                 else{
-                    return res.json(MESSAGE_IN_SUCCESS_LOGOUT);
+                    return res.json({ success: false, message: "Logout Failed."});
                 }
             });
         }
         catch(error){
-            return res.json(MESSAGE_FAILED_CATCH_IN_LOGOUT_MESSAGE);
+            return res.json({ success: false, message: "Server error during Logout." });
         }
 
     }
@@ -255,7 +248,7 @@ class EmployeeControllers{
         const user = req.session.user;
 
         if(!user || !user.employee_id){
-            return res.json(SESSION_USER_NOT_FOUND);
+            return res.json({ success: false, message: "User session not found." });
         }
 
         try{
@@ -268,7 +261,7 @@ class EmployeeControllers{
             res.json({ success: true, result: response_data.result });
         }
         catch(error){
-            res.json(ERROR_IN_CATCH_GET_ALL_CREDIT_RECORD);
+            res.json({ success: false, error: "Failed to fetch employee leave credits." });
         }
     }
 

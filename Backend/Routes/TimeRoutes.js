@@ -1,5 +1,5 @@
 import express from 'express';
-import AttendanceControllers from '../Controllers/AttendanceControllers.js';
+import AttendanceControllers from '../Controllers/Attendance.js';
 import AuthMiddleware from '../Middleware/authMiddleware.js';
 
 

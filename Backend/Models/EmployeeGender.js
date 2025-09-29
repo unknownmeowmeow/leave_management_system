@@ -1,5 +1,4 @@
 import db from "../Configs/Database.js";
-import { STATUS_QUERY, ERROR_IN_MODEL_GENDER, ZERO } from "../Constant/Constants.js";
 
 class EmployeeGenderModel{
 
@@ -14,7 +13,7 @@ class EmployeeGenderModel{
      * updated at: September 20 2025 4:18 pm  
      */
     static async getGenderById(id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_gender_by_id_result] = await db.execute(`
@@ -23,14 +22,14 @@ class EmployeeGenderModel{
                 WHERE id = ?
             `, [id]);
 
-            if(get_gender_by_id_result.length === ZERO){
+            if(get_gender_by_id_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_MODEL_GENDER;
+                response_data.error = "gender record not found in model";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_gender_by_id_result[ZERO];
+                response_data.result = get_gender_by_id_result[0];
             }
         }
         catch(error){

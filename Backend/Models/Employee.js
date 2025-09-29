@@ -1,9 +1,6 @@
 import db from "../Configs/Database.js";
-import {
-    STATUS_QUERY, ZERO, TWO, THREE, ERROR_IN_GET_ID
-} from "../Constant/Constants.js"
 
-class EmployeeModel {
+class EmployeeModel{
 
     /**
      * Retrieves an employee record by email.
@@ -20,7 +17,7 @@ class EmployeeModel {
      * updated at: September 20 2025 10:38 pm  
      */
     static async getEmployeeEmail(email){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_email_result] = await db.execute(`
@@ -29,14 +26,14 @@ class EmployeeModel {
                 WHERE email = ?
             `, [email]);
 
-            if(get_all_email_result.length === ZERO){
+            if(get_all_email_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_FIND_EMAIL_MODEL;
+                response_data.error = "email not found in model";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_email_result[ZERO];
+                response_data.result = get_all_email_result[0];
             }
         }
         catch(error){
@@ -68,7 +65,7 @@ class EmployeeModel {
      * updated at: September 21 2025 11:38 pm  
      */
     static async createUser({ first_name, last_name, email, role, gender, password }){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [insert_employee_data_result] = await db.execute(`
@@ -88,7 +85,7 @@ class EmployeeModel {
             if(!insert_employee_data_result.insertId){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_CREATE_EMPLOYEE_MODEL;
+                response_data.error =  "insert employee data error in model";
             }
             else{
                 response_data.status = true;
@@ -114,16 +111,16 @@ class EmployeeModel {
      * updated at: September 25, 2025 - 4:30 PM
      */
     static async getAllEmployeeByRoleId(){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_all_employee_role_id_result] = await db.execute(`
                 SELECT id, first_name, last_name, email, employee_role_type_id
                 FROM employees
                 WHERE employee_role_type_id IN (?, ?)
-            `, [TWO, THREE]);
+            `, [2, 3]);
 
-            if(get_all_employee_role_id_result.length === ZERO){
+            if(get_all_employee_role_id_result.length === 0){
                 response_data.status = true;
                 response_data.result = [];
             }
@@ -135,7 +132,7 @@ class EmployeeModel {
         catch(error){
             response_data.status = false;
             response_data.result = null;
-            response_data.error = ERROR_IN_GET_EMPLOYEES_BY_ROLE_TYPE || error.message;
+            response_data.error =  error.message;
         }
 
         return response_data;
@@ -157,7 +154,7 @@ class EmployeeModel {
      * updated at: September 26 2025 5:00 pm
      */
     static async getById(employee_id){
-        const response_data = { ...STATUS_QUERY };
+        const response_data =  { status: false, result: null, error: null };
 
         try{
             const [get_employee_by_id_result] = await db.execute(`
@@ -166,14 +163,14 @@ class EmployeeModel {
                 WHERE id = ?
             `, [employee_id]);
 
-            if(get_employee_by_id_result.length === ZERO){
+            if(get_employee_by_id_result.length === 0){
                 response_data.status = false;
                 response_data.result = null;
-                response_data.error = ERROR_IN_GET_ID;
+                response_data.error =  `employee id not found in employee model.`;
             }
             else{
                 response_data.status = true;
-                response_data.result = get_employee_by_id_result[ZERO];
+                response_data.result = get_employee_by_id_result[0];
             }
         }
         catch(error){
