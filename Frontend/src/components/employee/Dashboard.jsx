@@ -41,7 +41,6 @@ export default function Dashboard() {
             <div style={{ marginBottom: "30px", textAlign: "center" }}>
                 <button style={buttonStyle} onClick={() => handleAction("http://localhost:5000/api/attendance/timein")}>Time IN</button>
                 <button style={buttonStyle} onClick={() => handleAction("http://localhost:5000/api/attendance/timeout")}>Time OUT</button>
-                <button style={buttonStyle} onClick={() => handleAction("http://localhost:5000/api/attendance/leave")}>Leave</button>
             </div>
 
             <h2 style={{ marginBottom: "20px" }}>Your Attendance Records</h2>

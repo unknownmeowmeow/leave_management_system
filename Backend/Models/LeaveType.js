@@ -202,11 +202,25 @@ class LeaveTypeModel{
 
         return response_data;
     }
- 
-    static async getAllLeaves() {
+
+    /**
+     * Retrieves all leave transactions for all employees.
+     * 
+     * This method joins multiple tables to provide detailed information about
+     * each leave transaction, including employee name, leave type, grant type,
+     * status, and who rewarded or approved the leave. Results are ordered by
+     * leave transaction ID in descending order.
+     * 
+     * @returns {Promise<{status: boolean, result: Array|null, error: string|null}>} 
+     * Returns a response object with operation status, all leave transaction records, or an error message.
+     * 
+     * created by: Rogendher Keith Lachica
+     * updated at: September 30 2025 7:30 pm
+     */
+    static async getAllLeaves(){
         const response_data = { status: false, result: null, error: null };
     
-        try {
+        try{
             const [get_all_employee_leave_result] = await db.execute(`
                 SELECT 
                     leave_transactions.id,
@@ -235,7 +249,7 @@ class LeaveTypeModel{
                 ORDER BY leave_transactions.id DESC;
             `);
     
-            if (!get_all_employee_leave_result.length) {
+            if(!get_all_employee_leave_result.length){
                 response_data.status = false;
                 response_data.result = [];
                 response_data.error = "No leave transactions found.";
@@ -252,8 +266,74 @@ class LeaveTypeModel{
     
         return response_data;
     }
+
+    /**
+     * Retrieves all leave transactions for a specific employee.
+     * 
+     * This method fetches leave transactions for the given employee ID and 
+     * provides detailed information including leave type, grant type, status, 
+     * and the employees who rewarded or approved the leave. Results are 
+     * ordered by leave transaction ID in descending order.
+     * 
+     * @param {number} employee_id - Unique identifier of the employee.
+     * 
+     * @returns {Promise<{status: boolean, result: Array|null, error: string|null}>} 
+     * Returns a response object with operation status, leave transaction records for the employee, or an error message.
+     * 
+     * created by: Rogendher Keith Lachica
+     * updated at: September 30 2025 7:35 pm
+     */
+    static async getAllLeave(employee_id) {
+        const response_data = { status: false, result: null, error: null };
     
+        try {
+            const [get_all_employee_leave_result] = await db.execute(`
+                SELECT 
+                    leave_transactions.id,
+                    CONCAT(employees.first_name, ' ', employees.last_name) AS employee_name,
+                    leave_types.name AS leave_type,
+                    leave_type_grant_types.name AS grant_type_name, 
+                    leave_transactions.start_date,
+                    leave_transactions.end_date,
+                    leave_transactions.reason,
+                    leave_transaction_statuses.name AS status,
+                    CONCAT(rewarder.first_name, ' ', rewarder.last_name) AS rewarded_by,
+                    CONCAT(approver.first_name, ' ', approver.last_name) AS approved_by
+                FROM leave_transactions
+                JOIN employees 
+                    ON employees.id = leave_transactions.employee_id
+                JOIN leave_types 
+                    ON leave_types.id = leave_transactions.leave_type_id
+                JOIN leave_type_grant_types
+                    ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
+                LEFT JOIN leave_transaction_statuses 
+                    ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                LEFT JOIN employees AS rewarder
+                    ON rewarder.id = leave_transactions.rewarded_by_id
+                LEFT JOIN employees AS approver
+                    ON approver.id = leave_transactions.approved_by_id
+
+                WHERE leave_transactions.employee_id = ?
+                ORDER BY leave_transactions.id DESC;
+            `, [employee_id]);
     
+            if (!get_all_employee_leave_result.length) {
+                response_data.status = false;
+                response_data.result = [];
+                response_data.error = "No leave transactions found.";
+            } 
+            else{
+                response_data.status = true;
+                response_data.result = get_all_employee_leave_result;
+            }
+        } 
+        catch (error) {
+            response_data.status = false;
+            response_data.error = error.message;
+        }
+    
+        return response_data;
+    } 
 
     /**
      * Update leave transaction status (approved, rejected, etc.)
@@ -340,9 +420,6 @@ class LeaveTypeModel{
         return response_data;
     }
     
-    
-    
-
 }
 
 export default LeaveTypeModel; 

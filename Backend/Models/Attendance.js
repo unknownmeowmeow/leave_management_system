@@ -12,19 +12,18 @@ class AttendanceModel{
     * created by: rogendher keith lachica
     * updated at: September 23 2025 1:21 pm  
     */
-    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID }){
+    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID, connection = db }){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [insert_attendance_result] = await db.execute(`
+            const [insert_attendance_result] = await connection.execute(`
                 INSERT INTO attendances (
                     employee_id, 
                     attendance_type_id, 
                     time_in, 
-                    created_at, 
-                    updated_at
+                    created_at
                 )
-                VALUES (?, ?, NOW(), NOW(), NOW())
+                VALUES (?, ?, NOW(), NOW())
             `, [employee_id, attendance_type_id]);
 
             if(!insert_attendance_result.insertId){
@@ -121,13 +120,13 @@ class AttendanceModel{
     * created by: rogendher keith lachica
     * updated at: September 23 2025 3:15 pm  
     */
-    static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id }){
+    static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection = db }){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [update_time_out_result] = await db.execute(`
+            const [update_time_out_result] = await connection.execute(`
                 UPDATE attendances
-                SET time_out = ?, work_hour = ?, attendance_type_id = ?, updated_at = NOW()
+                SET time_out = ?, work_hour = ?, attendance_type_id = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [time_out, work_hour, attendance_type_id, id]);
 

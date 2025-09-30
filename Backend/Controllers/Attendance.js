@@ -2,8 +2,10 @@ import AttendanceModel from "../Models/Attendance.js";
 import TimeValidationHelper from "../Helpers/TimeValidationHelper.js";
 import LeaveCreditModel from "../Models/LeaveCredit.js";   
 import WorkTimeValidationHelper from "../Helpers/WorkTimeValidationHelper.js";
+import database from "../Configs/Database.js";
 
 class AttendanceControllers{
+
     /**
      * Handles employee time-in process.
      * - Checks for active session user.
@@ -22,22 +24,32 @@ class AttendanceControllers{
         if(!user){
             return res.json({ success: false, message: "User session not found." });
         }
+        const connection = await database.getConnection();
+
         try{
+            await connection.beginTransaction();
             const employee_id = user.employee_id;
             const check_time_in = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
 
             if(check_time_in.status && check_time_in.result){
-                return res.json("Already time in today.");
+                await connection.rollback();
+                return res.json({ success: false, message: "Already time in today." });
             }
-            const result = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id });
+            const result = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id, connection});
 
             if(!result.status){
+                await connection.rollback();
                 return res.json({ success: false, message: result.error });
             }
+            await connection.commit();
             return res.json( { success: true, message: "Time IN recorded successfully" });
         } 
         catch(error){
+            await connection.rollback();
             return res.json({ success: false, message: error.message });
+        }
+        finally{
+            connection.release();
         }
     }
 
@@ -62,76 +74,71 @@ class AttendanceControllers{
      */
     static async EmployeetimeOut(req, res){
         const user = req.session.user;
-
+    
         if(!user){
             return res.json({ success: false, message: "User session not found." });
         }
-
+        const connection = await database.getConnection();
+    
         try{
+            await connection.beginTransaction();
             const employee_id = user.employee_id;
             const attendance_type_id = 2;
             const record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
             const active_record_time_in = record.result;
-            const check_time_out = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
-
-            if(check_time_out.status && check_time_out.result){
-                return res.json({ success: false, message: "Already time out today." });
-            }
-
+    
             if(!record.status || !active_record_time_in){
+                await connection.rollback();
                 return res.json({ success: false, message: "No time-in record found for today." });
+            }
+            const check_time_out = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
+            
+            if(check_time_out.status && check_time_out.result){
+                await connection.rollback();
+                return res.json({ success: false, message: "Already time out today." });
             }
             const id = active_record_time_in.id;
             const time_in = active_record_time_in.time_in;
-
+    
             if(!id || !time_in){
-                return res.json( { success: false, message: "Invalid or missing id or time_in." });
+                await connection.rollback();
+                return res.json({ success: false, message: "Invalid or missing id or time_in." });
             }
             const time_out = TimeValidationHelper.checkEmployeeCurrentTime();
             const work_hour = TimeValidationHelper.calculateEmployeeWorkHour(time_in, time_out);
             const validation_check_time = WorkTimeValidationHelper.validateEmployeeTimeOut({ id, time_out, work_hour });
 
             if(!validation_check_time.is_valid){
+                await connection.rollback();
                 return res.json({ success: false, message: validation_check_time.error });
             }
-
-            const update_attendance = await AttendanceModel.updateEmployeeTimeOutAttendance({
-                id,
-                time_out,
-                work_hour,
-                attendance_type_id,
-            });
-
+            const update_attendance = await AttendanceModel.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
+    
             if(!update_attendance.status){
+                await connection.rollback();
                 return res.json({ success: false, message: update_attendance.error });
             }
             const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
             const current_credit = latest_credit_result.latest_credit || 0;
-            const { earned_credit,deducted_credit,latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
-
-            await LeaveCreditModel.updateLeaveCreditFromWorkHour({
-                employee_id,
-                leave_transaction_id: null,
-                attendance_id: id,
-                leave_type_id: null,
-                earned_credit,
-                used_credit: 0,
-                deducted_credit,
-                current_credit,
-                latest_credit
-            });
-
-            return res.json({
-                success: true,
-                message: `Time out Successfully`,
-                time_out,
-                work_hour,
-            });
+            const { earned_credit, deducted_credit, latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
+            const update_credit = await LeaveCreditModel.insertLeaveCreditFromWorkHour({ employee_id, attendance_id: id, earned_credit, deducted_credit, current_credit, latest_credit, connection});
+    
+            if(!update_credit.status){
+                await connection.rollback();
+                return res.json({ success: false, message: update_credit.error });
+            }
+            await connection.commit();
+            return res.json({ success: true, message: "Time out successfully", time_out, work_hour, earned_credit, deducted_credit, latest_credit});
         } 
         catch(error){
+            await connection.rollback();
             return res.json({ success: false, message: error.message });
+        } 
+        finally{
+            connection.release();
         }
     }
+    
 
     /**
      * Retrieves all attendance records for the logged-in employee.

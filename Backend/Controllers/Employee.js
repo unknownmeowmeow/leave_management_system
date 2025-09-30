@@ -5,6 +5,8 @@ import EmployeeRoleTypeModel from "../Models/EmployeeRoleType.js";
 import ValidationHelper from '../Helpers/ValidationHelper.js';
 import LeaveTypeModel from "../Models/LeaveType.js";
 import LeaveCreditModel from "../Models/LeaveCredit.js";
+import database from "../Configs/Database.js";
+
 
 
 class EmployeeControllers{
@@ -74,80 +76,78 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 24 2025 1:59 pm    
      */
-    static async userRegistration(req, res){          
-       
-        try{             
-            const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);  
+    static async userRegistration(req, res) {
+        const connection = await database.getConnection();
+    
+        try {
+            await connection.beginTransaction();
+            const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
+    
+            if(validation_error.length){
+                await connection.rollback();
+                return res.json({ success: false, errors: validation_error });
+            }
+            const { first_name, last_name, email, password, role, gender } = req.body;
+            const email_exist = await EmployeeModel.getEmployeeEmail(email);
+    
+            if(email_exist.result){
+                await connection.rollback();
+                return res.json({ success: false, message: "Email Already Exists in Registration" });
+            }
+            const role_data = await EmployeeRoleTypeModel.getRoleById(role);
 
-            if(validation_error.length){                 
-                return res.json({ success: false, errors: validation_error });             
-            }             
-            const { first_name, last_name, email, password, role, gender } = req.body;             
-            const email_exist = await EmployeeModel.getEmployeeEmail(email); 
-
-            if(email_exist.result){                 
-                return res.json({ success: false, message: "Email Already Exists in Registration" });             
-            }             
-            const role_data = await EmployeeRoleTypeModel.getRoleById(role); 
-
-            if(!role_data.result){                 
-                return res.json({ success: false, message: "Failed to fetch roles"});             
-            }             
-            const gender_data = await EmployeeGenderModel.getGenderById(gender);  
-
-            if(!gender_data.result){                 
-                return res.json({ success: false, message: "Failed to fetch in gender registration" });             
-            }             
-            const hash_password = await bcrypt.hash(password, 12);  
-
-            const new_user = await EmployeeModel.createUser({                 
-                first_name,                 
-                last_name,                 
-                email,                 
-                role,                 
-                gender,                 
-                password: hash_password,             
-            });              
-
-            if(new_user.status){                 
-                const employee_id = new_user.insert_employee_result.id; 
-                               
-                if(parseInt(role, 10) === 3){                     
-                    const carry_over_leave_types = await LeaveTypeModel.getAllCarryOverLeaveTypes();   
-
-                    if(carry_over_leave_types.status && carry_over_leave_types.result.length){                         
-                        const total_base_value = carry_over_leave_types.result.reduce(                             
-                            (total, leave_type) => total + leave_type.base_value, 0                         
-                        );          
-
-                        for(const leave_type of carry_over_leave_types.result){   
-
-                            await LeaveCreditModel.insertLeaveCredit({                             
-                                employee_id,                             
-                                leave_transaction_id: null,                             
-                                attendance_id: null,                             
-                                leave_type_id: leave_type.id,                             
-                                earned_credit: leave_type.base_value,                             
-                                used_credit: 0.00,
-                                deducted_credit: 0.00,                            
-                                current_credit: leave_type.base_value,                             
-                                latest_credit: total_base_value,                         
-                            });                   
-                        }                 
-                    }             
-                }                 
-
-                return res.json({ success: true, message: "Registration Successful" });             
-            }             
-            else{            
-
-                return res.json({ success: false, message:"Registration Failed in backend" });             
-            }         
-        }         
-        catch(error){             
-            return res.json({ success: false, message: "Server Error in Registration"});         
-        }     
+            if(!role_data.result){
+                await connection.rollback();
+                return res.json({ success: false, message: "Failed to fetch roles" });
+            }
+            const gender_data = await EmployeeGenderModel.getGenderById(gender);
+            
+            if(!gender_data.result){
+                await connection.rollback();
+                return res.json({ success: false, message: "Failed to fetch in gender registration" });
+            }
+            const hash_password = await bcrypt.hash(password, 12);
+            const new_user = await EmployeeModel.createUser({ first_name, last_name, email, role, gender, password: hash_password }, connection);
+    
+            if(new_user.status){
+                const employee_id = new_user.insert_employee_result.id;
+    
+                if(parseInt(role, 10) === 3){
+                    const carry_over_leave_types = await LeaveTypeModel.getAllCarryOverLeaveTypes();
+    
+                    const insert_employee_data = carry_over_leave_types.result.map(leave_type => ({
+                        employee_id,
+                        leave_transaction_id: null,
+                        attendance_id: null,
+                        leave_type_id: leave_type.id,
+                        earned_credit: leave_type.base_value,
+                        used_credit: 0.00,
+                        deducted_credit: 0.00,
+                        current_credit: leave_type.base_value,
+                        latest_credit: leave_type.base_value, 
+                        connection
+                    }));
+                    console.log("insert credit", insert_employee_data);
+    
+                    await Promise.all( insert_employee_data.map(insert_base_value => LeaveCreditModel.insertLeaveCredit(insert_base_value)));
+                }
+                await connection.commit();
+                return res.json({ success: true, message: "Registration Successful in controller" });
+            } 
+            else{
+                await connection.rollback();
+                return res.json({ success: false, message: "Registration Failed in controller" });
+            }
+        } 
+        catch(error){
+            await connection.rollback();
+            return res.json({ success: false, message: "server error in controller" });
+        } 
+        finally{
+            connection.release();
+        }
     }
+    
     
     /**
      * Controller to handle user login.
@@ -199,7 +199,7 @@ class EmployeeControllers{
             });
         }
         catch(error){
-            return res.json({ success: false, message: "Server error during Login." });
+            return res.json({ success: false, message: "server error in controller login" });
         }
     }
 
@@ -221,7 +221,7 @@ class EmployeeControllers{
                 return res.json({ success: false, message: "No Employee Session Found in Log out."});
             }
 
-            req.session.destroy(error => {
+            req.session.destroy(error =>{
                 if(error){
                     return res.json({ success: false, message: "Server error during Logout." });
                 }
@@ -235,35 +235,7 @@ class EmployeeControllers{
         }
 
     }
-    /**
-     * Controller to get all employee leave credit records.
-     * 
-     * @param {Object} req - The Express request object.
-     * @param {Object} res - The Express response object.
-     * @returns {Promise<Object>} Sends JSON response with credit records or error message.
-     * created by: rogendher keith lachica
-     * updated at: September 24 2025 1:30 pm  
-     */
-    static async getAllEmployeeCredits(req, res){
-        const user = req.session.user;
 
-        if(!user || !user.employee_id){
-            return res.json({ success: false, message: "User session not found." });
-        }
-
-        try{
-            const response_data = await LeaveCreditModel.getAllEmployeeCredits();
-
-            if(response_data.error){
-                return res.json({ success: false, error: response_data.error });
-            }
-
-            res.json({ success: true, result: response_data.result });
-        }
-        catch(error){
-            res.json({ success: false, error: "Failed to fetch employee leave credits." });
-        }
-    }
 
 
 }

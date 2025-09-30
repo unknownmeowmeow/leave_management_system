@@ -94,7 +94,7 @@ export default function RecordFile() {
                         <th style={table_cell}>Reason</th>
                         <th style={table_cell}>Grant Type</th>
                         <th style={table_cell}>Rewarded By</th>
-                        <th style={table_cell}>Approved By</th>
+                        <th style={table_cell}>Decision By</th>
                         <th style={table_cell}>Status</th>
                         <th style={table_cell}>Actions</th>
                     </tr>

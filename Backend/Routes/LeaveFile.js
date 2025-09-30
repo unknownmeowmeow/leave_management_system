@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/api/leave_types", AuthMiddleware.requireLogin, LeaveTypeController.getAllDefaultLeaveType);
 router.get("/api/leave_types_admin", AuthMiddleware.requireLogin, LeaveTypeController.getAllRewardedAndSpecialLeave);
-router.post("/api/leave/apply", AuthMiddleware.requireLogin, LeaveController.applyLeave);
+router.post("/api/leave/apply", AuthMiddleware.requireLogin, LeaveController.applyEmployeeLeave);
 router.get("/latest_credit", AuthMiddleware.requireLogin, LeaveController.getLatestCredit);
 router.post("/apply", AuthMiddleware.requireLogin, LeaveController.applyLeave);
 router.get("/employeesbyrole", LeaveController.getEmployeesByRole);

@@ -81,6 +81,27 @@ class ValidationHelper{
             return ["Error in validation login."];
         }
     }
+     /**
+     * Validates leave application data.
+     * @param {object} leave_data - The leave application data from the request body.
+     * @returns {string[]} An array of error messages, empty if validation passes.
+     * created by: rogendher keith lachica
+     * updated at: September 30 2025
+     */
+     static validateLeaveApplication(leave_data) {
+        try{
+            const { leave_type, start_date, end_date } = leave_data;
+
+            if(!leave_type || !start_date || !end_date){
+                return ["All fields are required."];
+            }
+
+            return []; 
+        } 
+        catch(error) {
+            return ["Error in validating leave application."];
+        }
+    }
 }
 
 export default ValidationHelper;

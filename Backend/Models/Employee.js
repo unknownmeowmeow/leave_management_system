@@ -64,11 +64,11 @@ class EmployeeModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 21 2025 11:38 pm  
      */
-    static async createUser({ first_name, last_name, email, role, gender, password }){
+    static async createUser({ first_name, last_name, email, role, gender, password }, connection = db){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [insert_employee_data_result] = await db.execute(`
+            const [insert_employee_data_result] = await connection.execute(`
                 INSERT INTO employees (
                     employee_role_type_id, 
                     employee_gender_id, 
@@ -76,9 +76,8 @@ class EmployeeModel{
                     last_name, 
                     email, 
                     password, 
-                    created_at, 
-                    updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+                    created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, NOW())
             `, [role, gender, first_name, last_name, email, password]
             );
 
@@ -97,6 +96,7 @@ class EmployeeModel{
         }
         return response_data;
     }
+    
     /**
      * Retrieves all employees where role type is 2 or 3 (e.g., Full-Time or Part-Time).
      *
@@ -137,7 +137,6 @@ class EmployeeModel{
 
         return response_data;
     }
-    // ... existing methods ...
 
     /**
      * Retrieves an employee record by ID.
@@ -160,7 +159,7 @@ class EmployeeModel{
             const [get_employee_by_id_result] = await db.execute(`
                 SELECT *
                 FROM employees
-                WHERE id = ?
+                WHERE  id = ? 
             `, [employee_id]);
 
             if(get_employee_by_id_result.length === 0){

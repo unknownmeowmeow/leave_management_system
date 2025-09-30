@@ -13,7 +13,7 @@ export default function CreditEmployee() {
     useEffect(() => {
         const fetchCredits = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/auth/credits", {
+                const response = await axios.get("http://localhost:5000/api/credits", {
                     withCredentials: true,
                 });
 
