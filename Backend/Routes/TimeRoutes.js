@@ -1,14 +1,14 @@
 import express from 'express';
-import AttendanceControllers from '../Controllers/Attendance.js';
+import AttendanceControllers from '../Controllers/attendances.js';
 import AuthMiddleware from '../Middleware/authMiddleware.js';
 
 
 const router = express.Router();
 
-router.post('/timein', AuthMiddleware.requireLogin, AttendanceControllers.EmployeetimeIn);
-router.post('/timeout', AuthMiddleware.requireLogin, AttendanceControllers.EmployeetimeOut);
-router.post('/record', AuthMiddleware.requireLogin, AttendanceControllers.EmployeeRecord);
-router.post('/records', AuthMiddleware.requireLogin, AttendanceControllers.AllEmployeesAttendanceRecord);
+router.post('/timein', AuthMiddleware.requireLogin, AttendanceControllers.employeetimeIn);
+router.post('/timeout', AuthMiddleware.requireLogin, AttendanceControllers.employeetimeOut);
+router.post('/record', AuthMiddleware.requireLogin, AttendanceControllers.employeeRecord);
+router.post('/records', AuthMiddleware.requireLogin, AttendanceControllers.allEmployeesAttendanceRecord);
 
 
 export default router;

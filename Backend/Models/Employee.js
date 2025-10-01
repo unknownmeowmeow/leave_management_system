@@ -1,5 +1,5 @@
-import db from "../Configs/Database.js";
-
+import db from "../Configs/database.js";
+import { ROLE_TYPE_ID } from "../Constant/constants.js";
 class EmployeeModel{
 
     /**
@@ -110,7 +110,7 @@ class EmployeeModel{
      * created by: Rogendher Keith Lachica  
      * updated at: September 25, 2025 - 4:30 PM
      */
-    static async getAllEmployeeByRoleId(){
+    static async getAllEmployeeAndIntern(){
         const response_data =  { status: false, result: null, error: null };
 
         try{

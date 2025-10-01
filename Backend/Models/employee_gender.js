@@ -1,4 +1,4 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
 
 class EmployeeGenderModel{
 

@@ -5,17 +5,17 @@ import path from "path";
 import EmployeeRoutes from "./Routes/EmployeeRoutes.js";
 import TimeRoutes from "./Routes/TimeRoutes.js";
 import adminRoutes from "./Routes/AdminRoutes.js";
-import { MY_SECRET_SERVER_SESSION, EXPRESS_URL, FRONT_END_URL, CORS, SERVER_CONSOLE_LOG } from "./Constant/Constants.js";
+import { MY_SECRET_SERVER_SESSION } from "./Constant/constants.js";
 import LeaveTypeRoutes from "./Routes/LeaveFile.js";
-import "./Helpers/YearlyAddCreditHelper.js";
-import CreditRoutes from "./Routes/LeaveCreditRoutes.js";
+import "./Scheduler/yearly_add_credit_helper.js";
+import CreditRoutes from "./Routes/leaveCreditRoutes.js";
 import leaveFileRoutes from "./Routes/LeaveFile.js";
 const app = express();
 
-app.use(cors(CORS));
-app.use(express.json(FRONT_END_URL));
-app.use(express.urlencoded(EXPRESS_URL));
-app.use(session(MY_SECRET_SERVER_SESSION));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(express.json({ origin: "http://localhost:5173", credentials: true }));
+app.use(express.urlencoded( { extended: true }));
+app.use(session({ secret: MY_SECRET_SERVER_SESSION, resave: false, saveUninitialized: false }));
 
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", EmployeeRoutes); 
@@ -27,4 +27,4 @@ app.use("/api", leaveFileRoutes);
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
-app.listen(5000, () => SERVER_CONSOLE_LOG);
+app.listen(5000, () => console.log("Server running on http://localhost:5000"));

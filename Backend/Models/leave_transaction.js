@@ -1,7 +1,7 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
 import {
-    ZERO, ONE, LIMIT
-} from "../Constant/Constants.js"
+      NUMBER
+} from "../Constant/constants.js"
 
 class leaveTransactionModel {
 
@@ -26,12 +26,12 @@ class leaveTransactionModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 10:40 am
      */
-    static async insertTransaction({ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = ZERO,
-        is_active = ONE, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null, connection = db}){
+    static async insertTransaction({ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = NUMBER.zero,
+        is_active = NUMBER.one, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null}){
         const response_data = { status: false, result: null, error: null };
     
         try{
-            const [insert_result] = await connection.execute(`
+            const [insert_data_result] = await db.execute(`
                 INSERT INTO leave_transactions (
                     employee_id,
                     leave_transaction_status_id,
@@ -48,14 +48,14 @@ class leaveTransactionModel {
                     approved_by_id,
                     created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            `, [employee_id,leave_transaction_status_id,leave_type_id,reason,total_leave,is_weekend,is_active,start_date,end_date,filed_date,year,rewarded_by_id,approved_by_id]);
+            `, [ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend, is_active, start_date, end_date, filed_date, year, rewarded_by_id,  approved_by_id]);
             
-            if(!insert_result.insertId){
+            if(!insert_data_result.insertId){
                 response_data.error = "Insert failed in model.";
             } 
             else{
                 response_data.status = true;
-                response_data.result = { leave_id: insert_result.insertId };
+                response_data.result = { leave_id: insert_data_result.insertId };
             }
         } 
         catch(error){
@@ -75,7 +75,7 @@ class leaveTransactionModel {
      */
     static async getLeaveTransactionById(leave_id){
         const response_data =  { status: false, result: null, error: null };
-        console.log(leave_id);
+
         try {
             const [get_all_leave_transaction_result] = await db.execute(`
                 SELECT id, employee_id, total_leave, leave_transaction_status_id
@@ -108,41 +108,41 @@ class leaveTransactionModel {
      * updated at: September 29 2025
      */
     static async getTotalCredit(employee_id){
-            const response_data = { status: false, result: null, error: null };
-
-            try{
-                const [get_total_credit_result] = await db.execute(`
-                    SELECT
-                        leave_credits.employee_id,
-                        employees.first_name,
-                        employees.last_name,
-                        employees.employee_role_type_id,
-                        SUM(leave_credits.earned_credit) AS total_earned_credit,
-                        SUM(leave_credits.used_credit) AS total_used_credit,
-                        SUM(leave_credits.deducted_credit) AS total_deducted_credit,
-                        SUM(leave_credits.latest_credit) AS total_latest_credit
-                    FROM leave_credits
-                    LEFT JOIN employees 
-                    ON leave_credits.employee_id = employees.id
-                    WHERE leave_credits.employee_id = ?
-                    GROUP BY leave_credits.employee_id
-                    ORDER BY leave_credits.employee_id DESC
-                `, [employee_id]);
-
-                if(get_total_credit_result.length === 0){
-                    response_data.error = "No leave credit found for employee.";
-                } 
-                else{
-                    response_data.status = true;
-                    response_data.result = get_total_credit_result[0];
-                }
+        const response_data = { status: false, result: null, error: null };
+        try{
+            const [get_total_credit_result] = await db.execute(`
+                SELECT
+                    leave_credits.employee_id,
+                    employees.first_name,
+                    employees.last_name,
+                    employees.employee_role_type_id,
+                    SUM(leave_credits.earned_credit) AS total_earned_credit,
+                    SUM(leave_credits.used_credit) AS total_used_credit,
+                    SUM(leave_credits.deducted_credit) AS total_deducted_credit,
+                    SUM(leave_credits.latest_credit) AS total_latest_credit
+                FROM leave_credits
+                LEFT JOIN employees 
+                ON leave_credits.employee_id = employees.id
+                WHERE leave_credits.employee_id = ?
+                GROUP BY leave_credits.employee_id
+                ORDER BY leave_credits.employee_id DESC
+            `, [employee_id]);
+            
+            if(get_total_credit_result.length > NUMBER.zero){
+                response_data.status = true;
+                response_data.result = get_total_credit_result[NUMBER.zero];
             } 
-            catch(error){
-                response_data.status = false;
-                response_data.error = error.message;
+            else{
+                response_data.error = "No leave credit found for employee in leave transaction models.";
             }
-            return response_data;
+        } 
+        catch(error){
+            response_data.status = false;
+            response_data.error = error.message;
+        }
+        return response_data;
     }
+    
 
     /**
      * Retrieves the most recent leave credit record of an employee.
@@ -160,18 +160,17 @@ class leaveTransactionModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 30 2025 6:55 pm
      */
-    static async getLatestCreditRecord(employee_id) {
+    static async getLatestCreditRecord(employee_id){
         const response_data = { status: false, result: null, error: null };
     
-        console.log(employee_id);
     
-        try {
+        try{
             const [get_latest_credit_record_result] = await db.execute(`
                 SELECT id
                 FROM leave_credits
                 WHERE employee_id = ?
                 ORDER BY created_at DESC
-                LIMIT ${LIMIT}
+                LIMIT ${NUMBER.one}
             `, [employee_id]);
     
             if(!get_latest_credit_record_result.length){
@@ -183,7 +182,7 @@ class leaveTransactionModel {
                 response_data.result = get_latest_credit_record_result[0];
             }
         } 
-        catch(error) {
+        catch(error){
             response_data.status = false;
             response_data.error = error.message;
         }
@@ -209,15 +208,8 @@ class leaveTransactionModel {
      * created by: Rogendher Keith Lachica
      * updated at: September 30 2025 7:05 pm
      */
-    static async deductCredit(credit_id, total_leave, connection = db) {
+    static async deductCredit(credit_id, total_leave, connection = db){
         const response_data = { status: false, result: null, error: null };
-    
-        if(!credit_id){
-            response_data.error = "no credit id in model";
-            return response_data;
-        }
-    
-        console.log(credit_id, total_leave);
     
         try{
             const [deducted_credit_result] = await connection.execute(`
@@ -229,7 +221,7 @@ class leaveTransactionModel {
                 WHERE id = ?
             `, [total_leave, total_leave, total_leave, credit_id]);
     
-            if(deducted_credit_result.affectedRows === 0){
+            if(deducted_credit_result.affectedRows === NUMBER.zero){
                 response_data.error = "Leave credit record not found or deduction failed in model.";
             } 
             else{
@@ -243,9 +235,8 @@ class leaveTransactionModel {
         }
     
         return response_data;
-    }
+    }    
     
-
     /**
      * Updates the status of a leave transaction.
      * 
@@ -274,7 +265,7 @@ class leaveTransactionModel {
                 WHERE id = ?
             `, [status_id, approver_id, leave_id]);
     
-            if(update_status_result.affectedRows === 0){
+            if(update_status_result.affectedRows === NUMBER.zero){
                 response_data.error = "Leave transaction not found or status unchanged.";
             } 
             else{

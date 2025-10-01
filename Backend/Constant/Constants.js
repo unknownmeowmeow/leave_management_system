@@ -1,21 +1,55 @@
-export const MY_SECRET_SERVER_SESSION = { secret: "mysecret", resave: false, saveUninitialized: false };
-export const EXPRESS_URL = { extended: true };
-export const FRONT_END_URL = { origin: "http://localhost:5173", credentials: true };
-export const CORS = { origin: "http://localhost:5173", credentials: true };
-export const SERVER_CONSOLE_LOG = console.log("Server running on http://localhost:5000");   
-export const ATTENDANCE_TYPE_ID = 1;
-export const IS_CARRIED_OVER = { yes: 1, no: 0 };
-export const LEAVE_STATUS = { active: 1, inactive: 0 };
-export const ROLE_TYPE_INTERN = 2;
-export const ROLE_TYPE_EMPLOYEE = 3;
-export const GRANT_TYPE_ID_DEFAULT = 2;
-export const GRANT_TYPE_ID_REWARDED = 1;
-export const GRANT_TYPE_ID_SPECIAL = 3;
-export const GET_ROLE_EMPLOYEE = 3;
-export const LEAVE_TYPE_ID_MODEL_VACATION_LEAVE = 1;
-export const LEAVE_TYPE_ID_MODEL_SICK_LEAVE = 2;
-export const ZERO = 0;
-export const TWENTY_FOUR = 24;
-export const EIGHT = 8;
-export const ONE = 1;
-export const LIMIT = 1;
+export const MY_SECRET_SERVER_SESSION =  "mysecret";
+
+export const IS_CARRIED_OVER = { 
+    yes: 1, 
+    no: 0 
+};
+
+export const LEAVE_STATUS = { 
+    active: 1, 
+    inactive: 0 
+};
+
+export const GRANT_TYPE_ID = {
+    rewarded: 1,
+    default: 2,
+    special: 3,
+}
+
+export const NUMBER ={
+    zero_point_zero_zero: 0.00,
+    zero_point_thirty_three: 0.33,
+    one_point_fifty: 1.50,
+    zero: 0,
+    one: 1,
+    two: 2,
+    three: 3,
+    six: 6,
+    eight: 8,
+    ten: 10,
+    eleven: 11,
+    twelve: 12,
+    twenty_three: 23,
+    twenty_four: 24,
+    thirty_one: 31,
+    fifty_nine: 59,
+    sixty: 60,
+    nine_houndred_nine: 999,
+    one_thousand: 1000,
+}
+
+export const LEAVE_TYPE_ID = {
+    vacation_leave: 1,
+    sick_leave: 2
+}
+
+export const ROLE_TYPE_ID = {
+    intern: 2,
+    employee: 3
+}
+
+
+export const ATTENDANCE_TYPE_ID = {
+    time_in: 1,
+    time_out: 2
+}

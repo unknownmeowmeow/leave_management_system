@@ -1,10 +1,7 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
 import {
-  
-    LEAVE_STATUS, IS_CARRIED_OVER, GRANT_TYPE_ID_DEFAULT,
-    GRANT_TYPE_ID_SPECIAL, GRANT_TYPE_ID_REWARDED, LEAVE_TYPE_ID_MODEL_SICK_LEAVE, 
-    LEAVE_TYPE_ID_MODEL_VACATION_LEAVE
-} from "../Constant/Constants.js";
+    LEAVE_STATUS, IS_CARRIED_OVER, GRANT_TYPE_ID, LEAVE_TYPE_ID
+} from "../Constant/constants.js";
 
 class LeaveTypeModel{
 
@@ -27,7 +24,7 @@ class LeaveTypeModel{
                     FROM leave_types 
                     WHERE is_carried_over = ? AND is_active = ? AND id IN (?, ?)
                 `, [IS_CARRIED_OVER.yes, LEAVE_STATUS.active, 
-                    LEAVE_TYPE_ID_MODEL_VACATION_LEAVE, LEAVE_TYPE_ID_MODEL_SICK_LEAVE]
+                    LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave]
             );
 
             if(get_all_carry_over_leave_type_result.length === 0){
@@ -106,7 +103,7 @@ class LeaveTypeModel{
                 LEFT JOIN leave_type_grant_types 
                 ON leave_types.leave_type_grant_type_id = leave_type_grant_types.id
                 WHERE leave_types.leave_type_grant_type_id = ? AND leave_types.is_active = ?
-            `, [GRANT_TYPE_ID_DEFAULT, LEAVE_STATUS.active]);
+            `, [GRANT_TYPE_ID.default, LEAVE_STATUS.active]);
 
             if(!get_all_leave_type_by_id_result.length){
                 response_data.status = false;
@@ -146,7 +143,7 @@ class LeaveTypeModel{
                 ON leave_types.leave_type_grant_type_id = leave_type_grant_types.id
                 WHERE leave_types.is_active = ?
                 AND leave_types.leave_type_grant_type_id IN (?, ?)
-            `, [LEAVE_STATUS.active, GRANT_TYPE_ID_REWARDED, GRANT_TYPE_ID_SPECIAL]);
+            `, [LEAVE_STATUS.active, GRANT_TYPE_ID.special, GRANT_TYPE_ID.rewarded]);
 
             if(!get_all_special_and_rewarded_result.length){
                 response_data.status = false;

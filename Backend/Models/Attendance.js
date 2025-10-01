@@ -1,7 +1,7 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
 import { ATTENDANCE_TYPE_ID,
-    LIMIT
-} from "../Constant/Constants.js";
+    NUMBER
+} from "../Constant/constants.js";
 
 class AttendanceModel{
 
@@ -12,11 +12,11 @@ class AttendanceModel{
     * created by: rogendher keith lachica
     * updated at: September 23 2025 1:21 pm  
     */
-    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID, connection = db }){
+    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in }){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [insert_attendance_result] = await connection.execute(`
+            const [insert_attendance_result] = await db.execute(`
                 INSERT INTO attendances (
                     employee_id, 
                     attendance_type_id, 
@@ -58,7 +58,7 @@ class AttendanceModel{
                 FROM attendances
                 WHERE employee_id = ? AND DATE(time_in) = CURRENT_DATE()
                 ORDER BY id DESC 
-                LIMIT ${LIMIT}
+                LIMIT ${NUMBER.one}
             `, [employee_id]);
 
             if(!get_latest_time_in_record_result.length){

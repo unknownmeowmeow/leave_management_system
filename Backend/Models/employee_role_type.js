@@ -1,4 +1,5 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
+import { NUMBER } from "../Constant/constants.js";
 
 class EmployeeRoleTypeModel{
     /**
@@ -9,7 +10,7 @@ class EmployeeRoleTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 19, 2025 1:04 PM  
      */
-    static async getRoleById(role_id){
+    static async getRoleTypeById(role_id){
         const response_data = { status: false, result: null, error: null };
 
         try{
@@ -19,14 +20,14 @@ class EmployeeRoleTypeModel{
                 WHERE id = ?
             `, [role_id]);
 
-            if(get_role_by_id_result.length === 0){
+            if(get_role_by_id_result.length === NUMBER.zero){
                 response_data.status = false;
                 response_data.result = null;
                 response_data.error = "role record not found in model";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_role_by_id_result[0];
+                response_data.result = get_role_by_id_result[NUMBER.zero];
             }
         } 
         catch(error){
@@ -56,7 +57,7 @@ class EmployeeRoleTypeModel{
                 WHERE employee_role_type_id = ?
             `, [role_id]);
 
-            if(get_role_by_id_employee_result.length === 0){
+            if(get_role_by_id_employee_result.length === NUMBER.zero){
                 response_data.status = false;
                 response_data.result = [];
                 response_data.error = "No employees found for the given role in model.";

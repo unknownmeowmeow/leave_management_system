@@ -1,6 +1,6 @@
 import express from "express";
-import LeaveTypeController from "../Controllers/LeaveType.js";
-import LeaveController from "../Controllers/LeaveFile.js";
+import LeaveTypeController from "../Controllers/leave_types.js";
+import LeaveController from "../Controllers/leave_files.js";
 import AuthMiddleware from "../Middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.get("/api/leave_types_admin", AuthMiddleware.requireLogin, LeaveTypeContr
 router.post("/api/leave/apply", AuthMiddleware.requireLogin, LeaveController.applyEmployeeLeave);
 router.get("/latest_credit", AuthMiddleware.requireLogin, LeaveController.getLatestCredit);
 router.post("/apply", AuthMiddleware.requireLogin, LeaveController.applyLeave);
-router.get("/employeesbyrole", LeaveController.getEmployeesByRole);
+router.get("/employeesbyrole", LeaveController.getAllEmployeeAndIntern);
 router.get("/api/leave/latest_credit", AuthMiddleware.requireLogin, LeaveController.getLatestCredit);
 
 export default router;

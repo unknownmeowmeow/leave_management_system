@@ -10,7 +10,7 @@
  * updated at: September 25 2025 3:45 pm
  */
 import cron from "node-cron";
-import CreditControllers from "../Controllers/Credit.js";
+import CreditControllers from "../Controllers/credits.js";
 
 cron.schedule("0 0 1 1 *", async () => {
     console.log("Yearly leave credit job started...");
