@@ -42,32 +42,33 @@ class TimeValidationHelper{
     }
 
     /**
-     * Calculates the normalized work hours for an employee between `time_in` and `time_out`.
-     *
-     * - Converts the worked time into a fraction of a day (24 hours).
-     * - Compares the actual fraction against the "default" fraction for 8 hours (1/3 of a day).
-     * - Rounds the result to 3 decimal places.
-     * - Handles weekends with special rules.
-     *
-     * Rules:
-     *  - If invalid dates or negative time range → returns 0.
-     *  - If working on a weekday:
-     *      > Example: 8 hrs → 0.333, 12 hrs → 0.5, etc.
-     *  - If working on a weekend:
-     *      > If `calculated <= 0` → returns absolute value or defaults to `0.33`.
-     *
-     * Formula:
-     *   worked_hours = (end_time - start_time) / (1000 * 60 * 60)
-     *   normalized   = (worked_hours / 24) - (8 / 24)
-     *   final        = round(normalized, 3)
-     *
-     * @param {string|Date} time_in - Start time (ISO string or Date object).
-     * @param {string|Date} time_out - End time (ISO string or Date object).
-     * @returns {number} Normalized work hours (fraction of a day).
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 04:05 PM
-     */
+    * Calculates the normalized work hours for an employee between `time_in` and `time_out`.
+    *
+    * Workflow:
+    * 1. Converts the worked time into a fraction of a day (24 hours).
+    * 2. Compares the actual fraction against the "default" fraction for 8 hours (1/3 of a day).
+    * 3. Rounds the result to 3 decimal places.
+    * 4. Handles weekends with special rules.
+    *
+    * Rules:
+    *  - If invalid dates or negative time range → returns 0.
+    *  - If working on a weekday:
+    *      > Example: 8 hrs → 0.333, 12 hrs → 0.5, etc.
+    *  - If working on a weekend:
+    *      > If `calculated <= 0` → returns absolute value or defaults to `0.33`.
+    *
+    * Formula:
+    *   worked_hours = (end_time - start_time) / (1000 * 60 * 60)
+    *   normalized   = (worked_hours / 24) - (8 / 24)
+    *   final        = round(normalized, 3)
+    *
+    * @param {string|Date} time_in - Start time (ISO string or Date object).
+    * @param {string|Date} time_out - End time (ISO string or Date object).
+    * @returns {number} Normalized work hours (fraction of a day).
+    *
+    * created by: Rogendher Keith Lachica
+    * updated at: October 1, 2025 04:05 PM
+    */
     static calculateEmployeeWorkHour(time_in, time_out) {
         const start_time = new Date(time_in);
         const end_time = new Date(time_out);
@@ -95,19 +96,17 @@ class TimeValidationHelper{
     /**
      * Computes leave credit adjustments based on employee work hours.
      *
-     * Rules:
-     *  - Positive `work_hour` → Earn credit.
+     * Workflow:
+     * 1. If work hour is positive, employee earns credit:
      *      > earned_credit = work_hour * 1.5
-     *  - Negative `work_hour` → Deduct credit.
-     *      > deducted_credit = |work_hour|
-     *  - Zero → No change.
+     * 2. If work hour is negative, employee's credit is deducted:
+     *      > deducted_credit = absolute value of work_hour
+     * 3. Zero work hour means no change.
      *
-     * Returns the new state:
-     *   {
-     *     earned_credit: number,
-     *     deducted_credit: number,
-     *     latest_credit: number
-     *   }
+     * Returns an object containing:
+     *  - earned_credit: number
+     *  - deducted_credit: number
+     *  - latest_credit: number (updated leave credit balance)
      *
      * Example:
      *   computeLeaveCreditFromWorkHour(2, 10)

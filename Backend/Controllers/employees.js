@@ -52,8 +52,8 @@ class EmployeeControllers{
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 2, 2025 03:30 PM
      */
     static async employeeRole(req, res){
 
@@ -111,8 +111,8 @@ class EmployeeControllers{
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 2, 2025 03:30 PM
      */
     static async employeeGender(req, res){
 
@@ -199,8 +199,8 @@ class EmployeeControllers{
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response indicating the success or failure of the registration process.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 2, 2025 03:30 PM
      */
     static async employeeRegistration(req, res){
         const connection = await database.getConnection();
@@ -344,8 +344,8 @@ class EmployeeControllers{
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response indicating the success or failure of login.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 2, 2025 03:30 PM
      */
 
     static async employeeLogin(req, res){

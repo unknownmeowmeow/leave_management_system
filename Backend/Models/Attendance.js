@@ -26,15 +26,14 @@ class AttendanceModel{
      * @param {Object} param0 - Object containing:
      *    @param {number} employee_id - The ID of the employee.
      *    @param {number} [attendance_type_id=ATTENDANCE_TYPE_ID.time_in] - The attendance type ID, defaulting to "time in".
-     * @returns {Object} response_data - Object containing:
+     * @returns {Promise<Object>} response_data - Object containing:
      *    - status: Boolean indicating success or failure.
      *    - result: Inserted record info (ID) if successful.
      *    - error: Error message if failed.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
      */
-
     static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in }){
         const response_data =  { status: false, result: null, error: null };
 
@@ -64,30 +63,30 @@ class AttendanceModel{
     }
 
     /**
-    * Retrieves the latest "time in" attendance record for an employee on the current date.
-    *
-    * Workflow:
-    * 1. **Query Latest Time In**
-    *    - Selects attendance records where `employee_id` matches and `time_in` is today.
-    *    - Orders by descending ID to get the most recent record.
-    *    - Limits the result to 1 record.
-    *
-    * 2. **Return Result**
-    *    - If a record is found, returns status `true` with the record data.
-    *    - If no record found, returns status `false` with an error message.
-    *
-    * 3. **Error Handling**
-    *    - Catches and captures any database errors.
-    *
-    * @param {number} employee_id - The ID of the employee.
-    * @returns {Object} response_data - Object containing:
-    *    - status: Boolean indicating success or failure.
-    *    - result: Array with the latest time in record if successful.
-    *    - error: Error message if failed or no record found.
-    *
-    * created by: [Your Name]
-    * updated at: [Update Date & Time]
-    */
+     * Retrieves the latest "time in" attendance record for an employee on the current date.
+     *
+     * Workflow:
+     * 1. **Query Latest Time In**
+     *    - Selects attendance records where `employee_id` matches and `time_in` is today.
+     *    - Orders by descending ID to get the most recent record.
+     *    - Limits the result to 1 record.
+     *
+     * 2. **Return Result**
+     *    - If a record is found, returns status `true` with the record data.
+     *    - If no record found, returns status `false` with an error message.
+     *
+     * 3. **Error Handling**
+     *    - Catches and captures any database errors.
+     *
+     * @param {number} employee_id - The ID of the employee.
+     * @returns {Promise<Object>} response_data - Object containing:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Array with the latest time in record if successful.
+     *    - error: Error message if failed or no record found.
+     *
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+     */
     static async checkEmployeeLatestTimeIn(employee_id){
         const response_data =  { status: false, result: null, error: null };
 
@@ -136,8 +135,8 @@ class AttendanceModel{
      *    - result: Array with the latest time out record if successful.
      *    - error: Error message if failed or no record found.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
      */
 
     static async checkLatestEmployeeTimeOut(employee_id){
@@ -192,8 +191,8 @@ class AttendanceModel{
      *    - result: Update operation result if successful.
      *    - error: Error message if update failed or no row affected.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
      */
 
     static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection = db }){
@@ -248,8 +247,8 @@ class AttendanceModel{
      *    - result: Array of attendance records with employee details if successful.
      *    - error: Error message if no records found or on failure.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
      */
 
     static async getAllEmployeeTimeInAndTimeOut(){
@@ -311,8 +310,8 @@ class AttendanceModel{
      *    - result: Array of attendance records if successful.
      *    - error: Error message if no records found or on failure.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
      */
     static async getAllTimeInAndTimeOutByEmployeeId(employee_id){
         const response_data =  { status: false, result: null, error: null };

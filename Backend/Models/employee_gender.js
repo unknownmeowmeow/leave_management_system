@@ -22,8 +22,8 @@ class EmployeeGenderModel{
      *    - result: Array with the gender record if successful.
      *    - error: Error message if not found or on failure.
      *
-     * created by: [Your Name]
-     * updated at: [Update Date & Time]
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
      */ 
     static async getGenderById(id){
         const response_data =  { status: false, result: null, error: null };
