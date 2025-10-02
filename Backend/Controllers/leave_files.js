@@ -242,7 +242,7 @@ class LeaveController{
             const employee_credit_data = await LeaveTransactionModel.getTotalCredit(employee_id);
 
             if(!employee_credit_data.status){
-                throw new Error(employee_credit_data.error)
+                throw new Error("No employee Credit found");
             }
     
             const available_credit = Number(employee_credit_data.result.total_latest_credit);
@@ -321,12 +321,18 @@ class LeaveController{
 
         try{
             const get_all_employee_intern_record = await EmployeeModel.getAllEmployeeAndIntern();
-            return res.json(get_all_employee_intern_record);
+    
+            if(!get_all_employee_intern_record.status || !get_all_employee_intern_record.result){
+                throw new Error("No employee or intern records found");
+            }
+    
+            return res.json({ success: true, result: get_all_employee_intern_record.result });
         } 
         catch(error){
-            return res.json({ status: false, result: null, error: error.message });
+            return res.json({ success: false, result: null, error: error.message });
         }
     }
+    
 
     /**
      * Retrieves the latest leave credit for the currently logged-in employee.

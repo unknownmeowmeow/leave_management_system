@@ -26,8 +26,20 @@ class leaveTransactionModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 10:40 am
      */
-    static async insertTransaction({ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = NUMBER.zero,
-        is_active = NUMBER.one, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null}){
+    static async insertTransaction({ 
+            employee_id, 
+            leave_transaction_status_id, 
+            leave_type_id, 
+            reason, 
+            total_leave, 
+            is_weekend = NUMBER.zero,
+            is_active = NUMBER.one, 
+            start_date, 
+            end_date, 
+            filed_date = new Date(), 
+            year, 
+            rewarded_by_id = null, 
+            approved_by_id = null}){
         const response_data = { status: false, result: null, error: null };
     
         try{

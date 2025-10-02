@@ -220,8 +220,7 @@ class AttendanceControllers{
             const update_attendance = await AttendanceModel.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
     
             if(!update_attendance.status){
-                await connection.rollback();
-                return res.json({ success: false, message: update_attendance.error });
+                throw new Error("Update Attendance Failed");
             }
             const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
             const current_credit = latest_credit_result.latest_credit || NUMBER.zero;
@@ -373,7 +372,7 @@ class AttendanceControllers{
             const attendance_record = await AttendanceModel.getAllEmployeeTimeInAndTimeOut();
 
             if(!attendance_record.status){
-                throw new Error(attendance_record.error || "Attendance No Record Found");
+                throw new Error( "Attendance No Record Found");
             }
 
             return res.json({ success: true, result: attendance_record.result });

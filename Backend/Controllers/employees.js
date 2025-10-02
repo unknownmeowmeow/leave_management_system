@@ -79,16 +79,15 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 24 2025 1:59 pm    
      */
-    static async employeeRegistration(req, res) {
+    static async employeeRegistration(req, res){
         const connection = await database.getConnection();
 
-        try {
+        try{
             await connection.beginTransaction();
 
             const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
 
-            if (validation_error.length) {
-                await connection.rollback();
+            if(validation_error.length){
                 return res.json({ success: false, errors: validation_error });
             }
 
@@ -273,7 +272,7 @@ class EmployeeControllers{
                     throw new Error("Server Error");
                 }
                 else{
-                    throw new Error("Success Logout");
+                    return res.json({ success: true, message: "Successfully Logout" });
                 }
             });
         }

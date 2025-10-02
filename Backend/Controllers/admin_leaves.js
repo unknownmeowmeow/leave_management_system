@@ -40,7 +40,7 @@ class AdminLeaveController{
             const leave_data = await LeaveTypeModel.getAllLeaves();
 
             if(!leave_data.status){
-                return res.json({ success: false, message: leave_data.error });
+               throw new Error("No leave transaction found");
             }
 
             return res.json({ success: true, data: leave_data.result });
@@ -97,16 +97,16 @@ class AdminLeaveController{
         const employee_id = user.employee_id;
 
         try{
-            const leave_transaction_data = await LeaveTypeModel.getAllLeave(employee_id);
+            const leave_transaction_record = await LeaveTypeModel.getAllLeave(employee_id);
 
-            if(!leave_transaction_data.status){
-                return res.json({ success: false, message: leave_transaction_data.error });
+            if(!leave_transaction_record.status){
+                throw new Error("No leave Transaction Found");
             }
 
-            return res.json({ success: true, data: leave_transaction_data.result });
+            return res.json({ success: true, data: leave_transaction_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: "failed by employee in controllers."});
+            return res.json({ success: false, message: error.message || "Server error attendance in controller" });
         }
     }
     
@@ -176,7 +176,6 @@ class AdminLeaveController{
             const employee_leave_transaction_record = await LeaveTransactionModel.getLeaveTransactionById(leave_id);
           
             if(!employee_leave_transaction_record.status){
-                await connection.rollback();
                 throw new Error("No Transaction Found");
             }
 
@@ -187,7 +186,7 @@ class AdminLeaveController{
                 const employee_total_credit_record = await LeaveTransactionModel.getTotalCredit(employee_id);
 
                 if(!employee_total_credit_record.status){
-                   throw new Error("No Employee Credit Found", employee_total_credit_record);
+                   throw new Error("No Employee Credit Found");
                 }
 
                 const available_credit = Number(employee_total_credit_record.result.total_latest_credit);

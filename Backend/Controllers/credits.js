@@ -108,7 +108,7 @@ class Credit{
             const insert_result = await LeaveCreditModel.insertYearlyCredit(employee_data);
     
             if(!insert_result.status){
-                throw new Error(insert_result.error || "Failed to insert yearly leave credits");
+                throw new Error("Failed to insert yearly leave credits");
             }
     
             return res.json({ success: true, result: "Leave credits successfully added for all employees in controls." });
@@ -168,6 +168,7 @@ class Credit{
      * updated at: September 26, 2025 12:15 PM
      */
     static async getAllEmployeeCredits(req, res){
+
         try{
             const user = req.session.user;
     
@@ -178,7 +179,7 @@ class Credit{
             const leave_credit_record = await LeaveCreditModel.getAllEmployeeCredits();
     
             if(leave_credit_record.error){
-                throw new Error(leave_credit_record.error);
+                throw new Error("No leave Credit Found");
             }
     
             return res.json({ success: true, result: leave_credit_record.result });

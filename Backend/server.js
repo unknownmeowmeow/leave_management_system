@@ -27,4 +27,4 @@ app.use("/api", leaveFileRoutes);
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 
-app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+app.listen(5000);

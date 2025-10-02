@@ -18,18 +18,33 @@ export default function LeaveFile() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Fetch leave types
                 const leaveRes = await axios.get("http://localhost:5000/api/leave_types_admin", {
                     withCredentials: true,
                 });
-                if (leaveRes.data.success) setLeaveTypes(leaveRes.data.data);
+
+                if (leaveRes.data.success) {
+                    setLeaveTypes(leaveRes.data.data);
+                } 
+                else {
+                    setServerMessage("Failed to load leave types.");
+                }
 
                 const empRes = await axios.get("http://localhost:5000/api/employeesbyrole", {
                     withCredentials: true,
                 });
-                if (empRes.data.status) setEmployees(empRes.data.result);
-            } catch (error) {
+
+                if (empRes.data.success) {
+                    setEmployees(empRes.data.result);
+                } else {
+                    setServerMessage("Failed to load employee data.");
+                }
+            } 
+            catch (error) {
+                console.error("Fetch error:", error);
                 setServerMessage("Failed to load data from server.");
-            } finally {
+            } 
+            finally {
                 setLoading(false);
             }
         };

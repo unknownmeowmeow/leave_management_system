@@ -23,8 +23,6 @@ export default function Register() {
         setError("");
         setSuccess("");
 
-        console.log({ first_name, last_name, email, password, confirm_password, gender, role, });
-
         try {
             const response = await axios.post("http://localhost:5000/api/auth/register", {
                 first_name,
