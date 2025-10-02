@@ -1,4 +1,5 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
+import { NUMBER } from "../Constant/constants.js";
 
 
 class LeaveTypeRuleModel{
@@ -21,15 +22,16 @@ class LeaveTypeRuleModel{
                 WHERE id = ?
             `, [rule_id]);
 
-            if(get_rule_id_result.length === 0){
+            if(get_rule_id_result.length){
                 response_data.error = "Rule not found.";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_rule_id_result[0];
+                response_data.result = get_rule_id_result[NUMBER.zero];
             }
         } 
         catch(error){
+            response_data.status = false;
             response_data.error = error.message;
         }
 

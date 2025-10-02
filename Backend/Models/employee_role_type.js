@@ -20,9 +20,7 @@ class EmployeeRoleTypeModel{
                 WHERE id = ?
             `, [role_id]);
 
-            if(get_role_by_id_result.length === NUMBER.zero){
-                response_data.status = false;
-                response_data.result = null;
+            if(get_role_by_id_result.length){
                 response_data.error = "role record not found in model";
             } 
             else{
@@ -57,9 +55,7 @@ class EmployeeRoleTypeModel{
                 WHERE employee_role_type_id = ?
             `, [role_id]);
 
-            if(get_role_by_id_employee_result.length === NUMBER.zero){
-                response_data.status = false;
-                response_data.result = [];
+            if(get_role_by_id_employee_result.length){
                 response_data.error = "No employees found for the given role in model.";
             } 
             else{

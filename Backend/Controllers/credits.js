@@ -73,22 +73,21 @@ class Credit{
      * updated at: September 26, 2025 12:05 PM
      */
     static async runYearlyCreditInsertion(req, res){
-
         try{
-            const leave_type_carry_over_data = await LeaveType.getAllCarryOverLeaveTypes();
-            
-            if(!leave_type_carry_over_data.status || leave_type_carry_over_data.result.length === NUMBER.zero){
-                return res.json({ success: false, error: leave_type_carry_over_data.error || "No carry-over leave types found" });
-            }
-            
-            const employee_type_response = await EmployeeModel.getRoleByIdEmployee(ROLE_TYPE_ID.employee);
-            
-            if(!employee_type_response.status || employee_type_response.result.length === NUMBER.zero){
-                return res.json({ success: false, error: employee_type_response.error || "No employees found" });
+            const leave_type_carry_over_record = await LeaveType.getAllCarryOverLeaveTypes();
+    
+            if(!leave_type_carry_over_record.status || leave_type_carry_over_record.result.length === NUMBER.zero){
+                throw new Error("No Leave Type for Carry Over");
             }
     
-            const leave_types = leave_type_carry_over_data.result;
-            const employees = employee_type_response.result;
+            const employee_record = await EmployeeModel.getRoleByIdEmployee(ROLE_TYPE_ID.employee);
+    
+            if(!employee_record.status || employee_record.result.length === NUMBER.zero){
+                throw new Error("No Employee Record Found");
+            }
+    
+            const leave_types = leave_type_carry_over_record.result;
+            const employees = employee_record.result;
             const total_base_value = CreditCalculationHelper.getTotalBaseValue(leave_types);
             const employee_data = employees.map(employee => [
                 employee.id, 
@@ -106,13 +105,19 @@ class Credit{
                 new Date()
             ]);
     
-            await LeaveCreditModel.insertYearlyCredit(employee_data);
+            const insert_result = await LeaveCreditModel.insertYearlyCredit(employee_data);
+    
+            if(!insert_result.status){
+                throw new Error(insert_result.error || "Failed to insert yearly leave credits");
+            }
+    
             return res.json({ success: true, result: "Leave credits successfully added for all employees in controls." });
         } 
         catch(error){
-            return res.json({ success: false, error: error.message });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         } 
     }
+    
     
     
     /**
@@ -163,25 +168,25 @@ class Credit{
      * updated at: September 26, 2025 12:15 PM
      */
     static async getAllEmployeeCredits(req, res){
-        const user = req.session.user;
-
-        if(!user || !user.employee_id){
-            return res.json({ success: false, message: "User session not found." });
-        }
-
         try{
-            const response_data = await LeaveCreditModel.getAllEmployeeCredits();
-
-            if(response_data.error){
-                return res.json({ success: false, error: response_data.error });
+            const user = req.session.user;
+    
+            if(!user || !user.employee_id){
+                throw new Error("No User Found");
             }
-
-            res.json({ success: true, result: response_data.result });
+    
+            const leave_credit_record = await LeaveCreditModel.getAllEmployeeCredits();
+    
+            if(leave_credit_record.error){
+                throw new Error(leave_credit_record.error);
+            }
+    
+            return res.json({ success: true, result: leave_credit_record.result });
         }
         catch(error){
-            res.json({ success: false, error: "Failed to fetch employee leave credits." });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         }
-    }
+    }    
 
 }
 

@@ -3,7 +3,7 @@ import {
       NUMBER
 } from "../Constant/constants.js"
 
-class leaveTransactionModel {
+class leaveTransactionModel{
 
     /**
      * Insert a new leave transaction record.
@@ -59,7 +59,8 @@ class leaveTransactionModel {
             }
         } 
         catch(error){
-            response_data.error = { success: false, message: "Leave ID and status required in model." };
+            response_data.status = false;
+            response_data.error = error.message;
         }
     
         return response_data;
@@ -83,13 +84,12 @@ class leaveTransactionModel {
                 WHERE id = ?
             `, [leave_id]);
 
-            if (!get_all_leave_transaction_result.length) {
-                response_data.status = false;
+            if(!get_all_leave_transaction_result.length){
                 response_data.error = "Leave transaction not found.";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_leave_transaction_result[0];
+                response_data.result = get_all_leave_transaction_result[NUMBER.zero];
             }
         }
         catch(error){
@@ -109,6 +109,7 @@ class leaveTransactionModel {
      */
     static async getTotalCredit(employee_id){
         const response_data = { status: false, result: null, error: null };
+        
         try{
             const [get_total_credit_result] = await db.execute(`
                 SELECT
@@ -122,19 +123,19 @@ class leaveTransactionModel {
                     SUM(leave_credits.latest_credit) AS total_latest_credit
                 FROM leave_credits
                 LEFT JOIN employees 
-                ON leave_credits.employee_id = employees.id
+                    ON leave_credits.employee_id = employees.id
                 WHERE leave_credits.employee_id = ?
                 GROUP BY leave_credits.employee_id
                 ORDER BY leave_credits.employee_id DESC
             `, [employee_id]);
             
-            if(get_total_credit_result.length > NUMBER.zero){
-                response_data.status = true;
-                response_data.result = get_total_credit_result[NUMBER.zero];
+            if(!get_total_credit_result.length){
+                response_data.error = "No leave credit found for employee in leave transaction models.";
             } 
             else{
-                response_data.error = "No leave credit found for employee in leave transaction models.";
-            }
+                response_data.status = true;
+                response_data.result = get_total_credit_result[NUMBER.zero];
+            }        
         } 
         catch(error){
             response_data.status = false;
@@ -142,7 +143,6 @@ class leaveTransactionModel {
         }
         return response_data;
     }
-    
 
     /**
      * Retrieves the most recent leave credit record of an employee.
@@ -174,12 +174,11 @@ class leaveTransactionModel {
             `, [employee_id]);
     
             if(!get_latest_credit_record_result.length){
-                response_data.status = false;
                 response_data.error = "No latest credit record found in model.";
             } 
-            else {
+            else{
                 response_data.status = true;
-                response_data.result = get_latest_credit_record_result[0];
+                response_data.result = get_latest_credit_record_result[NUMBER.zero];
             }
         } 
         catch(error){
@@ -221,7 +220,7 @@ class leaveTransactionModel {
                 WHERE id = ?
             `, [total_leave, total_leave, total_leave, credit_id]);
     
-            if(deducted_credit_result.affectedRows === NUMBER.zero){
+            if(deducted_credit_result.affectedRows){
                 response_data.error = "Leave credit record not found or deduction failed in model.";
             } 
             else{
@@ -231,6 +230,7 @@ class leaveTransactionModel {
     
         } 
         catch(error){
+            response_data.status = false;
             response_data.error = error.message;
         }
     
@@ -274,6 +274,7 @@ class leaveTransactionModel {
             }
         } 
         catch(error){
+            response_data.status = false;
             response_data.error = error.message;
         }
     

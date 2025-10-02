@@ -162,71 +162,61 @@ class AdminLeaveController{
         const user = req.session.user;
     
         if(!user){
-            return res.json({ success: false, message: "User session not found in controllers." });
+            throw new Error("No User Found");
         }
     
         if(!leave_id || !status_id){
-            return res.json({ success: false, message: "Leave ID and status required in controllers." });
+            throw new Error("No leave id found or status");
         }
 
         const connection = await database.getConnection();
     
         try{
             await connection.beginTransaction();
-            const employee_leave_transaction_data = await LeaveTransactionModel.getLeaveTransactionById(leave_id);
+            const employee_leave_transaction_record = await LeaveTransactionModel.getLeaveTransactionById(leave_id);
           
-            if(!employee_leave_transaction_data.status){
+            if(!employee_leave_transaction_record.status){
                 await connection.rollback();
-                return res.json({ success: false, message: employee_leave_transaction_data.error });
+                throw new Error("No Transaction Found");
             }
 
-            const employee_id = employee_leave_transaction_data.result.employee_id;
-            const total_leave = Number(employee_leave_transaction_data.result.total_leave);
+            const employee_id = employee_leave_transaction_record.result.employee_id;
+            const total_leave = Number(employee_leave_transaction_record.result.total_leave);
 
             if(Number(status_id) === NUMBER.two){
-                const employee_total_credit_data = await LeaveTransactionModel.getTotalCredit(employee_id);
+                const employee_total_credit_record = await LeaveTransactionModel.getTotalCredit(employee_id);
         
-                if(!employee_total_credit_data.status){
-                    await connection.rollback();
-                    return res.json({ success: false, message: employee_total_credit_data.error });
+                if(!employee_total_credit_record.status){
+                   throw new Error("No Employee Credit Found");
                 }
 
-                const available_credit = Number(employee_total_credit_data.result.total_latest_credit);
+                const available_credit = Number(employee_total_credit_record.result.total_latest_credit);
           
                 if(available_credit <= NUMBER.zero || available_credit < total_leave){
-                    await connection.rollback();
-                    return res.json({ success: false, message: `No credit available: ${available_credit} days.` });
+                    throw new Error(`No credit available: ${available_credit} days.`)
                 }
 
-                const latest_credit_data = await LeaveTransactionModel.getLatestCreditRecord(employee_id);
+                const latest_employee_credit_record = await LeaveTransactionModel.getLatestCreditRecord(employee_id);
                
-                if(!latest_credit_data.status){
-              
-                    await connection.rollback();
-                    return res.json({ success: false, message: latest_credit_data.error });
+                if(!latest_employee_credit_record.status){
+                    throw new Error("No Latest Credit Record Found");
                 }
 
-                const deduction_credit_data = await LeaveTransactionModel.deductCredit(latest_credit_data.result.id, total_leave, connection);
+                const deduction_credit_record = await LeaveTransactionModel.deductCredit(latest_employee_credit_record.result.id, total_leave, connection);
           
-                if(!deduction_credit_data.status){
-                    await connection.rollback();
-                    return res.json({ success: false, message: deduction_credit_data.error });
+                if(!deduction_credit_record.status){
+                    throw new Error("Failed to Deduct Credit Record");
                 }
             }
 
-            const update_status_data = await LeaveTransactionModel.updateStatus(leave_id, status_id, user.employee_id, connection);
-
-            if(!update_status_data.status){
-                await connection.rollback();
-                return res.json({ success: false, message: update_status_data.error });
-            }
+            const update_status_record = await LeaveTransactionModel.updateStatus(leave_id, status_id, user.employee_id, connection);
     
             await connection.commit();
-            return res.json({ success: true, data: update_status_data.result });
+            return res.json({ success: true, data: update_status_record.result });
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ success: false, message: error.message });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         } 
         finally{
             connection.release();
@@ -269,20 +259,20 @@ class AdminLeaveController{
         const user = req.session.user;
 
         if(!user){
-            return res.json({ success: false, message: "User session not found." });
+            throw new Error("No User Found");
         }
 
         try{
             const employee_leave_data = await LeaveTypeModel.getAllByEmployeeRecordLeaves(user.employee_id);
 
             if(!employee_leave_data.status){
-                return res.json({ success: false, message: employee_leave_data.error });
+                throw new Error("No Leave Transaction Found in controller");
             }
 
             return res.json({ success: true, data: employee_leave_data.result });
         } 
         catch(error){
-            return res.json({ success: false, message: "Failed to fetch leave records." });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         }
     }
 }

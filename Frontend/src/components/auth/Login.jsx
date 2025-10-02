@@ -37,22 +37,12 @@ export default function Login() {
                     navigate("/dashboard");
                 }
                 else {
-                    if (response.data.errors) {
-
-                        setError(response.data.errors);
-                    }
-                    else if (response.data.message) {
-                        setError(response.data.message);
-                    }
-                    else {
-                        setError("An unknown error occurred.");
-                    }
+                    setError("Unknown role");
                 }
             }
             else {
-                if (response.data.errors) {
-
-                    setError(response.data.errors);
+                if (response.data.errors && response.data.errors.length) {
+                    setError(response.data.errors.join(", "));
                 }
                 else if (response.data.message) {
                     setError(response.data.message);
@@ -67,7 +57,7 @@ export default function Login() {
                 setError(error.response.data.message);
             }
             else {
-                setError("Server Error in Login Frontend ");
+                setError("Server Error in Login Frontend");
             }
         }
     };
@@ -83,11 +73,10 @@ export default function Login() {
                     <div className="mb-3">
                         <label className="form-label">Email</label>
                         <input
-                            type="email"
+                            type="text"
                             className="form-control"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-
                         />
                     </div>
 
@@ -99,7 +88,6 @@ export default function Login() {
                                 className="form-control"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-
                             />
                             <button
                                 type="button"

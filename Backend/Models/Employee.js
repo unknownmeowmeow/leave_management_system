@@ -1,5 +1,5 @@
 import db from "../Configs/database.js";
-import { ROLE_TYPE_ID } from "../Constant/constants.js";
+import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
 class EmployeeModel{
 
     /**
@@ -26,18 +26,16 @@ class EmployeeModel{
                 WHERE email = ?
             `, [email]);
 
-            if(get_all_email_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "email not found in model";
+            if(get_all_email_result.length){
+                response_data.status = true;
+                response_data.result = get_all_email_result[NUMBER.zero];
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_email_result[0];
+                response_data.error = "email not found in model";
             }
         }
         catch(error){
-            response_data.error = error.message;
+            response_data.error = error.message || "error in get email in model";
         }
 
         return response_data;
@@ -82,13 +80,11 @@ class EmployeeModel{
             );
 
             if(!insert_employee_data_result.insertId){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error =  "insert employee data error in model";
-            }
-            else{
                 response_data.status = true;
                 response_data.insert_employee_result = { id: insert_employee_data_result.insertId };
+            }
+            else{
+                response_data.error =  "insert employee data error in model";
             }
         }
         catch(error){
@@ -118,20 +114,18 @@ class EmployeeModel{
                 SELECT id, first_name, last_name, email, employee_role_type_id
                 FROM employees
                 WHERE employee_role_type_id IN (?, ?)
-            `, [2, 3]);
+            `, [ROLE_TYPE_ID.intern, ROLE_TYPE_ID.employee]);
 
-            if(get_all_employee_role_id_result.length === 0){
-                response_data.status = true;
-                response_data.result = [];
-            }
-            else{
+            if(get_all_employee_role_id_result.length){
                 response_data.status = true;
                 response_data.result = get_all_employee_role_id_result;
             }
+            else{
+                response_data.error = "no employee data found";
+              
+            }
         }
         catch(error){
-            response_data.status = false;
-            response_data.result = null;
             response_data.error =  error.message;
         }
 
@@ -162,19 +156,16 @@ class EmployeeModel{
                 WHERE  id = ? 
             `, [employee_id]);
 
-            if(get_employee_by_id_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error =  `employee id not found in employee model.`;
+            if(get_employee_by_id_result.length){
+                response_data.status = true;
+                response_data.result = get_employee_by_id_result[NUMBER.zero];
             }
             else{
-                response_data.status = true;
-                response_data.result = get_employee_by_id_result[0];
+                response_data.error =  "employee id not found in employee model.";
+                
             }
         }
         catch(error){
-            response_data.status = false;
-            response_data.result = null;
             response_data.error = error.message;
         }
 

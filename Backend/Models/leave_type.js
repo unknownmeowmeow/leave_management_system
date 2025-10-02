@@ -1,6 +1,7 @@
 import db from "../Configs/database.js";
 import {
-    LEAVE_STATUS, IS_CARRIED_OVER, GRANT_TYPE_ID, LEAVE_TYPE_ID
+    LEAVE_STATUS, IS_CARRIED_OVER, GRANT_TYPE_ID, LEAVE_TYPE_ID,
+    NUMBER
 } from "../Constant/constants.js";
 
 class LeaveTypeModel{
@@ -27,14 +28,12 @@ class LeaveTypeModel{
                     LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave]
             );
 
-            if(get_all_carry_over_leave_type_result.length === 0){
-                response_data.status = false;
-                response_data.result = [];
+            if(get_all_carry_over_leave_type_result.length){
                 response_data.error = "No carry over leave type found";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_carry_over_leave_type_result;
+                response_data.result = get_all_carry_over_leave_type_result[NUMBER.zero];
 
             }
         }
@@ -63,16 +62,14 @@ class LeaveTypeModel{
             const [get_all_yearly_leave_type_result] = await db.execute(`
                 SELECT * FROM leave_types 
                 WHERE id IN (?, ?, ?)
-            `, [1, 2, 6]);
+            `, [LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave, LEAVE_TYPE_ID.vacation_leave]);
 
             if(!get_all_yearly_leave_type_result.length){
-                response_data.status = false;
-                response_data.result = [];
                 response_data.error = "No carry over leave type found";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_yearly_leave_type_result;
+                response_data.result = get_all_yearly_leave_type_result[NUMBER.zero];
             }
         }
         catch(error){
@@ -106,12 +103,11 @@ class LeaveTypeModel{
             `, [GRANT_TYPE_ID.default, LEAVE_STATUS.active]);
 
             if(!get_all_leave_type_by_id_result.length){
-                response_data.status = false;
                 response_data.error = "No active default leave types found.";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_leave_type_by_id_result;
+                response_data.result = get_all_leave_type_by_id_result[NUMBER.zero];
             }
         }
         catch(error){
@@ -146,12 +142,11 @@ class LeaveTypeModel{
             `, [LEAVE_STATUS.active, GRANT_TYPE_ID.special, GRANT_TYPE_ID.rewarded]);
 
             if(!get_all_special_and_rewarded_result.length){
-                response_data.status = false;
                 response_data.error = "No active special and rewarded leave types found.";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_special_and_rewarded_result;
+                response_data.result = get_all_special_and_rewarded_result[NUMBER.zero];
             }
         }
         catch(error){
@@ -176,20 +171,23 @@ class LeaveTypeModel{
         try {
             const [get_leave_type_result] = await db.execute(`
                 SELECT 
-                    id, name, is_carried_over, notice_day, 
-                    leave_type_grant_type_id, leave_type_rule_id, base_value
+                    id, 
+                    name, 
+                    is_carried_over, 
+                    notice_day, 
+                    leave_type_grant_type_id, 
+                    leave_type_rule_id, 
+                    base_value
                 FROM leave_types
                 WHERE id = ? AND is_active = ?
             `, [leave_type_id, LEAVE_STATUS.active]);
 
-            if(get_leave_type_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
+            if(get_leave_type_result.length){
                 response_data.error = "error in get all leave type by id";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_leave_type_result[0];
+                response_data.result = get_leave_type_result[NUMBER.zero];
             }
         } 
         catch(error){
@@ -247,16 +245,14 @@ class LeaveTypeModel{
             `);
     
             if(!get_all_employee_leave_result.length){
-                response_data.status = false;
-                response_data.result = [];
                 response_data.error = "No leave transactions found.";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_all_employee_leave_result;
+                response_data.result = get_all_employee_leave_result[NUMBER.zero];
             }
         } 
-        catch (error) {
+        catch(error){
             response_data.status = false;
             response_data.error = error.message;
         }
@@ -314,17 +310,15 @@ class LeaveTypeModel{
                 ORDER BY leave_transactions.id DESC;
             `, [employee_id]);
     
-            if (!get_all_employee_leave_result.length) {
-                response_data.status = false;
-                response_data.result = [];
+            if(!get_all_employee_leave_result.length){
                 response_data.error = "No leave transactions found.";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_all_employee_leave_result;
+                response_data.result = get_all_employee_leave_result[NUMBER.zero];
             }
         } 
-        catch (error) {
+        catch(error){
             response_data.status = false;
             response_data.error = error.message;
         }
@@ -352,12 +346,12 @@ class LeaveTypeModel{
                 WHERE id = ?
             `, [status_id, leave_id]);
     
-            if(update_leave_status_result.affectedRows === 0){
-                response_data.status = false;
+            if(update_leave_status_result.affectedRows){
                 response_data.error = "Leave transaction not found or status unchanged.";
             } 
             else{
                 response_data.status = true;
+                response_data.result = { leave_id, status_id };
             }
         } 
         catch(error){
@@ -391,22 +385,24 @@ class LeaveTypeModel{
                     leave_transactions.reason,
                     leave_transaction_statuses.name AS status
                 FROM leave_transactions
-                JOIN employees ON employees.id = leave_transactions.employee_id
-                JOIN leave_types ON leave_types.id = leave_transactions.leave_type_id
-                JOIN leave_type_grant_types ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
-                LEFT JOIN leave_transaction_statuses ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                JOIN employees 
+                    ON employees.id = leave_transactions.employee_id
+                JOIN leave_types 
+                    ON leave_types.id = leave_transactions.leave_type_id
+                JOIN leave_type_grant_types 
+                    ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
+                LEFT JOIN leave_transaction_statuses 
+                    ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
                 WHERE leave_transactions.employee_id = ? AND leave_transaction_status_id = ?
                 ORDER BY leave_transactions.id DESC
             `, [employee_id, status]);
     
             if(!get_all_employee_record_leave_result.length){
-                response_data.status = false;
-                response_data.result = [];
                 response_data.error = "No leave transactions found.";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_all_employee_record_leave_result;
+                response_data.result = get_all_employee_record_leave_result[NUMBER.zero];
             }
         } 
         catch(error){

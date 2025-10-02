@@ -1,4 +1,5 @@
-import db from "../Configs/Database.js";
+import db from "../Configs/database.js";
+import { NUMBER } from "../Constant/constants.js";
 
 
 class LeaveTypeGrantModel{
@@ -25,13 +26,12 @@ class LeaveTypeGrantModel{
                 WHERE name = ?
             `, [name]);
 
-            if(!get_grant_type_result.length === 0){
-                response_data.status = false;
+            if(!get_grant_type_result.length){
                 response_data.error = "grant type in model error";
             } 
             else{
                 response_data.status = true;
-                response_data.result = get_grant_type_result[0];
+                response_data.result = get_grant_type_result[NUMBER.zero];
                 
             }
         } 

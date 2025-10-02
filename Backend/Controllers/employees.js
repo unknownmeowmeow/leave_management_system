@@ -19,7 +19,7 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 19 2025 9:37 am  
      */
-    static async getRoles(req, res){
+    static async employeeRole(req, res){
 
         try{
             const role_data = await EmployeeRoleTypeModel.getAllRoles();
@@ -43,7 +43,7 @@ class EmployeeControllers{
     * created by: rogendher keith lachica
     * updated at: September 19 2025 9:17 am  
     */
-    static async getGender(req, res){
+    static async employeeGender(req, res){
 
         try{
             const gender_data = await EmployeeGenderModel.getAllGenders();
@@ -79,7 +79,7 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 24 2025 1:59 pm    
      */
-    static async userRegistration(req, res){
+    static async employeeRegistration(req, res){
         const connection = await database.getConnection();
     
         try{
@@ -95,30 +95,27 @@ class EmployeeControllers{
             const email_exist = await EmployeeModel.getEmployeeEmail(email);
             
             if(email_exist.result){
-                await connection.rollback();
-                return res.json({ success: false, message: "Email Already Exists in Registration" });
+                throw new Error("Email Already Exists in Registration in controller");
             }
     
             const role_data = await EmployeeRoleTypeModel.getRoleTypeById(role);
     
             if(!role_data.result){
-                await connection.rollback();
-                return res.json({ success: false, message: "Failed to fetch roles" });
+                throw new Error("Failed to fetch roles in controller");
+                
             }
     
             const gender_data = await EmployeeGenderModel.getGenderById(gender);
             
             if(!gender_data.result){
-                await connection.rollback();
-                return res.json({ success: false, message: "Failed to fetch gender in registration" });
+                throw new Error("Failed to fetch gender in controller");
             }
     
             const hash_password = await bcrypt.hash(password, NUMBER.twelve);
             const new_user = await EmployeeModel.createUser({ first_name, last_name, email, role, gender, password: hash_password }, connection);
     
             if(!new_user.status){
-                await connection.rollback();
-                return res.json({ success: false, message: "Registration Failed in controller" });
+                throw new Error("Registration Failed in controller");
             }
     
             const employee_id = new_user.insert_employee_result.id;
@@ -127,7 +124,7 @@ class EmployeeControllers{
                 const carry_over_leave_types = await LeaveTypeModel.getAllCarryOverLeaveTypes();
     
                 if(carry_over_leave_types.result.length){
-
+    
                     const employee_data = carry_over_leave_types.result.map(leave_type => [
                         employee_id,               
                         null,                     
@@ -147,8 +144,7 @@ class EmployeeControllers{
                     const leave_credit = await LeaveCreditModel.insertLeaveCredit({ employee_data, connection });
     
                     if(!leave_credit.status){
-                        await connection.rollback();
-                        return res.json({ success: false, message: "Failed to insert leave credits" });
+                        throw new Error("Initial Leave credit failed to insert in controller")
                     }
                 }
             }
@@ -158,12 +154,13 @@ class EmployeeControllers{
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ success: false, message: "Server error register in controller" });
+            return res.json({ success: false, message: error.message || "Server error register in controller" });
         } 
         finally{
             connection.release();
         }
     }
+    
     
     /**
      * Controller to handle user login.
@@ -179,29 +176,29 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 19 2025 10:47 am  
      */
-    static async userLogin(req, res){
+    static async employeeLogin(req, res){
 
         try{
             const validation_error = ValidationHelper.validateEmployeeLogin(req.body);
-
+    
             if(validation_error.length){
                 return res.json({ success: false, errors: validation_error });
             }
-
+    
             const { email, password } = req.body;
-            const user_data = await EmployeeModel.getEmployeeEmail(email);
-
-            if(!user_data.result){
-                return res.json({ success: false, message: "Email not Found" });
+            const employee_record = await EmployeeModel.getEmployeeEmail(email);
+    
+            if(!employee_record.status || !employee_record.result){
+                throw new Error("Email not found");
             }
-
-            const user = user_data.result;
+    
+            const user = employee_record.result;
             const match = await bcrypt.compare(password, user.password);
-
+    
             if(!match){
-                return res.json({ success: false, message: "Password do not Match" });
+                throw new Error("Password does not match");
             }
-
+    
             req.session.user = {
                 employee_id: user.id,
                 first_name: user.first_name,
@@ -209,13 +206,18 @@ class EmployeeControllers{
                 email: user.email,
                 role: user.employee_role_type_id,
             };
-
-            return res.json({ success: true, message: "Success login", user: req.session.user });
-        }
+    
+            return res.json({ success: true, message: "Login successful", user: req.session.user });
+    
+        } 
         catch(error){
-            return res.json({ success: false, message: "server error in controller login" });
+            console.error(error);
+    
+            return res.json({ success: false, message: error.message || "Server error in controller" });
         }
     }
+    
+    
 
     /**
      * Logs out the currently logged-in employee by destroying the session.
@@ -263,25 +265,24 @@ class EmployeeControllers{
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 12:25 PM
      */
-    static async logout(req, res){
+    static async employeeLogout(req, res){
 
         try{
-
             if(!req.session.user){
-                return res.json({ success: false, message: "No Employee Session Found in Log out."});
+              throw new Error(" No Session for Employee Found Failed to Logout")
             }
 
             req.session.destroy(error => {
                 if(error){
-                    return res.json({ success: false, message: "Server error during Logout." });
+                    throw new Error("Server Error");
                 }
                 else{
-                    return res.json({ success: false, message: "Logout Failed."});
+                    throw new Error("Success Logout");
                 }
             });
         }
         catch(error){
-            return res.json({ success: false, message: "Server error during Logout." });
+            return res.json({ success: false, message: error.message || "Server error register in controller" });
         }
 
     }

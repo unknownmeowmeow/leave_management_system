@@ -40,7 +40,8 @@ export const NUMBER ={
 
 export const LEAVE_TYPE_ID = {
     vacation_leave: 1,
-    sick_leave: 2
+    sick_leave: 2,
+    compensatory_leave: 6
 }
 
 export const ROLE_TYPE_ID = {

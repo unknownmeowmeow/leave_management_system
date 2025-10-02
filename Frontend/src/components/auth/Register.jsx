@@ -98,7 +98,7 @@ export default function Register() {
                     <div className="mb-3">
                         <label className="form-label">Email</label>
                         <input
-                            type="email"
+                            type="text"
                             className="form-control"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}

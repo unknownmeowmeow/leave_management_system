@@ -26,14 +26,12 @@ class AttendanceModel{
                 VALUES (?, ?, NOW(), NOW())
             `, [employee_id, attendance_type_id]);
 
-            if(!insert_attendance_result.insertId){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "inserting failed in time in model";
-            }
-            else{
+            if(insert_attendance_result.insertId){
                 response_data.status = true;
                 response_data.result = { id: insert_attendance_result.insertId };
+            }
+            else{
+                response_data.error = "inserting failed in time in model";
             }
         }
         catch(error){
@@ -61,14 +59,12 @@ class AttendanceModel{
                 LIMIT ${NUMBER.one}
             `, [employee_id]);
 
-            if(!get_latest_time_in_record_result.length){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "no time in record found in model";
+            if(get_latest_time_in_record_result.length){
+                response_data.status = true;
+                response_data.result = get_latest_time_in_record_result[NUMBER.zero];
             }
             else{
-                response_data.status = true;
-                response_data.result = get_latest_time_in_record_result[0];
+                response_data.error = "no time in record found in model";
             }
         }
         catch(error){
@@ -96,14 +92,12 @@ class AttendanceModel{
                 ORDER BY id DESC 
             `, [employee_id]);
 
-            if(!get_latest_time_out_result.length){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "no time out record found in model";
+            if(get_latest_time_out_result.length){
+                response_data.status = true;
+                response_data.result = get_latest_time_out_result[NUMBER.zero];
             }
             else{
-                response_data.status = true;
-                response_data.result = get_latest_time_out_result[0];
+                response_data.error = "no time out record found in model";
             }
         }
         catch (error){
@@ -130,14 +124,12 @@ class AttendanceModel{
                 WHERE id = ?
             `, [time_out, work_hour, attendance_type_id, id]);
 
-            if(update_time_out_result.affectedRows === 0){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "no affected row in updatetime out attendance in model";
-            }
-            else{
+            if(update_time_out_result.affectedRows){
                 response_data.status = true;
                 response_data.result = update_time_out_result;
+            }
+            else{
+                response_data.error = "no affected row in updatetime out attendance in model";
             }
         }
         catch(error){
@@ -169,14 +161,12 @@ class AttendanceModel{
                 ORDER BY attendances.updated_at DESC
             `);
 
-            if(get_all_employee_attendance_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "no attendance records found in model";
+            if(get_all_employee_attendance_result.length){
+                response_data.status = true;
+                response_data.result = get_all_employee_attendance_result[NUMBER.zero];
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_employee_attendance_result;
+                response_data.error = "no attendance records found in model";
             }
         }
         catch(error){
@@ -210,14 +200,12 @@ class AttendanceModel{
                 ORDER BY attendances.updated_at DESC
             `, [employee_id]);
 
-            if(get_all_employee_attendance_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error =  "no employee attendance records found in model";
+            if(get_all_employee_attendance_result.length){
+                response_data.status = true;
+                response_data.result = get_all_employee_attendance_result[NUMBER.zero];
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_employee_attendance_result;
+                response_data.error =  "no employee attendance records found in model";
             }
         }
         catch(error){

@@ -5,24 +5,24 @@ import {
 
 class LeaveCreditModel{
 
-   /**
-     * Inserts a new leave credit record into the database.
-     *
-     * @param {Object} data Leave credit data to insert.
-     * @param {number} data.employee_id
-     * @param {number} data.leave_transaction_id
-     * @param {number|null} data.attendance_id
-     * @param {number} data.leave_type_id
-     * @param {number} data.earned_credit
-     * @param {number} data.used_credit
-     * @param {number} data.deducted_credit
-     * @param {number} data.current_credit
-     * @param {number} data.latest_credit
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
-     * created by: Rogendher Keith Lachica
-     * updated at: September 24 2025 10:20 pm
-     */
-    static async insertLeaveCredit({ employee_data, connection = db }) {
+    /**
+      * Inserts a new leave credit record into the database.
+      *
+      * @param {Object} data Leave credit data to insert.
+      * @param {number} data.employee_id
+      * @param {number} data.leave_transaction_id
+      * @param {number|null} data.attendance_id
+      * @param {number} data.leave_type_id
+      * @param {number} data.earned_credit
+      * @param {number} data.used_credit
+      * @param {number} data.deducted_credit
+      * @param {number} data.current_credit
+      * @param {number} data.latest_credit
+      * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
+      * created by: Rogendher Keith Lachica
+      * updated at: September 24 2025 10:20 pm
+      */
+    static async insertLeaveCredit({ employee_data, connection = db }){
         const response_data = { status: false, result: null, error: null };
 
         try{
@@ -45,24 +45,20 @@ class LeaveCreditModel{
             `, [employee_data]);
 
             if(insert_employee_credit_result.affectedRows !== employee_data.length){
-                response_data.status = false;
                 response_data.error = "failed to insert in model";
-            } 
+            }
             else{
                 response_data.status = true;
-                response_data.result = { first_insert_id: insert_employee_credit_result.insertId, total_inserted: insert_employee_credit_result.affectedRows};
+                response_data.result = { first_insert_id: insert_employee_credit_result.insertId, total_inserted: insert_employee_credit_result.affectedRows };
             }
 
-        } 
+        }
         catch(error){
-            response_data.status = false;
             response_data.error = error.message;
         }
 
         return response_data;
     }
-
-
 
     /**
      * Inserts a new leave credit record earned from employee work hours.
@@ -87,7 +83,7 @@ class LeaveCreditModel{
      */
     static async insertLeaveCreditFromWorkHour({ employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit, connection = db }) {
         const response_data = { status: false, result: null, error: null };
-    
+
         try{
             const [insert_work_hour_result] = await connection.execute(`
                 INSERT INTO leave_credits (
@@ -99,25 +95,23 @@ class LeaveCreditModel{
                     latest_credit,
                     created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, NOW())
-            `, [ employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit]);
-    
+            `, [employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit]);
+
             if(!insert_work_hour_result.insertId){
-                response_data.status = false;
                 response_data.error = "Failed to insert leave credit record in model.";
-            } 
+            }
             else{
                 response_data.status = true;
-                response_data.result = { id:insert_work_hour_result.insertId  };
+                response_data.result = { id: insert_work_hour_result.insertId };
             }
-        } 
+        }
         catch(error){
-            response_data.status = false;
             response_data.error = error.message;
         }
-    
+
         return response_data;
     }
-    
+
     /**
      * Retrieve summarized leave credit totals per employee.
      *
@@ -125,10 +119,10 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm
      */
-    static async insertYearlyCredit(employee_data){
-        const response = { status: false, result: null, error: null };
-    
-        try{
+    static async insertYearlyCredit(employee_data) {
+        const response_data = { status: false, result: null, error: null };
+
+        try {
             const [insert_yearly_credit_result] = await db.query(`
                 INSERT INTO leave_credits (
                     employee_id,
@@ -146,25 +140,23 @@ class LeaveCreditModel{
                     created_at
                 ) VALUES ?
             `, [employee_data]);
-    
+
             if(!insert_yearly_credit_result.insertId){
-                response.status = false;
-                response.error = "Failed to insert yearly leave credit in model.";
+                response_data.error = "Failed to insert yearly leave credit in model.";
             }
             else{
-                response.status = true;
-                response.result = { id: insert_yearly_credit_result.insertId };
+                response_data.status = true;
+                response_data.result = { id: insert_yearly_credit_result.insertId };
             }
-    
+
         }
         catch(error){
-            response.status = false;
-            response.error = error.message;
+            response_data.error = error.message;
         }
-    
-        return response;
+
+        return response_data;
     }
-    
+
 
     /**
      * Retrieve summarized leave credit totals per employee.
@@ -173,7 +165,7 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm
      */
-    static async getAllEmployeeCredits(){
+    static async getAllEmployeeCredits() {
         const response_data = { status: false, result: null, error: null };
 
         try{
@@ -195,9 +187,7 @@ class LeaveCreditModel{
                 ORDER BY leave_credits.employee_id DESC
             `, [ROLE_TYPE_ID.intern, ROLE_TYPE_ID.employee]);
 
-            if(get_all_employee_credit_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
+            if(get_all_employee_credit_result.length){
                 response_data.error = "no leave credit records found";
             }
             else{
@@ -222,7 +212,7 @@ class LeaveCreditModel{
      */
     static async getLatestEmployeeLeaveCredited(employee_id){
         const response_data = { status: false, result: null, error: null };
-        
+
         try{
             const [get_all_latest_credit_result] = await db.execute(`
                 SELECT id
@@ -233,28 +223,25 @@ class LeaveCreditModel{
             `, [employee_id]);
 
             if(!get_all_latest_credit_result.length){
-                response_data.status = false;
-                response_data.result = null;
                 response_data.error = "No credit found in model";
             }
             else{
                 response_data.status = true;
-                response_data.result = get_all_latest_credit_result[0];
+                response_data.result = get_all_latest_credit_result[NUMBER.zero];
             }
         }
         catch(error){
-            response_data.status = false;
-            response_data.result = null;
             response_data.error = error.message;
         }
 
         return response_data;
     }
-        static async getTotalCredit(employee_id){
-            const response_data = { status: false, result: null, error: null };
 
-            try{
-                const [get_total_credit_result] = await db.execute(`
+    static async getTotalCredit(employee_id){
+        const response_data = { status: false, result: null, error: null };
+
+        try{
+            const [get_total_credit_result] = await db.execute(`
                     SELECT
                         leave_credits.employee_id,
                         employees.first_name,
@@ -270,23 +257,22 @@ class LeaveCreditModel{
                     WHERE leave_credits.employee_id = ?
                     GROUP BY leave_credits.employee_id
                     ORDER BY leave_credits.employee_id DESC
-                `, [employee_id]);
+                    `, [employee_id]);
 
-                if(get_total_credit_result.length){
-                    response_data.error = "No leave credit found for employee in credit model .";
-                } 
-                else{
-                    response_data.status = true;
-                    response_data.result = get_total_credit_result[0];
-                }
-            } 
-            catch(error){
-                response_data.status = false;
-                response_data.error = error.message;
+            if(get_total_credit_result.length){
+                response_data.error = "No leave credit found for employee in credit model .";
             }
-            return response_data;
+            else{
+                response_data.status = true;
+                response_data.result = get_total_credit_result[NUMBER.zero];
+            }
+        }
+        catch(error){
+            response_data.error = error.message;
+        }
+        return response_data;
     }
-    
+
     /**
      * Updates the latest leave credit for an employee.
      *
@@ -304,31 +290,29 @@ class LeaveCreditModel{
      */
     static async updateLatestCredit({ leave_credit_id, leave_transaction_id, leave_type_id, used_credit, latest_credit, current_credit, deducted_credit, connection = db }) {
         const response_data = { status: false, result: null, error: null };
-    
-        try{
+
+        try {
             const [update_latest_credit_result] = await connection.execute(`
                 UPDATE leave_credits
                 SET used_credit = ?, deducted_credit = ?, current_credit = ?, latest_credit = ?, leave_transaction_id = ?, leave_type_id = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [used_credit, deducted_credit, current_credit, latest_credit, leave_transaction_id, leave_type_id, leave_credit_id]);
-    
-            if(update_latest_credit_result.affectedRows === 0){
-                response_data.status = false;
+
+            if (update_latest_credit_result.affectedRows) {
                 response_data.error = "No leave credit record found to update in model.";
-            } 
-            else{
+            }
+            else {
                 response_data.status = true;
                 response_data.result = { leave_credit_id, leave_transaction_id, leave_type_id, used_credit, deducted_credit, current_credit, latest_credit };
             }
-        } 
+        }
         catch(error){
-            response_data.status = false;
             response_data.error = error.message;
         }
-    
+
         return response_data;
     }
-    
+
 
 }
 

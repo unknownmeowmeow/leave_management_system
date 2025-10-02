@@ -1,4 +1,5 @@
 import db from "../Configs/database.js";
+import { NUMBER } from "../Constant/constants.js";
 
 class EmployeeGenderModel{
 
@@ -22,14 +23,12 @@ class EmployeeGenderModel{
                 WHERE id = ?
             `, [id]);
 
-            if(get_gender_by_id_result.length === 0){
-                response_data.status = false;
-                response_data.result = null;
-                response_data.error = "gender record not found in model";
+            if(get_gender_by_id_result.length){
+                response_data.status = true;
+                response_data.result = get_gender_by_id_result[NUMBER.zero];
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_gender_by_id_result[0];
+                response_data.error = "gender record not found in model";
             }
         }
         catch(error){

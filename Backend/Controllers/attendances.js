@@ -67,7 +67,7 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json({ success: false, message: "User session not found." });
+            throw new Error("No User Found");
         }
 
         const connection = await database.getConnection();
@@ -78,20 +78,20 @@ class AttendanceControllers{
             const check_time_in = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
 
             if(check_time_in.status && check_time_in.result){
-                return res.json({ success: false, message: "Already time in today." });
+                throw new Error("Already Time in to this day");
             }
 
-            const result = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id});
+            const insert_employee_attendance_record = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id});
 
-            if(!result.status){
-                return res.json({ success: false, message: result.error });
+            if(!insert_employee_attendance_record.status){
+                throw new Error("Insert Time In Failed");
             }
 
             await connection.commit();
             return res.json( { success: true, message: "Time IN recorded successfully" });
         } 
         catch(error){
-            return res.json({ success: false, message: error.message });
+            return res.json({ success: false, message: error.message || "Server error attendance in controller" });
         }
         finally{
             connection.release();
@@ -193,23 +193,20 @@ class AttendanceControllers{
             const active_record_time_in = record.result;
     
             if(!record.status || !active_record_time_in){
-                await connection.rollback();
-                return res.json({ success: false, message: "No time-in record found for today." });
+                throw new Error("No Record for time In");
             }
 
             const check_time_out = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
             
             if(check_time_out.status && check_time_out.result){
-                await connection.rollback();
-                return res.json({ success: false, message: "Already time out today." });
+                throw new Error("Already Time Out this day");
             }
 
             const id = active_record_time_in.id;
             const time_in = active_record_time_in.time_in;
     
             if(!id || !time_in){
-                await connection.rollback();
-                return res.json({ success: false, message: "Invalid or missing id or time_in." });
+                throw new Error("No Time In Found");
             }
 
             const time_out = TimeValidationHelper.checkEmployeeCurrentTime();
@@ -217,8 +214,7 @@ class AttendanceControllers{
             const validation_check_time = WorkTimeValidationHelper.validateEmployeeTimeOut({ id, time_out, work_hour });
 
             if(!validation_check_time.is_valid){
-                await connection.rollback();
-                return res.json({ success: false, message: validation_check_time.error });
+                throw new Error("Failed to Time Out in controller");
             }
 
             const update_attendance = await AttendanceModel.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
@@ -233,8 +229,7 @@ class AttendanceControllers{
             const update_credit = await LeaveCreditModel.insertLeaveCreditFromWorkHour({ employee_id, attendance_id: id, earned_credit, deducted_credit, current_credit, latest_credit, connection});
     
             if(!update_credit.status){
-                await connection.rollback();
-                return res.json({ success: false, message: update_credit.error });
+                throw new Error("Failed to insert credit in controller");
             }
 
             await connection.commit();
@@ -242,7 +237,7 @@ class AttendanceControllers{
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ success: false, message: error.message });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         } 
         finally{
             connection.release();
@@ -302,21 +297,21 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json({ success: false, message: "User session not found." });
+            throw new Error("No User Found");
         }
 
         try{
             const employee_id = user.employee_id;
-            const response_data = await AttendanceModel.getAllEmployeesRecord(employee_id);
+            const employee_record = await AttendanceModel.getAllEmployeesRecord(employee_id);
 
-            if(response_data.error){
-                return res.json({ success: false, message: response_data.error });
+            if(employee_record.error){
+                throw new Error("No Employee Found");
             }
 
-            return res.json({ success: true, records: response_data.result });
+            return res.json({ success: true, records: employee_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: "Error in Catch in Get All Record" });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         }
     }
 
@@ -371,20 +366,20 @@ class AttendanceControllers{
         const user = req.session.user;
 
         if(!user){
-            return res.json({ success: false, message: "User session not found." });
+           throw new Error("User Not Found");
         }
 
         try{
-            const response_data = await AttendanceModel.getAllEmployeesRecords();
+            const attendance_record = await AttendanceModel.getAllEmployeesRecords();
 
-            if(response_data.error){
-                return res.json({ success: false, message: response_data.error });
+            if(attendance_record.error){
+                throw new Error("Attendance No Record Found");
             }
 
-            return res.json({ success: true, records: response_data.result });
+            return res.json({ success: true, records: attendance_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: "Error in Catch in Get All Record" });
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });
         }
     }
 

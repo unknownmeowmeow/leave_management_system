@@ -52,13 +52,13 @@ class LeaveTypeController{
     static async getAllDefaultLeaveType(req, res){
         
         try{
-            const result = await LeaveTypeModel.getAllLeaveDefaultType(); 
+            const get_all_default_leave_record = await LeaveTypeModel.getAllLeaveDefaultType(); 
     
-            if(!result.status){
-                return res.json({ success: false, message: result.error }); 
+            if(!get_all_default_leave_record.status){
+                return res.json({ success: false, message: get_all_default_leave_record.error }); 
             }
     
-            return res.json({ success: true, data: result.result });
+            return res.json({ success: true, data: get_all_default_leave_record.result });
         } 
         catch(error){ 
             return res.json({ success: false, message: "Error in default Leave type Controllers" });        
@@ -116,16 +116,16 @@ class LeaveTypeController{
     static async getAllRewardedAndSpecialLeave(req, res){
         
         try{
-            const result = await LeaveTypeModel.getAllSpecialAndRewardedLeaveType();
+            const get_all_rewarded_special_leave_record = await LeaveTypeModel.getAllSpecialAndRewardedLeaveType();
     
-            if(!result.status){
-                return res.json({ success: false, message: result.error });
+            if(!get_all_rewarded_special_leave_record.status){
+                return res.json({ success: false, message: get_all_rewarded_special_leave_record.error });
             }
 
-            return res.json({ success: true, data: result.result });
+            return res.json({ success: true, data: get_all_rewarded_special_leave_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: "Error in special  and rewarded Leave type Controllers" });
+            return res.json({ success: false, message: error.message || "Server error register in controller" });
         }
     }
 }
