@@ -29,7 +29,6 @@ export const NUMBER ={
     ten: 10,
     eleven: 11,
     twelve: 12,
-    fourteen:14,
     twenty_three: 23,
     twenty_four: 24,
     thirty_one: 31,
@@ -42,7 +41,7 @@ export const NUMBER ={
 export const LEAVE_TYPE_ID = {
     vacation_leave: 1,
     sick_leave: 2,
-    compensatory_leave: 6
+    compensatory_leave: 14
 }
 
 export const ROLE_TYPE_ID = {

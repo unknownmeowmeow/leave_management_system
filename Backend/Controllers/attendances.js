@@ -176,7 +176,7 @@ class AttendanceControllers{
      * created by: Rogendher Keith Lachica
      * updated at: September 24, 2025 11:30 PM
      */
-    static async employeetimeOut(req, res){
+    static async updateEmployeeTimeOut(req, res){
         const user = req.session.user;
     
         if(!user){
@@ -222,10 +222,10 @@ class AttendanceControllers{
             if(!update_attendance.status){
                 throw new Error("Update Attendance Failed");
             }
-            const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
+            const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
             const current_credit = latest_credit_result.latest_credit || NUMBER.zero;
             const { earned_credit, deducted_credit, latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
-            const update_credit = await LeaveCreditModel.insertLeaveCreditFromWorkHour({ employee_id, attendance_id: id, earned_credit, deducted_credit, current_credit, latest_credit, connection});
+            const update_credit = await LeaveCreditModel.insertEmployeeLeaveCreditFromWorkHour({ employee_id, attendance_id: id, earned_credit, deducted_credit, current_credit, latest_credit, connection});
     
             if(!update_credit.status){
                 throw new Error("Failed to insert credit in controller");
@@ -381,7 +381,6 @@ class AttendanceControllers{
             return res.json({ success: false, message: error.message || "Server error admin in controller" });
         }
     }
-
 }
 
 export default AttendanceControllers;

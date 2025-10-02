@@ -34,10 +34,10 @@ class AdminLeaveController{
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 10:15 AM
      */
-    static async getAllLeaveTransactions(req, res){
+    static async getAllEmployeeTransaction(req, res){
 
         try{
-            const leave_data = await LeaveTypeModel.getAllLeaves();
+            const leave_data = await LeaveTypeModel.getAllEmployeeLeaveTransaction();
 
             if(!leave_data.status){
                throw new Error("No leave transaction found");
@@ -87,7 +87,7 @@ class AdminLeaveController{
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 9:30 AM
      */
-    static async getAllLeaveTransaction(req, res){
+    static async getAllLeaveTransactionByEmployee(req, res){
         const user = req.session.user;
 
         if(!user){
@@ -97,7 +97,7 @@ class AdminLeaveController{
         const employee_id = user.employee_id;
 
         try{
-            const leave_transaction_record = await LeaveTypeModel.getAllLeave(employee_id);
+            const leave_transaction_record = await LeaveTypeModel.getAllLeaveTransactionByEmployeeId(employee_id);
 
             if(!leave_transaction_record.status){
                 throw new Error("No leave Transaction Found");
@@ -160,7 +160,7 @@ class AdminLeaveController{
     static async updateLeaveStatus(req, res){
         const { leave_id, status_id } = req.body;
         const user = req.session.user;
-    
+
         if(!user){
             throw new Error("No User Found");
         }
@@ -209,7 +209,6 @@ class AdminLeaveController{
             }
 
             const update_status_record = await LeaveTransactionModel.updateStatus(leave_id, status_id, user.employee_id, connection);
-    
             await connection.commit();
             return res.json({ success: true, data: update_status_record.result });
         } 
@@ -260,9 +259,9 @@ class AdminLeaveController{
         if(!user){
             throw new Error("No User Found");
         }
-
+        
         try{
-            const employee_leave_data = await LeaveTypeModel.getAllByEmployeeRecordLeaves(user.employee_id);
+            const employee_leave_data = await LeaveTypeModel.getAllByEmployeeRecordLeaves();
 
             if(!employee_leave_data.status){
                 throw new Error("No Leave Transaction Found in controller");

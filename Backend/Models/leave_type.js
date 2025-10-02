@@ -272,7 +272,7 @@ class LeaveTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
-    static async getAllLeaves(){
+    static async getAllEmployeeLeaveTransaction(){
         const response_data = { status: false, result: null, error: null };
     
         try{
@@ -349,7 +349,7 @@ class LeaveTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
-    static async getAllLeave(employee_id) {
+    static async getAllLeaveTransactionByEmployeeId(employee_id) {
         const response_data = { status: false, result: null, error: null };
     
         try {
@@ -475,7 +475,7 @@ class LeaveTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
-    static async getAllByEmployeeRecordLeaves(employee_id, status = 2){
+    static async getAllByEmployeeRecordLeaves(){
         const response_data =  { status: false, result: null, error: null };
     
         try{
@@ -507,13 +507,9 @@ class LeaveTypeModel{
                     leave_transaction_statuses 
                 ON 
                     leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
-                WHERE 
-                    leave_transactions.employee_id = ? 
-                AND 
-                    leave_transaction_status_id = ?
                 ORDER BY 
                     leave_transactions.id DESC
-            `, [employee_id, status]);
+            `);
     
             if(get_all_employee_record_leave_result.length){
                 response_data.status = true;

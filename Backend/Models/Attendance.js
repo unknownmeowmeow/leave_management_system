@@ -101,7 +101,7 @@ class AttendanceModel{
 
             if(get_latest_time_in_record_result.length){
                 response_data.status = true;
-                response_data.result = get_latest_time_in_record_result;
+                response_data.result = get_latest_time_in_record_result[NUMBER.zero];
             }
             else{
                 response_data.error = "no time in record found in model";

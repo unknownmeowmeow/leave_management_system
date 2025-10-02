@@ -82,7 +82,7 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 30 2025 6:45 pm
      */
-    static async insertLeaveCreditFromWorkHour({ employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit, connection = db }) {
+    static async insertEmployeeLeaveCreditFromWorkHour({ employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit, connection = db }) {
         const response_data = { status: false, result: null, error: null };
 
         try{
@@ -244,7 +244,7 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 12:10 am
      */
-    static async getLatestEmployeeLeaveCredited(employee_id){
+    static async getLatestEmployeeLeaveCredit(employee_id){
         const response_data = { status: false, result: null, error: null };
 
         try{

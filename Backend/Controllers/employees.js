@@ -130,7 +130,7 @@ class EmployeeControllers{
         }
     }
 
-   /**
+    /**
      * Registers a new employee in the system, including validation, role and gender verification,
      * password hashing, and initial leave credit assignment if applicable.
      *
@@ -207,7 +207,6 @@ class EmployeeControllers{
 
         try{
             await connection.beginTransaction();
-
             const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
 
             if(validation_error.length){
@@ -371,14 +370,7 @@ class EmployeeControllers{
                 throw new Error("Password does not match");
             }
     
-            req.session.user = {
-                employee_id: user.id,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                email: user.email,
-                role: user.employee_role_type_id,
-            };
-    
+            req.session.user = { employee_id: user.id, first_name: user.first_name, last_name: user.last_name,email: user.email, role: user.employee_role_type_id };
             return res.json({ success: true, message: "Login successful", user: req.session.user });
     
         } 

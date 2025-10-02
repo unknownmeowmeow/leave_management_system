@@ -208,7 +208,7 @@ class LeaveController{
      * updated at: October 1, 2025 01:35 PM
      */
     static async applyEmployeeLeave(req, res){
-
+        
         try{
             const employee = req.session.user;
             const employee_id = employee.employee_id;

@@ -5,8 +5,8 @@ import AuthMiddleware from "../Middleware/authMiddleware.js";
 const router = express.Router();
 
 
-router.get("/leave_transactions", AuthMiddleware.requireLogin, LeaveController.getAllLeaveTransactions);
+router.get("/leave_transactions", AuthMiddleware.requireLogin, LeaveController.getAllEmployeeLeaveTransaction);
 router.post("/update_leave_status", AuthMiddleware.requireLogin, LeaveController.updateLeaveStatus);
-router.get("/leave_transaction", AuthMiddleware.requireLogin, LeaveController.getAllLeaveTransaction);
+router.get("/leave_transaction", AuthMiddleware.requireLogin, LeaveController.getAllLeaveTransactionByEmployee);
 
 export default router;
