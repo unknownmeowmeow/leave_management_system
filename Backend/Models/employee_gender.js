@@ -30,12 +30,9 @@ class EmployeeGenderModel{
 
         try{
             const [get_gender_by_id_result] = await db.execute(`
-                SELECT 
-                    * 
-                FROM 
-                    employee_genders 
-                WHERE 
-                    id = ?
+                SELECT * 
+                FROM employee_genders 
+                WHERE id = ?
             `, [id]);
 
             if(get_gender_by_id_result.length){

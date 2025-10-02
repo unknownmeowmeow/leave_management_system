@@ -77,14 +77,14 @@ class LeaveController{
             const admin = req.session.user;
 
             if(!admin || !admin.employee_id){
-              throw new Error("No Session Found for Admin");
+                throw new Error("No Session Found for Admin");
             }
 
             const rewarded_by_id = admin.employee_id;
             const { employee_id, leave_type, start_date, end_date, reason } = req.body;
             
             if(!employee_id){
-              throw new Error("No Employee Found");
+                throw new Error("No Employee Found");
             }
 
             const leave_type_record = await LeaveTypeModel.getLeaveTypeById(leave_type);
@@ -106,6 +106,7 @@ class LeaveController{
             if(!is_valid){
                 return res.json({ success: false, message });
             }
+
             const check_credit_employee_record = await LeaveTransactionModel.getTotalCredit(employee_id);
 
             if(!check_credit_employee_record.status){
@@ -119,7 +120,7 @@ class LeaveController{
             }
     
             if(duration > available_credit){
-               throw new Error(`Insufficient leave credit. Available: ${available_credit} days.`);
+                throw new Error(`Insufficient leave credit. Available: ${available_credit} days.`);
             }
 
             const leave_transaction_data = await LeaveTransactionModel.insertTransaction({
@@ -138,8 +139,9 @@ class LeaveController{
             });
     
             if(!leave_transaction_data.status || !leave_transaction_data.result.leave_id){
-               throw new Error("Failed to Insert Transaction");
+                throw new Error("Failed to Insert Transaction");
             }
+
             return res.json({ success: true, message: "Leave successfully filed." });
     
         } 
@@ -265,7 +267,7 @@ class LeaveController{
             });
     
             if(!employee_transaction_data.status || !employee_transaction_data.result.leave_id){
-               throw new Error("Error inserting leave transaction in controller.");
+                throw new Error("Error inserting leave transaction in controller.");
             }
 
             return res.json({ success: true, message: "Leave successfully filed in controller." });

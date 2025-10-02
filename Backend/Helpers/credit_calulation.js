@@ -72,10 +72,7 @@ class CreditCalculationHelper{
             return NUMBER.zero;
         }
 
-        return leave_types.reduce(
-            (total, leave_type) => total + (parseFloat(leave_type.base_value) || NUMBER.zero), 
-            NUMBER.zero
-        );
+        return leave_types.reduce((total, leave_type) => total + (parseFloat(leave_type.base_value) || NUMBER.zero), NUMBER.zero);
     }
     
     /**

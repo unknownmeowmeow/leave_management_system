@@ -68,7 +68,21 @@ class leaveTransactionModel{
                     approved_by_id,
                     created_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            `, [ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend, is_active, start_date, end_date, filed_date, year, rewarded_by_id,  approved_by_id]);
+            `, [ 
+                employee_id, 
+                leave_transaction_status_id, 
+                leave_type_id, 
+                reason, 
+                total_leave, 
+                is_weekend, 
+                is_active, 
+                start_date, 
+                end_date, 
+                filed_date, 
+                year, 
+                rewarded_by_id,  
+                approved_by_id
+            ]);
             
             if(insert_data_result.insertId){
                 response_data.status = true;
@@ -213,16 +227,11 @@ class leaveTransactionModel{
     
         try{
             const [get_latest_credit_record_result] = await db.execute(`
-                SELECT 
-                    id
-                FROM 
-                    leave_credits
-                WHERE 
-                    employee_id = ?
-                ORDER BY 
-                    created_at DESC
-                LIMIT 
-                    ${NUMBER.one}
+                SELECT id
+                FROM leave_credits
+                WHERE employee_id = ?
+                ORDER BY created_at DESC
+                LIMIT ${NUMBER.one}
             `, [employee_id]);
     
             if(get_latest_credit_record_result.length){

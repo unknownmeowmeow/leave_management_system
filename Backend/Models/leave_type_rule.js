@@ -24,13 +24,9 @@ class LeaveTypeRuleModel{
 
         try{
             const [get_rule_id_result] = await db.execute(`
-                SELECT 
-                    id, 
-                    rule_name
-                FROM 
-                    leave_type_rules
-                WHERE 
-                    id = ?
+                SELECT id, rule_name
+                FROM leave_type_rules
+                WHERE id = ?
             `, [rule_id]);
 
             if(get_rule_id_result.length){

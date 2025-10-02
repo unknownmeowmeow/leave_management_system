@@ -179,12 +179,9 @@ class EmployeeModel{
 
         try{
             const [get_employee_by_id_result] = await db.execute(`
-                SELECT 
-                    *
-                FROM 
-                    employees
-                WHERE  
-                    id = ? 
+                SELECT *
+                FROM employees
+                WHERE id = ? 
             `, [employee_id]);
 
             if(get_employee_by_id_result.length){

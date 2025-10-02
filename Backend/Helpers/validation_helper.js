@@ -178,7 +178,8 @@ class ValidationHelper{
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 02:25 PM
      */
-     static validateLeaveApplication(leave_data) {
+     static validateLeaveApplication(leave_data){
+
         try{
             const { leave_type, start_date, end_date } = leave_data;
 
@@ -188,7 +189,7 @@ class ValidationHelper{
 
             return []; 
         } 
-        catch(error) {
+        catch(error){
             return ["Error in validating leave application."];
         }
     }

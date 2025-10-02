@@ -24,12 +24,9 @@ class EmployeeRoleTypeModel{
 
         try{
             const [get_role_by_id_result] = await db.execute(`
-                SELECT 
-                    * 
-                FROM 
-                    employee_role_types 
-                WHERE 
-                    id = ?
+                SELECT * 
+                FROM employee_role_types 
+                WHERE id = ?
             `, [role_id]);
 
             if(get_role_by_id_result.length){

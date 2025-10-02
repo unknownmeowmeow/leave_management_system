@@ -205,7 +205,6 @@ class TimeValidationHelper{
     static async validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason }) {
     
         try{
-            
             if(!employee_id || !leave_type_data || !start_date || !end_date || !reason){
                 return { is_valid: false, message: { success: false, message: "All Fields are Required" } };
             }
@@ -296,12 +295,7 @@ class TimeValidationHelper{
                 return { is_valid: false, message: `Leave exceeds max allowed (${max_days_allowed} days).` };
             }
     
-            return {
-                is_valid: true,
-                message: null,
-                duration: total_leave_day,
-                adjusted_end_date
-            };
+            return {is_valid: true,message: null, duration: total_leave_day, adjusted_end_date};
     
         } 
         catch(error){

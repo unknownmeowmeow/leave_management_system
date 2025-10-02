@@ -249,16 +249,11 @@ class LeaveCreditModel{
 
         try{
             const [get_all_latest_credit_result] = await db.execute(`
-                SELECT 
-                    id
-                FROM 
-                    leave_credits
-                WHERE 
-                    employee_id = ?
-                ORDER BY 
-                    created_at DESC
-                LIMIT 
-                    ${NUMBER.one}
+                SELECT id
+                FROM leave_credits
+                WHERE employee_id = ?
+                ORDER BY created_at DESC
+                LIMIT ${NUMBER.one}
             `, [employee_id]);
 
             if(get_all_latest_credit_result.length){

@@ -222,6 +222,7 @@ class AttendanceControllers{
             if(!update_attendance.status){
                 throw new Error("Update Attendance Failed");
             }
+            
             const latest_credit_result = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
             const current_credit = latest_credit_result.latest_credit || NUMBER.zero;
             const { earned_credit, deducted_credit, latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
