@@ -27,7 +27,7 @@ class LeaveCreditModel{
 
         try{
             const [insert_employee_credit_result] = await connection.query(`
-                INSERT INTO leave_credits (
+                    INSERT INTO leave_credits (
                     employee_id,
                     leave_transaction_id,
                     attendance_id,
@@ -40,16 +40,17 @@ class LeaveCreditModel{
                     used_credit,
                     current_credit,
                     latest_credit,
-                    created_at 
-                ) VALUES ?
-            `, [employee_data]);
+                    created_at
+                ) 
+                VALUES ?
+            `, [employee_data]);            
 
-            if(insert_employee_credit_result.affectedRows !== employee_data.length){
-                response_data.error = "failed to insert in model";
-            }
-            else{
+            if(insert_employee_credit_result.affectedRows){
                 response_data.status = true;
                 response_data.result = { first_insert_id: insert_employee_credit_result.insertId, total_inserted: insert_employee_credit_result.affectedRows };
+            }
+            else{
+                response_data.error = "failed to insert in model";
             }
 
         }
@@ -94,15 +95,17 @@ class LeaveCreditModel{
                     current_credit,
                     latest_credit,
                     created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, NOW())
+                ) 
+                VALUES 
+                    (?, ?, ?, ?, ?, ?, NOW())
             `, [employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit]);
 
-            if(!insert_work_hour_result.insertId){
-                response_data.error = "Failed to insert leave credit record in model.";
-            }
-            else{
+            if(insert_work_hour_result.insertId){
                 response_data.status = true;
                 response_data.result = { id: insert_work_hour_result.insertId };
+            }
+            else{
+                response_data.error = "Failed to insert leave credit record in model.";   
             }
         }
         catch(error){
@@ -138,15 +141,16 @@ class LeaveCreditModel{
                     current_credit,
                     latest_credit,
                     created_at
-                ) VALUES ?
+                ) 
+                VALUES ?
             `, [employee_data]);
 
-            if(!insert_yearly_credit_result.insertId){
-                response_data.error = "Failed to insert yearly leave credit in model.";
-            }
-            else{
+            if(insert_yearly_credit_result.insertId){
                 response_data.status = true;
                 response_data.result = { id: insert_yearly_credit_result.insertId };
+            }
+            else{
+                response_data.error = "Failed to insert yearly leave credit in model.";
             }
 
         }
@@ -179,20 +183,28 @@ class LeaveCreditModel{
                     SUM(leave_credits.used_credit) AS total_used_credit,
                     SUM(leave_credits.deducted_credit) AS total_deducted_credit,
                     SUM(leave_credits.latest_credit) AS total_latest_credit
-                FROM leave_credits
-                LEFT JOIN employees 
-                ON leave_credits.employee_id = employees.id
-                WHERE employees.employee_role_type_id IN (?, ?)
-                GROUP BY leave_credits.employee_id 
-                ORDER BY leave_credits.employee_id DESC
+                FROM 
+                    leave_credits
+                LEFT JOIN 
+                    employees 
+                ON 
+                    leave_credits.employee_id = employees.id
+                WHERE 
+                    employees.employee_role_type_id 
+                IN 
+                    (?, ?)
+                GROUP BY 
+                    leave_credits.employee_id 
+                ORDER BY 
+                    leave_credits.employee_id DESC
             `, [ROLE_TYPE_ID.intern, ROLE_TYPE_ID.employee]);
 
             if(get_all_employee_credit_result.length){
-                response_data.error = "no leave credit records found";
-            }
-            else{
                 response_data.status = true;
                 response_data.result = get_all_employee_credit_result;
+            }
+            else{
+                response_data.error = "no leave credit records found";
             }
         }
         catch(error){
@@ -215,19 +227,25 @@ class LeaveCreditModel{
 
         try{
             const [get_all_latest_credit_result] = await db.execute(`
-                SELECT id
-                FROM leave_credits
-                WHERE employee_id = ?
-                ORDER BY created_at DESC
-                LIMIT ${NUMBER.one}
+                SELECT 
+                    id
+                FROM 
+                    leave_credits
+                WHERE 
+                    employee_id = ?
+                ORDER BY 
+                    created_at DESC
+                LIMIT 
+                    ${NUMBER.one}
             `, [employee_id]);
 
-            if(!get_all_latest_credit_result.length){
-                response_data.error = "No credit found in model";
+            if(get_all_latest_credit_result.length){
+                response_data.status = true;
+                response_data.result = get_all_latest_credit_result;
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_latest_credit_result[NUMBER.zero];
+                response_data.error = "No credit found in model";
+               
             }
         }
         catch(error){
@@ -251,20 +269,26 @@ class LeaveCreditModel{
                         SUM(leave_credits.used_credit) AS total_used_credit,
                         SUM(leave_credits.deducted_credit) AS total_deducted_credit,
                         SUM(leave_credits.latest_credit) AS total_latest_credit
-                    FROM leave_credits
-                    LEFT JOIN employees 
-                    ON leave_credits.employee_id = employees.id
-                    WHERE leave_credits.employee_id = ?
-                    GROUP BY leave_credits.employee_id
-                    ORDER BY leave_credits.employee_id DESC
+                    FROM 
+                        leave_credits
+                    LEFT JOIN 
+                        employees 
+                    ON 
+                        leave_credits.employee_id = employees.id
+                    WHERE 
+                        leave_credits.employee_id = ?
+                    GROUP BY 
+                        leave_credits.employee_id
+                    ORDER BY 
+                        leave_credits.employee_id DESC
                     `, [employee_id]);
 
             if(get_total_credit_result.length){
-                response_data.error = "No leave credit found for employee in credit model .";
+                response_data.status = true;
+                response_data.result = get_total_credit_result;
             }
             else{
-                response_data.status = true;
-                response_data.result = get_total_credit_result[NUMBER.zero];
+                response_data.error = "No leave credit found for employee in credit model .";
             }
         }
         catch(error){
@@ -293,17 +317,26 @@ class LeaveCreditModel{
 
         try {
             const [update_latest_credit_result] = await connection.execute(`
-                UPDATE leave_credits
-                SET used_credit = ?, deducted_credit = ?, current_credit = ?, latest_credit = ?, leave_transaction_id = ?, leave_type_id = ?, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                UPDATE 
+                    leave_credits
+                SET 
+                    used_credit = ?, 
+                    deducted_credit = ?, 
+                    current_credit = ?, 
+                    latest_credit = ?, 
+                    leave_transaction_id = ?, 
+                    leave_type_id = ?, 
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE 
+                    id = ?
             `, [used_credit, deducted_credit, current_credit, latest_credit, leave_transaction_id, leave_type_id, leave_credit_id]);
 
-            if (update_latest_credit_result.affectedRows) {
-                response_data.error = "No leave credit record found to update in model.";
-            }
-            else {
+            if(update_latest_credit_result.affectedRows){
                 response_data.status = true;
                 response_data.result = { leave_credit_id, leave_transaction_id, leave_type_id, used_credit, deducted_credit, current_credit, latest_credit };
+            }
+            else{
+                response_data.error = "No leave credit record found to update in model.";
             }
         }
         catch(error){

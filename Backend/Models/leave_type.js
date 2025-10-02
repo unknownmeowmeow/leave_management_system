@@ -18,32 +18,44 @@ class LeaveTypeModel{
      */
     static async getAllCarryOverLeaveTypes(){
         const response_data =  { status: false, result: null, error: null };
-
+    
         try{
             const [get_all_carry_over_leave_type_result] = await db.execute(`
-                    SELECT id, base_value 
-                    FROM leave_types 
-                    WHERE is_carried_over = ? AND is_active = ? AND id IN (?, ?)
-                `, [IS_CARRIED_OVER.yes, LEAVE_STATUS.active, 
-                    LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave]
-            );
-
+                SELECT 
+                    id, 
+                    base_value 
+                FROM 
+                    leave_types 
+                WHERE 
+                    is_carried_over = ? 
+                AND 
+                    is_active = ? 
+                AND 
+                    id 
+                IN (?, ?)
+            `, [
+                IS_CARRIED_OVER.yes, 
+                LEAVE_STATUS.active, 
+                LEAVE_TYPE_ID.vacation_leave, 
+                LEAVE_TYPE_ID.sick_leave
+                ]);
+    
             if(get_all_carry_over_leave_type_result.length){
-                response_data.error = "No carry over leave type found";
+                response_data.status = true;
+                response_data.result = get_all_carry_over_leave_type_result;
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_carry_over_leave_type_result[NUMBER.zero];
-
+                response_data.error = "No carry over leave type found";
             }
         }
         catch(error){
             response_data.status = false;
             response_data.error = error.message;
         }
-
+    
         return response_data;
     }
+    
 
   /**
      * Retrieves yearly leave types by fixed IDs (1, 2, 6).
@@ -60,16 +72,21 @@ class LeaveTypeModel{
 
         try{
             const [get_all_yearly_leave_type_result] = await db.execute(`
-                SELECT * FROM leave_types 
-                WHERE id IN (?, ?, ?)
+                SELECT 
+                    * 
+                FROM 
+                    leave_types 
+                WHERE 
+                    id 
+                IN (?, ?, ?)
             `, [LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave, LEAVE_TYPE_ID.vacation_leave]);
 
-            if(!get_all_yearly_leave_type_result.length){
-                response_data.error = "No carry over leave type found";
+            if(get_all_yearly_leave_type_result.length){
+                response_data.status = true;
+                response_data.result = get_all_yearly_leave_type_result;
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_yearly_leave_type_result[NUMBER.zero];
+                response_data.error = "No carry over leave type found";  
             }
         }
         catch(error){
@@ -95,19 +112,27 @@ class LeaveTypeModel{
 
         try{
             const [get_all_leave_type_by_id_result] = await db.execute(`
-                SELECT leave_types.id, leave_types.name
-                FROM leave_types
-                LEFT JOIN leave_type_grant_types 
-                ON leave_types.leave_type_grant_type_id = leave_type_grant_types.id
-                WHERE leave_types.leave_type_grant_type_id = ? AND leave_types.is_active = ?
+                SELECT 
+                    leave_types.id, 
+                    leave_types.name
+                FROM 
+                    leave_types
+                LEFT JOIN 
+                    leave_type_grant_types 
+                ON 
+                    leave_types.leave_type_grant_type_id = leave_type_grant_types.id
+                WHERE 
+                    leave_types.leave_type_grant_type_id = ? 
+                AND 
+                    leave_types.is_active = ?
             `, [GRANT_TYPE_ID.default, LEAVE_STATUS.active]);
 
-            if(!get_all_leave_type_by_id_result.length){
-                response_data.error = "No active default leave types found.";
+            if(get_all_leave_type_by_id_result.length){
+                response_data.status = true;
+                response_data.result = get_all_leave_type_by_id_result;
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_leave_type_by_id_result[NUMBER.zero];
+                response_data.error = "No active default leave types found.";
             }
         }
         catch(error){
@@ -133,20 +158,28 @@ class LeaveTypeModel{
 
         try{
             const [get_all_special_and_rewarded_result] = await db.execute(`
-                SELECT leave_types.id, leave_types.name
-                FROM leave_types
-                LEFT JOIN leave_type_grant_types 
-                ON leave_types.leave_type_grant_type_id = leave_type_grant_types.id
-                WHERE leave_types.is_active = ?
-                AND leave_types.leave_type_grant_type_id IN (?, ?)
+                SELECT 
+                    leave_types.id, 
+                    leave_types.name
+                FROM 
+                    leave_types
+                LEFT JOIN 
+                    leave_type_grant_types 
+                ON 
+                    leave_types.leave_type_grant_type_id = leave_type_grant_types.id
+                WHERE 
+                    leave_types.is_active = ?
+                AND 
+                    leave_types.leave_type_grant_type_id 
+                IN (?, ?)
             `, [LEAVE_STATUS.active, GRANT_TYPE_ID.special, GRANT_TYPE_ID.rewarded]);
 
-            if(!get_all_special_and_rewarded_result.length){
-                response_data.error = "No active special and rewarded leave types found.";
+            if(get_all_special_and_rewarded_result.length){
+                response_data.status = true;
+                response_data.result = get_all_special_and_rewarded_result;
             }
             else{
-                response_data.status = true;
-                response_data.result = get_all_special_and_rewarded_result[NUMBER.zero];
+                response_data.error = "No active special and rewarded leave types found."; 
             }
         }
         catch(error){
@@ -178,16 +211,20 @@ class LeaveTypeModel{
                     leave_type_grant_type_id, 
                     leave_type_rule_id, 
                     base_value
-                FROM leave_types
-                WHERE id = ? AND is_active = ?
+                FROM 
+                    leave_types
+                WHERE 
+                    id = ? 
+                AND 
+                    is_active = ?
             `, [leave_type_id, LEAVE_STATUS.active]);
 
             if(get_leave_type_result.length){
-                response_data.error = "error in get all leave type by id";
-            } 
-            else{
                 response_data.status = true;
                 response_data.result = get_leave_type_result[NUMBER.zero];
+            } 
+            else{
+                response_data.error = "error in get all leave type by id";
             }
         } 
         catch(error){
@@ -228,28 +265,42 @@ class LeaveTypeModel{
                     leave_transaction_statuses.name AS status,
                     CONCAT(rewarder.first_name, ' ', rewarder.last_name) AS rewarded_by,
                     CONCAT(approver.first_name, ' ', approver.last_name) AS approved_by
-                FROM leave_transactions
-                JOIN employees 
-                    ON employees.id = leave_transactions.employee_id
-                JOIN leave_types 
-                    ON leave_types.id = leave_transactions.leave_type_id
-                JOIN leave_type_grant_types
-                    ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
-                LEFT JOIN leave_transaction_statuses 
-                    ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
-                LEFT JOIN employees AS rewarder
-                    ON rewarder.id = leave_transactions.rewarded_by_id
-                LEFT JOIN employees AS approver
-                    ON approver.id = leave_transactions.approved_by_id
-                ORDER BY leave_transactions.id DESC;
+                FROM 
+                    leave_transactions
+                INNER JOIN 
+                    employees 
+                ON 
+                    employees.id = leave_transactions.employee_id
+                INNER JOIN 
+                    leave_types 
+                ON 
+                    leave_types.id = leave_transactions.leave_type_id
+                INNER JOIN 
+                    leave_type_grant_types
+                ON 
+                    leave_type_grant_types.id = leave_types.leave_type_grant_type_id
+                LEFT JOIN 
+                    leave_transaction_statuses 
+                ON 
+                    leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                LEFT JOIN 
+                    employees AS rewarder
+                ON 
+                    rewarder.id = leave_transactions.rewarded_by_id
+                LEFT JOIN 
+                    employees AS approver
+                ON 
+                    approver.id = leave_transactions.approved_by_id
+                ORDER BY 
+                    leave_transactions.id DESC;
             `);
     
-            if(!get_all_employee_leave_result.length){
-                response_data.error = "No leave transactions found.";
+            if(get_all_employee_leave_result.length){
+                response_data.status = true;
+                response_data.result = get_all_employee_leave_result;
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_all_employee_leave_result[NUMBER.zero];
+                response_data.error = "No leave transactions found.";
             }
         } 
         catch(error){
@@ -292,30 +343,44 @@ class LeaveTypeModel{
                     leave_transaction_statuses.name AS status,
                     CONCAT(rewarder.first_name, ' ', rewarder.last_name) AS rewarded_by,
                     CONCAT(approver.first_name, ' ', approver.last_name) AS approved_by
-                FROM leave_transactions
-                JOIN employees 
-                    ON employees.id = leave_transactions.employee_id
-                JOIN leave_types 
-                    ON leave_types.id = leave_transactions.leave_type_id
-                JOIN leave_type_grant_types
-                    ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
-                LEFT JOIN leave_transaction_statuses 
-                    ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
-                LEFT JOIN employees AS rewarder
-                    ON rewarder.id = leave_transactions.rewarded_by_id
-                LEFT JOIN employees AS approver
-                    ON approver.id = leave_transactions.approved_by_id
-
-                WHERE leave_transactions.employee_id = ?
-                ORDER BY leave_transactions.id DESC;
+                FROM 
+                    leave_transactions
+                INNER JOIN 
+                    employees 
+                ON 
+                    employees.id = leave_transactions.employee_id
+                INNER JOIN 
+                    leave_types 
+                ON 
+                    leave_types.id = leave_transactions.leave_type_id
+                INNER JOIN 
+                    leave_type_grant_types
+                ON 
+                    leave_type_grant_types.id = leave_types.leave_type_grant_type_id
+                LEFT JOIN 
+                    leave_transaction_statuses 
+                ON 
+                    leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                LEFT JOIN 
+                    employees AS rewarder
+                ON 
+                    rewarder.id = leave_transactions.rewarded_by_id
+                LEFT JOIN 
+                    employees AS approver
+                ON 
+                    approver.id = leave_transactions.approved_by_id
+                WHERE 
+                    leave_transactions.employee_id = ?
+                ORDER BY 
+                    leave_transactions.id DESC;
             `, [employee_id]);
     
-            if(!get_all_employee_leave_result.length){
-                response_data.error = "No leave transactions found.";
+            if(get_all_employee_leave_result.length){
+                response_data.status = true;
+                response_data.result = get_all_employee_leave_result; 
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_all_employee_leave_result[NUMBER.zero];
+                response_data.error = "No leave transactions found.";
             }
         } 
         catch(error){
@@ -324,7 +389,8 @@ class LeaveTypeModel{
         }
     
         return response_data;
-    } 
+    }
+    
 
     /**
      * Update leave transaction status (approved, rejected, etc.)
@@ -341,9 +407,13 @@ class LeaveTypeModel{
     
         try{
             const [update_leave_status_result] = await db.execute(`
-                UPDATE leave_transactions
-                SET leave_transaction_status_id = ?, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                UPDATE 
+                    leave_transactions
+                SET 
+                    leave_transaction_status_id = ?, 
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE 
+                    id = ?
             `, [status_id, leave_id]);
     
             if(update_leave_status_result.affectedRows){
@@ -384,25 +454,38 @@ class LeaveTypeModel{
                     leave_transactions.end_date,
                     leave_transactions.reason,
                     leave_transaction_statuses.name AS status
-                FROM leave_transactions
-                JOIN employees 
-                    ON employees.id = leave_transactions.employee_id
-                JOIN leave_types 
-                    ON leave_types.id = leave_transactions.leave_type_id
-                JOIN leave_type_grant_types 
-                    ON leave_type_grant_types.id = leave_types.leave_type_grant_type_id
-                LEFT JOIN leave_transaction_statuses 
-                    ON leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
-                WHERE leave_transactions.employee_id = ? AND leave_transaction_status_id = ?
-                ORDER BY leave_transactions.id DESC
+                FROM 
+                    leave_transactions
+                INNER JOIN 
+                    employees 
+                ON 
+                    employees.id = leave_transactions.employee_id
+                INNER JOIN 
+                    leave_types 
+                ON 
+                    leave_types.id = leave_transactions.leave_type_id
+                INNER JOIN 
+                    leave_type_grant_types 
+                ON 
+                    leave_type_grant_types.id = leave_types.leave_type_grant_type_id
+                LEFT JOIN 
+                    leave_transaction_statuses 
+                ON 
+                    leave_transaction_statuses.id = leave_transactions.leave_transaction_status_id
+                WHERE 
+                    leave_transactions.employee_id = ? 
+                AND 
+                    leave_transaction_status_id = ?
+                ORDER BY 
+                    leave_transactions.id DESC
             `, [employee_id, status]);
     
-            if(!get_all_employee_record_leave_result.length){
-                response_data.error = "No leave transactions found.";
+            if(get_all_employee_record_leave_result.length){
+                response_data.status = true;
+                response_data.result = get_all_employee_record_leave_result;
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_all_employee_record_leave_result[NUMBER.zero];
+                response_data.error = "No leave transactions found.";
             }
         } 
         catch(error){

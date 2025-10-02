@@ -29,6 +29,7 @@ export const NUMBER ={
     ten: 10,
     eleven: 11,
     twelve: 12,
+    fourteen:14,
     twenty_three: 23,
     twenty_four: 24,
     thirty_one: 31,

@@ -50,12 +50,12 @@ class leaveTransactionModel{
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend, is_active, start_date, end_date, filed_date, year, rewarded_by_id,  approved_by_id]);
             
-            if(!insert_data_result.insertId){
-                response_data.error = "Insert failed in model.";
-            } 
-            else{
+            if(insert_data_result.insertId){
                 response_data.status = true;
                 response_data.result = { leave_id: insert_data_result.insertId };
+            } 
+            else{
+                response_data.error = "Insert failed in model.";
             }
         } 
         catch(error){
@@ -79,17 +79,23 @@ class leaveTransactionModel{
 
         try {
             const [get_all_leave_transaction_result] = await db.execute(`
-                SELECT id, employee_id, total_leave, leave_transaction_status_id
-                FROM leave_transactions
-                WHERE id = ?
+                SELECT 
+                    id, 
+                    employee_id, 
+                    total_leave, 
+                    leave_transaction_status_id
+                FROM 
+                    leave_transactions
+                WHERE 
+                    id = ?
             `, [leave_id]);
 
-            if(!get_all_leave_transaction_result.length){
-                response_data.error = "Leave transaction not found.";
-            }
-            else{
+            if(get_all_leave_transaction_result.length){
                 response_data.status = true;
                 response_data.result = get_all_leave_transaction_result[NUMBER.zero];
+            }
+            else{
+                response_data.error = "Leave transaction not found.";
             }
         }
         catch(error){
@@ -121,20 +127,26 @@ class leaveTransactionModel{
                     SUM(leave_credits.used_credit) AS total_used_credit,
                     SUM(leave_credits.deducted_credit) AS total_deducted_credit,
                     SUM(leave_credits.latest_credit) AS total_latest_credit
-                FROM leave_credits
-                LEFT JOIN employees 
-                    ON leave_credits.employee_id = employees.id
-                WHERE leave_credits.employee_id = ?
-                GROUP BY leave_credits.employee_id
-                ORDER BY leave_credits.employee_id DESC
+                FROM 
+                    leave_credits
+                LEFT 
+                    JOIN employees 
+                ON 
+                    leave_credits.employee_id = employees.id
+                WHERE 
+                    leave_credits.employee_id = ?
+                GROUP BY 
+                    leave_credits.employee_id
+                ORDER BY 
+                    leave_credits.employee_id DESC
             `, [employee_id]);
             
-            if(!get_total_credit_result.length){
-                response_data.error = "No leave credit found for employee in leave transaction models.";
+            if(get_total_credit_result.length){
+                response_data.status = true;
+                response_data.result = get_total_credit_result;
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_total_credit_result[NUMBER.zero];
+                response_data.error = "No leave credit found for employee in leave transaction models.";
             }        
         } 
         catch(error){
@@ -166,19 +178,24 @@ class leaveTransactionModel{
     
         try{
             const [get_latest_credit_record_result] = await db.execute(`
-                SELECT id
-                FROM leave_credits
-                WHERE employee_id = ?
-                ORDER BY created_at DESC
-                LIMIT ${NUMBER.one}
+                SELECT 
+                    id
+                FROM 
+                    leave_credits
+                WHERE 
+                    employee_id = ?
+                ORDER BY 
+                    created_at DESC
+                LIMIT 
+                    ${NUMBER.one}
             `, [employee_id]);
     
-            if(!get_latest_credit_record_result.length){
-                response_data.error = "No latest credit record found in model.";
-            } 
-            else{
+            if(get_latest_credit_record_result.length){
                 response_data.status = true;
                 response_data.result = get_latest_credit_record_result[NUMBER.zero];
+            } 
+            else{
+                response_data.error = "No latest credit record found in model."; 
             }
         } 
         catch(error){
@@ -212,20 +229,24 @@ class leaveTransactionModel{
     
         try{
             const [deducted_credit_result] = await connection.execute(`
-                UPDATE leave_credits
-                SET deducted_credit = deducted_credit + ?,
+                UPDATE 
+                    leave_credits
+                SET 
+                    deducted_credit = deducted_credit + ?,
                     used_credit = used_credit + ?,
                     latest_credit = latest_credit - ?,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                WHERE 
+                    id = ?
             `, [total_leave, total_leave, total_leave, credit_id]);
     
             if(deducted_credit_result.affectedRows){
-                response_data.error = "Leave credit record not found or deduction failed in model.";
-            } 
-            else{
                 response_data.status = true;
                 response_data.result = { credit_id, deducted: total_leave };
+            } 
+            else{
+                response_data.error = "Leave credit record not found or deduction failed in model.";
+               
             }
     
         } 
@@ -260,17 +281,23 @@ class leaveTransactionModel{
     
         try{
             const [update_status_result] = await connection.execute(`
-                UPDATE leave_transactions
-                SET leave_transaction_status_id = ?, approved_by_id = ?, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                UPDATE 
+                    leave_transactions
+                SET 
+                    leave_transaction_status_id = ?, 
+                    approved_by_id = ?, 
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE 
+                    id = ?
             `, [status_id, approver_id, leave_id]);
     
-            if(update_status_result.affectedRows === NUMBER.zero){
-                response_data.error = "Leave transaction not found or status unchanged.";
-            } 
-            else{
+            if(update_status_result.affectedRows){
                 response_data.status = true;
                 response_data.result = { leave_id, status_id };
+            } 
+            else{
+                response_data.error = "Leave transaction not found or status unchanged.";
+                
             }
         } 
         catch(error){

@@ -1,5 +1,4 @@
 import db from "../Configs/database.js";
-import { NUMBER } from "../Constant/constants.js";
 
 class EmployeeGenderModel{
 
@@ -18,14 +17,17 @@ class EmployeeGenderModel{
 
         try{
             const [get_gender_by_id_result] = await db.execute(`
-                SELECT * 
-                FROM employee_genders 
-                WHERE id = ?
+                SELECT 
+                    * 
+                FROM 
+                    employee_genders 
+                WHERE 
+                    id = ?
             `, [id]);
 
             if(get_gender_by_id_result.length){
                 response_data.status = true;
-                response_data.result = get_gender_by_id_result[NUMBER.zero];
+                response_data.result = get_gender_by_id_result;
             } 
             else{
                 response_data.error = "gender record not found in model";

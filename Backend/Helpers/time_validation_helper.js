@@ -204,7 +204,7 @@ class TimeValidationHelper{
      * updated at: October 1, 2025 01:55 PM
      */
     static async validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason }) {
-        
+    
         try{
             
             if(!employee_id || !leave_type_data || !start_date || !end_date || !reason){
@@ -212,7 +212,7 @@ class TimeValidationHelper{
             }
     
             const start_date_day = new Date(start_date);
-            const end_date_day = new Date(end_date);
+            let end_date_day = new Date(end_date);
     
             if(isNaN(start_date_day.getTime()) || isNaN(end_date_day.getTime())){
                 return { is_valid: false, message: "Invalid date format." };
@@ -246,33 +246,44 @@ class TimeValidationHelper{
             const start_only = new Date(start_date_day.getFullYear(), start_date_day.getMonth(), start_date_day.getDate());
             const end_only = new Date(end_date_day.getFullYear(), end_date_day.getMonth(), end_date_day.getDate());
             let total_leave_day = NUMBER.zero;
-
-            for(let except = new Date(start_only); except <= end_only; except.setDate(except.getDate() + NUMBER.one)) {
+    
+            for(let except = new Date(start_only); except <= end_only; except.setDate(except.getDate() + NUMBER.one)){
                 const day = except.getDay();
 
                 if(day !== NUMBER.zero && day !== NUMBER.six){ 
                     total_leave_day++;
                 }
             }
-
+    
             const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (NUMBER.one_thousand * NUMBER.sixty * NUMBER.sixty * NUMBER.twenty_four));
     
-            if(notice_day === NUMBER.zero && rule_id === NUMBER.three && (start_only.getTime() !== today_only.getTime() || end_only.getTime() !== today_only.getTime())){
-                return { is_valid: false, message: `This leave type "${leave_type_data.name}" can only be used on the current date.` };
+            if(notice_day > NUMBER.zero){
+                if(different_days < notice_day){
+                    return { is_valid: false, message: `This leave type requires a notice period of at least ${notice_day} days.` };
+                }
+            } 
+            else if(notice_day === NUMBER.zero){
+                if(rule_id === NUMBER.three){
+                    if(start_only.getTime() !== today_only.getTime() || end_only.getTime() !== today_only.getTime()){
+                        return { is_valid: false, message: `This leave type "${leave_type_data.name}" can only be used on the current date.` };
+                    }
+                } 
+                else if(different_days < NUMBER.zero){
+                    return { is_valid: false, message: `This leave type cannot be applied for past dates.` };
+                }
             }
-    
-            if(notice_day > NUMBER.zero && different_days < notice_day){
-                return { is_valid: false, message: `This leave type requires a notice period of at least ${notice_day} days.` };
-            }
-    
-            if(notice_day < NUMBER.zero){
+            else if(notice_day < NUMBER.zero){
                 const allowed_past_date = new Date(today_only);
                 allowed_past_date.setDate(today_only.getDate() + notice_day);
                 const valid_start = start_only >= allowed_past_date && start_only <= today_only;
                 const valid_end = end_only >= allowed_past_date && end_only <= today_only;
-    
+                
                 if(!valid_start || !valid_end){
                     return { is_valid: false, message: `This leave type allows past date leave only within ${Math.abs(notice_day)} days from today.` };
+                }
+                
+                if(end_only > today_only){
+                    adjusted_end_date = today_only;
                 }
             }
     
@@ -280,12 +291,8 @@ class TimeValidationHelper{
                 return { is_valid: false, message: "Start date and End date cannot be the same." };
             }
     
-            if(notice_day === NUMBER.zero && rule_id !== NUMBER.three && different_days < NUMBER.zero){
-                return { is_valid: false, message: `This leave type cannot be applied for past dates.` };
-            }
-
             const max_days_allowed = Number(leave_type_data.base_value);
-            
+
             if(!isNaN(max_days_allowed) && max_days_allowed > NUMBER.zero && total_leave_day > max_days_allowed){
                 return { is_valid: false, message: `Leave exceeds max allowed (${max_days_allowed} days).` };
             }
@@ -302,6 +309,7 @@ class TimeValidationHelper{
             return { is_valid: false, message: "Error validating leave application." };
         }
     }
+    
 }
 
 export default TimeValidationHelper;

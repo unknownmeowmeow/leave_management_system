@@ -20,7 +20,7 @@ export default function Dashboard() {
                     { withCredentials: true }
                 );
                 if (response.data.success) {
-                    setRecords(response.data.records);
+                    setRecords(response.data.result);
                 } else {
                     alert(response.data.message);
                 }
@@ -28,9 +28,10 @@ export default function Dashboard() {
                 alert(error.response?.data?.message || "Failed to fetch records");
             }
         };
-
+    
         fetchRecords();
     }, []);
+    
 
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>

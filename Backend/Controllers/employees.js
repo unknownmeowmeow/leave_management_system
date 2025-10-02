@@ -79,76 +79,75 @@ class EmployeeControllers{
      * created by: rogendher keith lachica
      * updated at: September 24 2025 1:59 pm    
      */
-    static async employeeRegistration(req, res){
+    static async employeeRegistration(req, res) {
         const connection = await database.getConnection();
-    
-        try{
+
+        try {
             await connection.beginTransaction();
+
             const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
-            
-            if(validation_error.length){
+
+            if (validation_error.length) {
                 await connection.rollback();
                 return res.json({ success: false, errors: validation_error });
             }
-    
+
             const { first_name, last_name, email, password, role, gender } = req.body;
             const email_exist = await EmployeeModel.getEmployeeEmail(email);
-            
+
             if(email_exist.result){
                 throw new Error("Email Already Exists in Registration in controller");
             }
-    
+
             const role_data = await EmployeeRoleTypeModel.getRoleTypeById(role);
-    
+
             if(!role_data.result){
                 throw new Error("Failed to fetch roles in controller");
-                
             }
-    
+
             const gender_data = await EmployeeGenderModel.getGenderById(gender);
-            
+
             if(!gender_data.result){
                 throw new Error("Failed to fetch gender in controller");
             }
-    
+
             const hash_password = await bcrypt.hash(password, NUMBER.twelve);
-            const new_user = await EmployeeModel.createUser({ first_name, last_name, email, role, gender, password: hash_password }, connection);
-    
-            if(!new_user.status){
+            const employee_new_account_record = await EmployeeModel.createEmployeeAccount({ first_name, last_name, email, role, gender, password: hash_password }, connection);
+
+            if(!employee_new_account_record.status){
                 throw new Error("Registration Failed in controller");
             }
-    
-            const employee_id = new_user.insert_employee_result.id;
-    
+
+            const employee_id = employee_new_account_record.insert_employee_result.id;
+
             if(parseInt(role, NUMBER.ten) === ROLE_TYPE_ID.employee){
-                const carry_over_leave_types = await LeaveTypeModel.getAllCarryOverLeaveTypes();
-    
-                if(carry_over_leave_types.result.length){
-    
-                    const employee_data = carry_over_leave_types.result.map(leave_type => [
-                        employee_id,               
-                        null,                     
-                        null,                     
-                        leave_type.id,            
-                        NUMBER.zero_point_zero_zero,                      
-                        NUMBER.zero_point_zero_zero,                     
-                        NUMBER.zero_point_zero_zero,                     
-                        leave_type.base_value,     
-                        NUMBER.zero_point_zero_zero,                     
-                        NUMBER.zero_point_zero_zero,                     
-                        leave_type.base_value,    
+                const carry_over_leave_type_record = await LeaveTypeModel.getAllCarryOverLeaveTypes();
+            
+                if(carry_over_leave_type_record.status && carry_over_leave_type_record.result.length) {
+                    const employee_data = carry_over_leave_type_record.result.map(leave_type => [
+                        employee_id,
+                        null,
+                        null,
+                        leave_type.id,
+                        NUMBER.zero_point_zero_zero,
+                        NUMBER.zero_point_zero_zero,
+                        NUMBER.zero_point_zero_zero,
+                        leave_type.base_value,
+                        NUMBER.zero_point_zero_zero,
+                        NUMBER.zero_point_zero_zero,
+                        leave_type.base_value,
                         leave_type.base_value,
                         new Date()
                     ]);
-    
+
                     const leave_credit = await LeaveCreditModel.insertLeaveCredit({ employee_data, connection });
-    
+            
                     if(!leave_credit.status){
-                        throw new Error("Initial Leave credit failed to insert in controller")
+                        throw new Error("Initial Leave credit failed to insert in controller");
                     }
                 }
             }
-    
+            
             await connection.commit();
             return res.json({ success: true, message: "Registration Successful in controller" });
         } 
@@ -211,12 +210,9 @@ class EmployeeControllers{
     
         } 
         catch(error){
-            console.error(error);
-    
             return res.json({ success: false, message: error.message || "Server error in controller" });
         }
     }
-    
     
 
     /**

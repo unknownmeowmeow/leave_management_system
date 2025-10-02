@@ -1,6 +1,4 @@
 import db from "../Configs/database.js";
-import { NUMBER } from "../Constant/constants.js";
-
 
 class LeaveTypeGrantModel{
 
@@ -21,18 +19,21 @@ class LeaveTypeGrantModel{
 
         try{
             const [get_grant_type_result] = await db.execute(`
-                SELECT id, name 
-                FROM leave_type_grant_types 
-                WHERE name = ?
+                SELECT 
+                    id, 
+                    name 
+                FROM 
+                    leave_type_grant_types 
+                WHERE 
+                    name = ?
             `, [name]);
 
-            if(!get_grant_type_result.length){
-                response_data.error = "grant type in model error";
+            if(get_grant_type_result.length){
+                response_data.status = true;
+                response_data.result = get_grant_type_result;
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_grant_type_result[NUMBER.zero];
-                
+                response_data.error = "grant type in model error";
             }
         } 
         catch(error){

@@ -164,7 +164,7 @@ class AdminLeaveController{
         if(!user){
             throw new Error("No User Found");
         }
-    
+
         if(!leave_id || !status_id){
             throw new Error("No leave id found or status");
         }
@@ -185,9 +185,9 @@ class AdminLeaveController{
 
             if(Number(status_id) === NUMBER.two){
                 const employee_total_credit_record = await LeaveTransactionModel.getTotalCredit(employee_id);
-        
+
                 if(!employee_total_credit_record.status){
-                   throw new Error("No Employee Credit Found");
+                   throw new Error("No Employee Credit Found", employee_total_credit_record);
                 }
 
                 const available_credit = Number(employee_total_credit_record.result.total_latest_credit);

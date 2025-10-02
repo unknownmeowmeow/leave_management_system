@@ -13,8 +13,8 @@ import leaveFileRoutes from "./Routes/LeaveFile.js";
 const app = express();
 
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-app.use(express.json({ origin: "http://localhost:5173", credentials: true }));
-app.use(express.urlencoded( { extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: MY_SECRET_SERVER_SESSION, resave: false, saveUninitialized: false }));
 
 app.use("/api/admin", adminRoutes);

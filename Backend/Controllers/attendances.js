@@ -302,7 +302,7 @@ class AttendanceControllers{
 
         try{
             const employee_id = user.employee_id;
-            const employee_record = await AttendanceModel.getAllEmployeesRecord(employee_id);
+            const employee_record = await AttendanceModel.getAllTimeInAndTimeOutByEmployeeId(employee_id);
 
             if(employee_record.error){
                 throw new Error("No Employee Found");
@@ -370,13 +370,13 @@ class AttendanceControllers{
         }
 
         try{
-            const attendance_record = await AttendanceModel.getAllEmployeesRecords();
+            const attendance_record = await AttendanceModel.getAllEmployeeTimeInAndTimeOut();
 
-            if(attendance_record.error){
-                throw new Error("Attendance No Record Found");
+            if(!attendance_record.status){
+                throw new Error(attendance_record.error || "Attendance No Record Found");
             }
 
-            return res.json({ success: true, records: attendance_record.result });
+            return res.json({ success: true, result: attendance_record.result });
         } 
         catch(error){
             return res.json({ success: false, message: error.message || "Server error admin in controller" });

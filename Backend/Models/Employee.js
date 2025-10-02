@@ -1,5 +1,5 @@
 import db from "../Configs/database.js";
-import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
+import {NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
 class EmployeeModel{
 
     /**
@@ -62,9 +62,9 @@ class EmployeeModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 21 2025 11:38 pm  
      */
-    static async createUser({ first_name, last_name, email, role, gender, password }, connection = db){
-        const response_data =  { status: false, result: null, error: null };
-
+    static async createEmployeeAccount({ first_name, last_name, email, role, gender, password }, connection = db) {
+        const response_data = { status: false, result: null, error: null };
+    
         try{
             const [insert_employee_data_result] = await connection.execute(`
                 INSERT INTO employees (
@@ -75,21 +75,56 @@ class EmployeeModel{
                     email, 
                     password, 
                     created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, NOW())
-            `, [role, gender, first_name, last_name, email, password]
-            );
-
-            if(!insert_employee_data_result.insertId){
+                ) 
+                VALUES 
+                    (?, ?, ?, ?, ?, ?, NOW())
+            `, [role, gender, first_name, last_name, email, password]);
+    
+            if(insert_employee_data_result.insertId){
                 response_data.status = true;
                 response_data.insert_employee_result = { id: insert_employee_data_result.insertId };
-            }
+            } 
             else{
-                response_data.error =  "insert employee data error in model";
+                response_data.error = "insert employee data error in model";
             }
-        }
+        } 
         catch(error){
             response_data.error = error.message;
         }
+    
+        return response_data;
+    }
+    
+    static async createEmployeeAccount({ first_name, last_name, email, role, gender, password }, connection = db) {
+        const response_data = { status: false, result: null, error: null };
+    
+        try{
+            const [insert_employee_data_result] = await connection.execute(`
+                INSERT INTO employees (
+                    employee_role_type_id, 
+                    employee_gender_id, 
+                    first_name, 
+                    last_name, 
+                    email, 
+                    password, 
+                    created_at
+                ) 
+                VALUES 
+                    (?, ?, ?, ?, ?, ?, NOW())
+            `, [role, gender, first_name, last_name, email, password]);
+    
+            if(insert_employee_data_result.insertId){
+                response_data.status = true;
+                response_data.insert_employee_result = { id: insert_employee_data_result.insertId };
+            } 
+            else{
+                response_data.error = "insert employee data error in model";
+            }
+        } 
+        catch(error){
+            response_data.error = error.message;
+        }
+    
         return response_data;
     }
     
@@ -111,9 +146,18 @@ class EmployeeModel{
 
         try{
             const [get_all_employee_role_id_result] = await db.execute(`
-                SELECT id, first_name, last_name, email, employee_role_type_id
-                FROM employees
-                WHERE employee_role_type_id IN (?, ?)
+                SELECT 
+                    id, 
+                    first_name, 
+                    last_name, 
+                    email, 
+                    employee_role_type_id
+                FROM 
+                    employees
+                WHERE 
+                    employee_role_type_id 
+                IN 
+                    (?, ?)
             `, [ROLE_TYPE_ID.intern, ROLE_TYPE_ID.employee]);
 
             if(get_all_employee_role_id_result.length){
@@ -158,7 +202,7 @@ class EmployeeModel{
 
             if(get_employee_by_id_result.length){
                 response_data.status = true;
-                response_data.result = get_employee_by_id_result[NUMBER.zero];
+                response_data.result = get_employee_by_id_result;
             }
             else{
                 response_data.error =  "employee id not found in employee model.";

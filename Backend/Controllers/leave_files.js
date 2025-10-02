@@ -90,7 +90,7 @@ class LeaveController{
             const leave_type_record = await LeaveTypeModel.getLeaveTypeById(leave_type);
             
             if(!leave_type_record.status || !leave_type_record.result){
-                throw new Error(leave_type_record.error);
+                throw new Error("No Leave type id Found");
             }
 
             const leave_type_data = leave_type_record.result;
@@ -109,7 +109,7 @@ class LeaveController{
             const check_credit_employee_record = await LeaveTransactionModel.getTotalCredit(employee_id);
 
             if(!check_credit_employee_record.status){
-                throw new Error(check_credit_employee_record.error);
+                throw new Error("No Credit Found");
             }
 
             const available_credit = Number(check_credit_employee_record.result.total_latest_credit);
@@ -144,7 +144,7 @@ class LeaveController{
             });
     
             if(!leave_transaction_data.status || !leave_transaction_data.result.leave_id){
-               throw new Error(leave_transaction_data.error);
+               throw new Error("Failed to Insert Transaction");
             }
             return res.json({ success: true, message: "Leave successfully filed." });
     
@@ -222,7 +222,7 @@ class LeaveController{
             const leave_type_id_data = await LeaveTypeModel.getLeaveTypeById(leave_type);
             
             if(!leave_type_id_data.status || !leave_type_id_data.result){
-                throw new Error(leave_type_id_data.error);
+                throw new Error("This leave type cannot carry over for next year");
             }
 
             const leave_type_data = leave_type_id_data.result;
@@ -271,7 +271,7 @@ class LeaveController{
             });
     
             if(!employee_transaction_data.status || !employee_transaction_data.result.leave_id){
-               throw new Error(employee_transaction_data.error);
+               throw new Error("Error inserting leave transaction in controller.");
             }
 
             return res.json({ success: true, message: "Leave successfully filed in controller." });
@@ -387,13 +387,13 @@ class LeaveController{
             const employee_credit_record = await LeaveCreditModel.getLatestEmployeeLeaveCredited(employee_id);
     
             if(!employee_credit_record.status || !employee_credit_record.result){
-                throw new Error(employee_credit_record.error);
+                throw new Error("No credit Found");
             }
 
             return res.json({ success: true, latest_credit: parseFloat(employee_credit_record.result.latest_credit)});
         } 
         catch(error){
-            return res.json({ success: false, message: error.message || "Server error register in controller" });
+             return res.json({ success: false, message: error.message || "Server error register in controller" });
         }
     }
     

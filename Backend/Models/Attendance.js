@@ -61,7 +61,7 @@ class AttendanceModel{
 
             if(get_latest_time_in_record_result.length){
                 response_data.status = true;
-                response_data.result = get_latest_time_in_record_result[NUMBER.zero];
+                response_data.result = get_latest_time_in_record_result;
             }
             else{
                 response_data.error = "no time in record found in model";
@@ -94,7 +94,7 @@ class AttendanceModel{
 
             if(get_latest_time_out_result.length){
                 response_data.status = true;
-                response_data.result = get_latest_time_out_result[NUMBER.zero];
+                response_data.result = get_latest_time_out_result;
             }
             else{
                 response_data.error = "no time out record found in model";
@@ -119,9 +119,15 @@ class AttendanceModel{
 
         try{
             const [update_time_out_result] = await connection.execute(`
-                UPDATE attendances
-                SET time_out = ?, work_hour = ?, attendance_type_id = ?, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                UPDATE 
+                    attendances
+                SET 
+                    time_out = ?, 
+                    work_hour = ?, 
+                    attendance_type_id = ?, 
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE 
+                    id = ?
             `, [time_out, work_hour, attendance_type_id, id]);
 
             if(update_time_out_result.affectedRows){
@@ -144,7 +150,7 @@ class AttendanceModel{
     * created by: rogendher keith lachica
     * updated at: September 24 2025 1:26 pm  
     */
-    static async getAllEmployeesRecords(){
+    static async getAllEmployeeTimeInAndTimeOut(){
         const response_data =  { status: false, result: null, error: null };
 
         try{
@@ -155,15 +161,19 @@ class AttendanceModel{
                     attendances.time_out, 
                     employees.first_name, 
                     employees.last_name
-                FROM attendances
-                LEFT JOIN employees 
-                ON attendances.employee_id = employees.id
-                ORDER BY attendances.updated_at DESC
+                FROM 
+                    attendances
+                LEFT JOIN 
+                    employees 
+                ON 
+                    attendances.employee_id = employees.id
+                ORDER BY 
+                    attendances.updated_at DESC
             `);
 
             if(get_all_employee_attendance_result.length){
                 response_data.status = true;
-                response_data.result = get_all_employee_attendance_result[NUMBER.zero];
+                response_data.result = get_all_employee_attendance_result;
             }
             else{
                 response_data.error = "no attendance records found in model";
@@ -182,7 +192,7 @@ class AttendanceModel{
     * created by: rogendher keith lachica
     * updated at: September 24 2025 1:26 pm
     */
-    static async getAllEmployeesRecord(employee_id){
+    static async getAllTimeInAndTimeOutByEmployeeId(employee_id){
         const response_data =  { status: false, result: null, error: null };
 
         try{
@@ -193,16 +203,21 @@ class AttendanceModel{
                     attendances.time_out, 
                     employees.first_name, 
                     employees.last_name
-                FROM attendances
-                LEFT JOIN employees 
-                ON attendances.employee_id = employees.id
-                WHERE attendances.employee_id = ?
-                ORDER BY attendances.updated_at DESC
+                FROM 
+                    attendances
+                LEFT JOIN 
+                    employees 
+                ON 
+                    attendances.employee_id = employees.id
+                WHERE 
+                    attendances.employee_id = ?
+                ORDER BY 
+                    attendances.updated_at DESC
             `, [employee_id]);
 
             if(get_all_employee_attendance_result.length){
                 response_data.status = true;
-                response_data.result = get_all_employee_attendance_result[NUMBER.zero];
+                response_data.result = get_all_employee_attendance_result;
             }
             else{
                 response_data.error =  "no employee attendance records found in model";

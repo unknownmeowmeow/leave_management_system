@@ -1,5 +1,5 @@
 import db from "../Configs/database.js";
-import { NUMBER } from "../Constant/constants.js";
+
 
 
 class LeaveTypeRuleModel{
@@ -17,17 +17,21 @@ class LeaveTypeRuleModel{
 
         try{
             const [get_rule_id_result] = await db.execute(`
-                SELECT id, rule_name
-                FROM leave_type_rules
-                WHERE id = ?
+                SELECT 
+                    id, 
+                    rule_name
+                FROM 
+                    leave_type_rules
+                WHERE 
+                    id = ?
             `, [rule_id]);
 
             if(get_rule_id_result.length){
-                response_data.error = "Rule not found.";
+                response_data.status = true;
+                response_data.result = get_rule_id_result;
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_rule_id_result[NUMBER.zero];
+                response_data.error = "Rule not found.";
             }
         } 
         catch(error){

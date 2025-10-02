@@ -1,5 +1,4 @@
 import db from "../Configs/database.js";
-import { NUMBER } from "../Constant/constants.js";
 
 class EmployeeRoleTypeModel{
     /**
@@ -15,17 +14,20 @@ class EmployeeRoleTypeModel{
 
         try{
             const [get_role_by_id_result] = await db.execute(`
-                SELECT * 
-                FROM employee_role_types 
-                WHERE id = ?
+                SELECT 
+                    * 
+                FROM 
+                    employee_role_types 
+                WHERE 
+                    id = ?
             `, [role_id]);
 
             if(get_role_by_id_result.length){
-                response_data.error = "role record not found in model";
+                response_data.status = true;
+                response_data.result = get_role_by_id_result;
             } 
             else{
-                response_data.status = true;
-                response_data.result = get_role_by_id_result[NUMBER.zero];
+                response_data.error = "role record not found in model";
             }
         } 
         catch(error){
@@ -50,17 +52,20 @@ class EmployeeRoleTypeModel{
 
         try{
             const [get_role_by_id_employee_result] = await db.execute(`
-                SELECT id 
-                FROM employees 
-                WHERE employee_role_type_id = ?
+                SELECT 
+                    id 
+                FROM 
+                    employees 
+                WHERE 
+                    employee_role_type_id = ?
             `, [role_id]);
 
             if(get_role_by_id_employee_result.length){
-                response_data.error = "No employees found for the given role in model.";
-            } 
-            else{
                 response_data.status = true;
                 response_data.result = get_role_by_id_employee_result;
+            } 
+            else{
+                response_data.error = "No employees found for the given role in model.";
             }
         } 
         catch(error){
