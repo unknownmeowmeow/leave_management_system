@@ -11,13 +11,49 @@ import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
 
 
 class EmployeeControllers{
+
     /**
-     * Controller to get all roles and send as JSON response.
-     * @param {Object} req - The Express request object.
-     * @param {Object} res - The Express response object.
-     * @returns {Promise<void>} Sends JSON response with roles or error message.
-     * created by: rogendher keith lachica
-     * updated at: September 19 2025 9:37 am  
+     * Fetches all employee role types from the database.
+     *
+     * Workflow:
+     * 1. **Fetch Roles from DB**
+     *    - Calls `EmployeeRoleTypeModel.getAllRoles()` to retrieve all defined roles.
+     *    - If an error occurs within the model, responds with `success: false` and the error message.
+     *
+     * 2. **Return Role Data**
+     *    - If successful, returns the list of roles with a `success: true` flag.
+     *
+     * 3. **Error Handling**
+     *    - If an unexpected error occurs (e.g., during the async call), it is caught and a generic failure response is returned.
+     *
+     * Example Response (Success):
+     * {
+     *   success: true,
+     *   roles: [
+     *     { id: 1, name: "Admin" },
+     *     { id: 2, name: "Employee" },
+     *     ...
+     *   ]
+     * }
+     *
+     * Example Response (Failure - Model Error):
+     * {
+     *   success: false,
+     *   message: "Failed to connect to role table"
+     * }
+     *
+     * Example Response (Failure - Uncaught Exception):
+     * {
+     *   success: false,
+     *   message: "Failed to fetch roles"
+     * }
+     *
+     * @param {Object} req - Express request object.
+     * @param {Object} res - Express response object.
+     * @returns {Object} JSON response indicating success or failure.
+     *
+     * created by: [Your Name]
+     * updated at: [Update Date & Time]
      */
     static async employeeRole(req, res){
 
@@ -36,13 +72,48 @@ class EmployeeControllers{
     }
 
     /**
-    * Controller to get all genders and send as JSON response.
-    * @param {Object} req - The Express request object.
-    * @param {Object} res - The Express response object.
-    * @returns {Promise<void>} Sends JSON response with genders or error message.
-    * created by: rogendher keith lachica
-    * updated at: September 19 2025 9:17 am  
-    */
+     * Fetches all employee gender types from the database.
+     *
+     * Workflow:
+     * 1. **Fetch Genders from DB**
+     *    - Calls `EmployeeGenderModel.getAllGenders()` to retrieve all defined gender options.
+     *    - If an error occurs within the model, responds with `success: false` and the error message.
+     *
+     * 2. **Return Gender Data**
+     *    - If successful, returns the list of genders with a `success: true` flag.
+     *
+     * 3. **Error Handling**
+     *    - If an unexpected error occurs (e.g., during the async call), it is caught and a generic failure response is returned.
+     *
+     * Example Response (Success):
+     * {
+     *   success: true,
+     *   genders: [
+     *     { id: 1, name: "Male" },
+     *     { id: 2, name: "Female" },
+     *     ...
+     *   ]
+     * }
+     *
+     * Example Response (Failure - Model Error):
+     * {
+     *   success: false,
+     *   message: "Database error while fetching genders"
+     * }
+     *
+     * Example Response (Failure - Uncaught Exception):
+     * {
+     *   success: false,
+     *   message: "Failed to fetch in gender registration"
+     * }
+     *
+     * @param {Object} req - Express request object.
+     * @param {Object} res - Express response object.
+     * @returns {Object} JSON response indicating success or failure.
+     *
+     * created by: [Your Name]
+     * updated at: [Update Date & Time]
+     */
     static async employeeGender(req, res){
 
         try{
@@ -59,25 +130,77 @@ class EmployeeControllers{
         }
     }
 
-    /**
-     * Controller to handle user registration.
-     * Validates input data, checks for existing email,
-     * verifies role and gender IDs, hashes password,
-     * and creates a new user.
-     * 
-     * @param {Object} req - The Express request object.
-     * @param {Object} req.body - The request body containing user details.
-     * @param {string} req.body.first_name - User's first name.
-     * @param {string} req.body.last_name - User's last name.
-     * @param {string} req.body.email - User's email address.
-     * @param {string} req.body.password - User's password.
-     * @param {string} req.body.confirm_password - Confirmation of the user's password.
-     * @param {number} req.body.role - Role ID of the user.
-     * @param {number} req.body.gender - Gender ID of the user.
-     * @param {Object} res - The Express response object.
-     * @returns {Promise<Object>} Sends JSON response indicating success or failure.
-     * created by: rogendher keith lachica
-     * updated at: September 24 2025 1:59 pm    
+   /**
+     * Registers a new employee in the system, including validation, role and gender verification,
+     * password hashing, and initial leave credit assignment if applicable.
+     *
+     * Workflow:
+     * 1. **Open Database Transaction**
+     *    - Establishes a connection and begins a transaction to ensure atomicity.
+     *
+     * 2. **Validate Request Data**
+     *    - Uses `ValidationHelper.validateEmployeeRegistration()` to check input fields.
+     *    - If validation errors exist, returns them immediately without proceeding.
+     *
+     * 3. **Check for Existing Email**
+     *    - Calls `EmployeeModel.getEmployeeEmail(email)` to ensure email uniqueness.
+     *    - Throws error if the email is already registered.
+     *
+     * 4. **Verify Role and Gender IDs**
+     *    - Retrieves role and gender details from their respective models.
+     *    - Throws error if invalid role or gender IDs are provided.
+     *
+     * 5. **Hash Password**
+     *    - Secures password with bcrypt hashing using a defined salt rounds constant.
+     *
+     * 6. **Create Employee Record**
+     *    - Calls `EmployeeModel.createEmployeeAccount()` with validated data and hashed password.
+     *    - Throws error if registration fails.
+     *
+     * 7. **Assign Initial Leave Credits (Conditional)**
+     *    - If the registered role is a regular employee:
+     *      - Fetches all carry-over leave types.
+     *      - Maps leave types to a structured array for bulk insertion of leave credits.
+     *      - Inserts leave credits into the database.
+     *      - Throws error if insertion fails.
+     *
+     * 8. **Commit or Rollback Transaction**
+     *    - Commits transaction upon success.
+     *    - Rolls back and returns error if any step fails.
+     *
+     * 9. **Release Database Connection**
+     *    - Ensures connection release in the `finally` block to prevent leaks.
+     *
+     * Example Response (Success):
+     * {
+     *   success: true,
+     *   message: "Registration Successful in controller"
+     * }
+     *
+     * Example Response (Failure - Validation Error):
+     * {
+     *   success: false,
+     *   errors: [ "First name is required", "Invalid email format" ]
+     * }
+     *
+     * Example Response (Failure - Email Exists):
+     * {
+     *   success: false,
+     *   message: "Email Already Exists in Registration in controller"
+     * }
+     *
+     * Example Response (Failure - DB or Other Errors):
+     * {
+     *   success: false,
+     *   message: "Registration Failed in controller"
+     * }
+     *
+     * @param {Object} req - Express request object containing registration details in req.body.
+     * @param {Object} res - Express response object used to send JSON responses.
+     * @returns {Object} JSON response indicating the success or failure of the registration process.
+     *
+     * created by: [Your Name]
+     * updated at: [Update Date & Time]
      */
     static async employeeRegistration(req, res){
         const connection = await database.getConnection();
@@ -161,19 +284,70 @@ class EmployeeControllers{
     
     
     /**
-     * Controller to handle user login.
-     * Validates input, checks for existing email,
-     * compares password hash, and sets session data on success.
-     * 
-     * @param {Object} req - The Express request object.
-     * @param {Object} req.body - The request body containing login details.
-     * @param {string} req.body.email - The user's email.
-     * @param {string} req.body.password - The user's password.
-     * @param {Object} res - The Express response object.
-     * @returns {Promise<Object>} Sends JSON response indicating success or failure.
-     * created by: rogendher keith lachica
-     * updated at: September 19 2025 10:47 am  
+     * Handles employee login by validating credentials, verifying email existence,
+     * comparing passwords, and establishing a user session.
+     *
+     * Workflow:
+     * 1. **Validate Login Data**
+     *    - Uses `ValidationHelper.validateEmployeeLogin()` to check the request body.
+     *    - Returns validation errors immediately if any.
+     *
+     * 2. **Check Email Existence**
+     *    - Calls `EmployeeModel.getEmployeeEmail(email)` to fetch employee data by email.
+     *    - Throws error if the email is not found or query fails.
+     *
+     * 3. **Verify Password**
+     *    - Compares provided password with the stored hashed password using bcrypt.
+     *    - Throws error if passwords do not match.
+     *
+     * 4. **Create Session**
+     *    - Stores employee details in `req.session.user` to maintain login state.
+     *
+     * 5. **Respond with Success**
+     *    - Returns JSON indicating successful login and session user data.
+     *
+     * 6. **Error Handling**
+     *    - Catches any thrown errors and returns a failure JSON response with appropriate message.
+     *
+     * Example Response (Success):
+     * {
+     *   success: true,
+     *   message: "Login successful",
+     *   user: {
+     *     employee_id: 123,
+     *     first_name: "John",
+     *     last_name: "Doe",
+     *     email: "john.doe@example.com",
+     *     role: 2
+     *   }
+     * }
+     *
+     * Example Response (Failure - Validation Error):
+     * {
+     *   success: false,
+     *   errors: [ "Email is required", "Password must be at least 8 characters" ]
+     * }
+     *
+     * Example Response (Failure - Email Not Found):
+     * {
+     *   success: false,
+     *   message: "Email not found"
+     * }
+     *
+     * Example Response (Failure - Password Mismatch):
+     * {
+     *   success: false,
+     *   message: "Password does not match"
+     * }
+     *
+     * @param {Object} req - Express request object containing login credentials.
+     * @param {Object} res - Express response object used to send JSON responses.
+     * @returns {Object} JSON response indicating the success or failure of login.
+     *
+     * created by: [Your Name]
+     * updated at: [Update Date & Time]
      */
+
     static async employeeLogin(req, res){
 
         try{

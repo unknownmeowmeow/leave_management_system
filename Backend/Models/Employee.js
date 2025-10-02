@@ -1,20 +1,25 @@
 import db from "../Configs/database.js";
-import {NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
+import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
+
 class EmployeeModel{
 
     /**
      * Retrieves an employee record by email.
      *
-     * - Queries the `employees` table for the given email.
-     * - Returns employee details if found, or an error if not.
+     * Workflow:
+     * 1. Executes a SQL SELECT query to find an employee with the given email.
+     * 2. If an employee is found, returns status `true` with employee data.
+     * 3. If not found, returns status `false` with an error message.
+     * 4. Catches and handles any database or execution errors.
      *
-     * @param {string} email The email of the employee to retrieve.
-     * @returns {Promise<Object>} An object containing the query status, result, and error if any.
-     * @property {boolean} status Indicates success or failure of the query.
-     * @property {Object|null} result The retrieved employee record or null if not found.
-     * @property {string|null} error Error message if the query fails or data is not found.
+     * @param {string} email - The email of the employee to retrieve.
+     * @returns {Promise<Object>} response_data - Contains:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Employee record if found.
+     *    - error: Error message if not found or on failure.
+     *
      * created by: Rogendher Keith Lachica
-     * updated at: September 20 2025 10:38 pm  
+     * updated at: September 20 2025 10:38 pm
      */
     static async getEmployeeEmail(email){
         const response_data =  { status: false, result: null, error: null };
@@ -44,26 +49,31 @@ class EmployeeModel{
     /**
      * Creates a new employee record.
      *
-     * - Inserts employee data into the `employees` table.
-     * - Accepts role, gender, name, email, and hashed password.
-     * - Automatically sets creation and update timestamps.
+     * Workflow:
+     * 1. Inserts a new employee record into the `employees` table using provided user data.
+     * 2. Automatically sets the `created_at` timestamp to current time.
+     * 3. If insert succeeds, returns status `true` with inserted record ID.
+     * 4. If insert fails, returns status `false` with an error message.
+     * 5. Catches and handles any database or execution errors.
      *
-     * @param {Object} userData The user data to insert.
-     * @param {string} userData.first_name The first name of the user.
-     * @param {string} userData.last_name The last name of the user.
-     * @param {string} userData.email The email of the user.
-     * @param {number} userData.role The role ID of the user.
-     * @param {number} userData.gender The gender ID of the user.
-     * @param {string} userData.password The hashed password of the user.
-     * @returns {Promise<Object>} An object containing the query status, inserted ID result, and error if any.
-     * @property {boolean} status Indicates success or failure of the insert operation.
-     * @property {Object|null} insert_employee_result The inserted record ID if successful.
-     * @property {string|null} error Error message if the insert fails.
+     * @param {Object} userData - The user data to insert.
+     * @param {string} userData.first_name - First name of the employee.
+     * @param {string} userData.last_name - Last name of the employee.
+     * @param {string} userData.email - Email address of the employee.
+     * @param {number} userData.role - Role ID of the employee.
+     * @param {number} userData.gender - Gender ID of the employee.
+     * @param {string} userData.password - Hashed password.
+     * @param {Object} [connection=db] - Optional database connection.
+     * @returns {Promise<Object>} response_data - Contains:
+     *    - status: Boolean indicating success or failure.
+     *    - insert_employee_result: Object with inserted record ID if successful.
+     *    - error: Error message if insert fails.
+     *
      * created by: Rogendher Keith Lachica
-     * updated at: September 21 2025 11:38 pm  
+     * updated at: September 21 2025 11:38 pm
      */
     static async createEmployeeAccount({ first_name, last_name, email, role, gender, password }, connection = db) {
-        const response_data = { status: false, result: null, error: null };
+        const response_data = { status: false, insert_employee_result: null, error: null };
     
         try{
             const [insert_employee_data_result] = await connection.execute(`
@@ -94,51 +104,22 @@ class EmployeeModel{
     
         return response_data;
     }
-    
-    static async createEmployeeAccount({ first_name, last_name, email, role, gender, password }, connection = db) {
-        const response_data = { status: false, result: null, error: null };
-    
-        try{
-            const [insert_employee_data_result] = await connection.execute(`
-                INSERT INTO employees (
-                    employee_role_type_id, 
-                    employee_gender_id, 
-                    first_name, 
-                    last_name, 
-                    email, 
-                    password, 
-                    created_at
-                ) 
-                VALUES 
-                    (?, ?, ?, ?, ?, ?, NOW())
-            `, [role, gender, first_name, last_name, email, password]);
-    
-            if(insert_employee_data_result.insertId){
-                response_data.status = true;
-                response_data.insert_employee_result = { id: insert_employee_data_result.insertId };
-            } 
-            else{
-                response_data.error = "insert employee data error in model";
-            }
-        } 
-        catch(error){
-            response_data.error = error.message;
-        }
-    
-        return response_data;
-    }
-    
-    /**
-     * Retrieves all employees where role type is 2 or 3 (e.g., Full-Time or Part-Time).
+
+     /**
+     * Retrieves all employees where role type is intern or employee.
      *
-     * - Returns list of employees with employee_role_type_id IN (2,3)
-     * - Returns an array of employees if found, or empty if none.
+     * Workflow:
+     * 1. Executes a SQL SELECT query to fetch employees where role type is either intern or employee.
+     * 2. If employees are found, returns status `true` with an array of employee records.
+     * 3. If no employees found, returns status `false` with an error message.
+     * 4. Catches and handles any database or execution errors.
      *
-     * @returns {Promise<Object>} An object with query status, result, and error if any.
-     * @property {boolean} status - Query success status.
-     * @property {Array|null} result - Array of employee records.
-     * @property {string|null} error - Error message if query fails.
-     * created by: Rogendher Keith Lachica  
+     * @returns {Promise<Object>} response_data - Contains:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Array of employee records if successful.
+     *    - error: Error message if none found or on failure.
+     *
+     * created by: Rogendher Keith Lachica
      * updated at: September 25, 2025 - 4:30 PM
      */
     static async getAllEmployeeAndIntern(){
@@ -166,7 +147,6 @@ class EmployeeModel{
             }
             else{
                 response_data.error = "no employee data found";
-              
             }
         }
         catch(error){
@@ -175,18 +155,22 @@ class EmployeeModel{
 
         return response_data;
     }
-
+    
     /**
      * Retrieves an employee record by ID.
      *
-     * - Queries the `employees` table for the given employee ID.
-     * - Returns employee details if found, or an error if not.
+     * Workflow:
+     * 1. Executes a SQL SELECT query to find an employee with the given ID.
+     * 2. If employee is found, returns status `true` with employee data.
+     * 3. If not found, returns status `false` with an error message.
+     * 4. Catches and handles any database or execution errors.
      *
-     * @param {number} employee_id The ID of the employee to retrieve.
-     * @returns {Promise<Object>} An object containing the query status, result, and error if any.
-     * @property {boolean} status Indicates success or failure of the query.
-     * @property {Object|null} result The retrieved employee record or null if not found.
-     * @property {string|null} error Error message if the query fails or data is not found.
+     * @param {number} employee_id - The ID of the employee to retrieve.
+     * @returns {Promise<Object>} response_data - Contains:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Employee record if found.
+     *    - error: Error message if not found or on failure.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 5:00 pm
      */
@@ -195,18 +179,20 @@ class EmployeeModel{
 
         try{
             const [get_employee_by_id_result] = await db.execute(`
-                SELECT *
-                FROM employees
-                WHERE  id = ? 
+                SELECT 
+                    *
+                FROM 
+                    employees
+                WHERE  
+                    id = ? 
             `, [employee_id]);
 
             if(get_employee_by_id_result.length){
                 response_data.status = true;
-                response_data.result = get_employee_by_id_result;
+                response_data.result = get_employee_by_id_result[0];
             }
             else{
                 response_data.error =  "employee id not found in employee model.";
-                
             }
         }
         catch(error){
@@ -216,7 +202,6 @@ class EmployeeModel{
         return response_data;
     }
 
-
 }
 
-export default EmployeeModel; 
+export default EmployeeModel;

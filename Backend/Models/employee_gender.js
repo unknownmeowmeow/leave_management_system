@@ -3,15 +3,28 @@ import db from "../Configs/database.js";
 class EmployeeGenderModel{
 
     /**
-     * Get a gender record by ID.
-     * @param {number} genderId - The ID of the gender to retrieve.
-     * @returns {Promise<Object>} An object containing the query status, result, and error if any.
-     * @property {boolean} status - Indicates success or failure of the query.
-     * @property {Object|null} result - The retrieved gender record or null if not found.
-     * @property {string|null} error - Error message if the query fails or data is not found.
-     * created by: rogendher keith lachica
-     * updated at: September 20 2025 4:18 pm  
-     */
+     * Retrieves a gender record from the database by its ID.
+     *
+     * Workflow:
+     * 1. **Execute Select Query**
+     *    - Queries the `employee_genders` table filtering by the given `id`.
+     *
+     * 2. **Return Result**
+     *    - If a record is found, returns status `true` with the gender data.
+     *    - If no record is found, returns status `false` with an error message.
+     *
+     * 3. **Error Handling**
+     *    - Catches and returns any database or execution errors.
+     *
+     * @param {number} id - The ID of the gender to retrieve.
+     * @returns {Object} response_data - Object containing:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Array with the gender record if successful.
+     *    - error: Error message if not found or on failure.
+     *
+     * created by: [Your Name]
+     * updated at: [Update Date & Time]
+     */ 
     static async getGenderById(id){
         const response_data =  { status: false, result: null, error: null };
 

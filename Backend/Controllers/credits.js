@@ -73,6 +73,7 @@ class Credit{
      * updated at: September 26, 2025 12:05 PM
      */
     static async runYearlyCreditInsertion(req, res){
+        
         try{
             const leave_type_carry_over_record = await LeaveType.getAllCarryOverLeaveTypes();
     

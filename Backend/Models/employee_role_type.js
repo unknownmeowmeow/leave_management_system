@@ -4,8 +4,18 @@ class EmployeeRoleTypeModel{
     /**
      * Retrieves a role record by its ID.
      *
-     * @param {number} role_id The ID of the role to retrieve.
-     * @returns {Promise<Object>} { status, result, error }
+     * Workflow:
+     * 1. Executes a SQL SELECT query to fetch the role from `employee_role_types` by `id`.
+     * 2. If a role is found, returns status `true` with the role data.
+     * 3. If no role is found, returns status `false` with an error message.
+     * 4. Catches and handles any database errors.
+     *
+     * @param {number} role_id - The ID of the role to retrieve.
+     * @returns {Promise<Object>} response_data - Contains:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Array with the role record if successful.
+     *    - error: Error message if not found or on failure.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 19, 2025 1:04 PM  
      */
@@ -42,12 +52,22 @@ class EmployeeRoleTypeModel{
     /**
      * Retrieves all employee IDs associated with a given role ID.
      *
-     * @param {number} role_id The role ID to search employees by.
-     * @returns {Promise<Object>} { status, result, error }
+     * Workflow:
+     * 1. Executes a SQL SELECT query to fetch employee IDs where `employee_role_type_id` matches the given role ID.
+     * 2. If employees are found, returns status `true` with the list of employee IDs.
+     * 3. If no employees are found, returns status `false` with an error message.
+     * 4. Catches and handles any database errors.
+     *
+     * @param {number} role_id - The role ID to search employees by.
+     * @returns {Promise<Object>} response_data - Contains:
+     *    - status: Boolean indicating success or failure.
+     *    - result: Array with employee IDs if successful.
+     *    - error: Error message if none found or on failure.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25, 2025 12:55 AM
      */
-    static async getRoleByIdEmployee(role_id) {
+    static async getRoleByIdEmployee(role_id){
         const response_data = { status: false, result: null, error: null };
 
         try{

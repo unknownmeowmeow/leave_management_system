@@ -6,25 +6,33 @@ import {
 class leaveTransactionModel{
 
     /**
-     * Insert a new leave transaction record.
+     * Inserts a new leave transaction record into the database.
      *
-     * @param {Object} params
-     * @param {number} params.employee_id
-     * @param {number} params.leave_transaction_status_id
-     * @param {number} params.leave_type_id
-     * @param {string} params.reason
-     * @param {number} params.total_leave
-     * @param {number} [params.is_weekend=0]
-     * @param {number} [params.is_active=1]
-     * @param {string|Date} params.start_date
-     * @param {string|Date} params.end_date
-     * @param {Date} [params.filed_date=new Date()]
-     * @param {number} params.year
-     * @param {number|null} [params.rewarded_by_id=null]
-     * @param {number|null} [params.approved_by_id=null]
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
+     * Workflow:
+     * 1. Executes an INSERT query to add a leave transaction with provided details.
+     * 2. On successful insertion, returns status `true` along with the inserted leave transaction ID.
+     * 3. If insertion fails, returns status `false` with an error message.
+     * 4. Catches and handles any errors that occur during the database operation.
+     *
+     * @param {Object} params - Parameters for the leave transaction.
+     * @param {number} params.employee_id - ID of the employee filing the leave.
+     * @param {number} params.leave_transaction_status_id - Status ID of the leave transaction.
+     * @param {number} params.leave_type_id - Type of leave.
+     * @param {string} params.reason - Reason for the leave.
+     * @param {number} params.total_leave - Total leave days/hours requested.
+     * @param {number} [params.is_weekend=0] - Indicates if leave includes weekend days.
+     * @param {number} [params.is_active=1] - Indicates if the transaction is active.
+     * @param {string|Date} params.start_date - Leave start date.
+     * @param {string|Date} params.end_date - Leave end date.
+     * @param {Date} [params.filed_date=new Date()] - Date when leave was filed.
+     * @param {number} params.year - Year of the leave transaction.
+     * @param {number|null} [params.rewarded_by_id=null] - ID of the user who rewarded the leave, if applicable.
+     * @param {number|null} [params.approved_by_id=null] - ID of the user who approved the leave, if applicable.
+     * 
+     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response object containing status, inserted ID or error message.
+     * 
      * created by: Rogendher Keith Lachica
-     * updated at: September 26 2025 10:40 am
+     * updated at: September 25 2025 3:00 am
      */
     static async insertTransaction({ 
             employee_id, 
@@ -79,12 +87,19 @@ class leaveTransactionModel{
     }
     
     /**
-     * Get leave transaction by its ID.
+     * Retrieves a leave transaction record by its ID.
      *
-     * @param {number} leave_id
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
+     * Workflow:
+     * 1. Queries the `leave_transactions` table for a record matching the provided leave ID.
+     * 2. If found, returns status `true` along with the leave transaction details.
+     * 3. If no record is found, returns status `false` with an appropriate error message.
+     * 4. Handles any errors that occur during the database query.
+     *
+     * @param {number} leave_id - The unique identifier of the leave transaction.
+     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response object containing status, result, or error.
+     *
      * created by: Rogendher Keith Lachica
-     * updated at: September 26 2025 10:41 am
+     * updated at: September 25 2025 2:00 am
      */
     static async getLeaveTransactionById(leave_id){
         const response_data =  { status: false, result: null, error: null };
@@ -118,12 +133,20 @@ class leaveTransactionModel{
     }
 
     /**
-     * Get total leave credit of an employee.
+     * Retrieves the aggregated leave credit summary for a specific employee.
      *
-     * @param {number} employee_id
-     * @returns {Promise<{status: boolean, result: number|null, error: string|null}>}
+     * Workflow:
+     * 1. Joins `leave_credits` with `employees` to fetch employee details alongside leave credit totals.
+     * 2. Calculates the sum of earned, used, deducted, and latest leave credits for the employee.
+     * 3. Groups the results by employee ID to get a summarized view.
+     * 4. Returns the aggregated leave credit data if found; otherwise, returns an error message.
+     * 5. Handles any errors that occur during the database query.
+     *
+     * @param {number} employee_id - The ID of the employee to get leave credit totals for.
+     * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response object containing status, results, or error.
+     *
      * created by: Rogendher Keith Lachica
-     * updated at: September 29 2025
+     * updated at: September 25 2025 1:30 am
      */
     static async getTotalCredit(employee_id){
         const response_data = { status: false, result: null, error: null };
@@ -169,21 +192,21 @@ class leaveTransactionModel{
     }
 
     /**
-     * Retrieves the most recent leave credit record of an employee.
-     * 
-     * This method queries the `leave_credits` table and fetches the latest 
-     * record based on `created_at` in descending order. The result is used 
-     * for validating or deducting credits in leave transactions.
-     * 
-     * @param {number} employee_id - Unique identifier of the employee.
-     * 
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} 
-     * Returns an object indicating the status, the latest credit record if found, 
-     * or an error message.
-     * 
-     * created by: Rogendher Keith Lachica
-     * updated at: September 30 2025 6:55 pm
-     */
+    * Retrieves the most recent leave credit record for a specific employee.
+    *
+    * Workflow:
+    * 1. Queries the `leave_credits` table for records matching the employee ID.
+    * 2. Orders the results by `created_at` in descending order to get the latest record.
+    * 3. Limits the result to one record.
+    * 4. Returns the latest credit record if found, otherwise returns an error.
+    * 5. Handles any database or execution errors during the query.
+    *
+    * @param {number} employee_id - The ID of the employee whose latest leave credit is requested.
+    * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response object with status, result, or error.
+    *
+    * created by: Rogendher Keith Lachica
+    * updated at: September 25 2025 1:15 am
+    */
     static async getLatestCreditRecord(employee_id){
         const response_data = { status: false, result: null, error: null };
     
@@ -220,21 +243,23 @@ class leaveTransactionModel{
     
 
     /**
-     * Deducts leave credits from the employee's record after leave approval.
-     * 
-     * This method updates the `leave_credits` table by increasing the 
-     * deducted and used credits while reducing the latest available credit. 
-     * It ensures the employee’s leave balance is properly adjusted.
-     * 
-     * @param {number} credit_id - Identifier of the leave credit record to update.
-     * @param {number} total_leave - Number of leave days to deduct.
-     * @param {Object} [connection=db] - Database connection object (default: db).
-     * 
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} 
-     * Returns a response object with status, deduction result, or error details.
-     * 
+     * Deducts leave credits from an employee's leave credit record.
+     *
+     * Workflow:
+     * 1. Increments the `deducted_credit` and `used_credit` by the specified total leave.
+     * 2. Decreases the `latest_credit` by the same amount.
+     * 3. Updates the `updated_at` timestamp.
+     * 4. Returns success status and deduction details if update succeeds.
+     * 5. Returns an error if no matching leave credit record is found or deduction fails.
+     * 6. Handles any exceptions thrown during the database update.
+     *
+     * @param {number} credit_id - The ID of the leave credit record to update.
+     * @param {number} total_leave - The amount of leave credit to deduct.
+     * @param {Object} [connection=db] - Optional database connection.
+     * @returns {Promise<Object>} Response object with status, result, or error message.
+     *
      * created by: Rogendher Keith Lachica
-     * updated at: September 30 2025 7:05 pm
+     * updated at: September 25 2025 1:00 am
      */
     static async deductCredit(credit_id, total_leave, connection = db){
         const response_data = { status: false, result: null, error: null };
@@ -272,21 +297,21 @@ class leaveTransactionModel{
     
     /**
      * Updates the status of a leave transaction.
-     * 
-     * This method modifies the `leave_transactions` table by changing the 
-     * transaction status and recording the approver who performed the update. 
-     * It also refreshes the `updated_at` timestamp to reflect the modification.
-     * 
-     * @param {number} leave_id - Identifier of the leave transaction to update.
-     * @param {number} status_id - New status ID to set for the leave transaction.
-     * @param {number} approver_id - Employee ID of the approver updating the record.
-     * @param {Object} [connection=db] - Database connection object (default: db).
-     * 
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} 
-     * Returns a response object with operation status, updated leave details, or an error message.
-     * 
+     *
+     * Workflow:
+     * 1. Updates leave transaction status and approver ID by leave transaction ID.
+     * 2. Returns success status and updated IDs if update is successful.
+     * 3. Returns an error if no record is updated or leave transaction is not found.
+     * 4. Handles any exceptions during the update query execution.
+     *
+     * @param {number} leave_id - The ID of the leave transaction to update.
+     * @param {number} status_id - The new status ID to set.
+     * @param {number} approver_id - The ID of the approver making the update.
+     * @param {Object} [connection=db] - Optional database connection.
+     * @returns {Promise<Object>} Response with status, result, or error.
+     *
      * created by: Rogendher Keith Lachica
-     * updated at: September 30 2025 7:15 pm
+     * updated at: September 25 2025 12:45 am
      */
     static async updateStatus(leave_id, status_id, approver_id, connection = db){
         const response_data = { status: false, result: null, error: null };

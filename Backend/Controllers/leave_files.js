@@ -8,7 +8,7 @@ import { NUMBER } from "../Constant/constants.js";
 
 class LeaveController{
 
- /**
+    /**
      * Applies a leave request for an employee.
      *
      * Workflow:
@@ -122,12 +122,6 @@ class LeaveController{
                throw new Error(`Insufficient leave credit. Available: ${available_credit} days.`);
             }
 
-            // const employee_latest_credit_data = await LeaveTransactionModel.getLatestCreditRecord(employee_id);
-            
-            // if(!employee_latest_credit_data.status){
-            //    throw new Error("No Latest Credit Record Found");
-            // }
-    
             const leave_transaction_data = await LeaveTransactionModel.insertTransaction({
                 employee_id,
                 leave_type_id: leave_type,
@@ -155,7 +149,7 @@ class LeaveController{
     }
 
 
-/**
+    /**
      * Allows an employee to file a leave request for themselves.
      *
      * Workflow:

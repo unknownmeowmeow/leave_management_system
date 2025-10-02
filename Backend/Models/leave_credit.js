@@ -6,22 +6,21 @@ import {
 class LeaveCreditModel{
 
     /**
-      * Inserts a new leave credit record into the database.
-      *
-      * @param {Object} data Leave credit data to insert.
-      * @param {number} data.employee_id
-      * @param {number} data.leave_transaction_id
-      * @param {number|null} data.attendance_id
-      * @param {number} data.leave_type_id
-      * @param {number} data.earned_credit
-      * @param {number} data.used_credit
-      * @param {number} data.deducted_credit
-      * @param {number} data.current_credit
-      * @param {number} data.latest_credit
-      * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
-      * created by: Rogendher Keith Lachica
-      * updated at: September 24 2025 10:20 pm
-      */
+     * Inserts multiple leave credit records into the database.
+     *
+     * Workflow:
+     * 1. Executes a bulk INSERT query using provided employee leave credit data.
+     * 2. Returns success status with inserted row count and first insert ID if successful.
+     * 3. Returns an error message if insertion fails.
+     * 4. Catches and handles any database or execution errors.
+     *
+     * @param {Object[]} employee_data - Array of leave credit records to insert.
+     * @param {Object} [connection=db] - Database connection to use.
+     * @returns {Promise<Object>} Response containing status, result, or error.
+     *
+     * created by: Rogendher Keith Lachica
+     * updated at: September 24 2025 10:20 pm
+     */
     static async insertLeaveCredit({ employee_data, connection = db }){
         const response_data = { status: false, result: null, error: null };
 
@@ -62,23 +61,24 @@ class LeaveCreditModel{
     }
 
     /**
-     * Inserts a new leave credit record earned from employee work hours.
-     * 
-     * This function saves a leave credit transaction into the `leave_credits` table 
-     * using attendance data. It records earned and deducted credits, updates the 
-     * current and latest credit values, and stores the creation timestamp.
-     * 
-     * @param {Object} params - Parameters required to insert leave credit.
+     * Inserts a leave credit record earned from employee work hours.
+     *
+     * Workflow:
+     * 1. Inserts a single leave credit using attendance data and credits.
+     * 2. Returns the inserted record ID on success.
+     * 3. Returns error message if insertion fails.
+     * 4. Handles any exceptions during execution.
+     *
+     * @param {Object} params - Parameters required for insertion.
      * @param {number} params.employee_id - Employee identifier.
-     * @param {number} params.attendance_id - Attendance record identifier linked to this credit.
-     * @param {number} params.earned_credit - Credit earned based on work hours.
-     * @param {number} params.deducted_credit - Credit deducted, if any.
-     * @param {number} params.current_credit - Current credit after update.
+     * @param {number} params.attendance_id - Linked attendance record ID.
+     * @param {number} params.earned_credit - Earned leave credit.
+     * @param {number} params.deducted_credit - Deducted leave credit.
+     * @param {number} params.current_credit - Current leave credit.
      * @param {number} params.latest_credit - Latest cumulative leave credit.
-     * @param {Object} [params.connection=db] - Database connection (default: db).
-     * 
-     * @returns {Object} Response object containing status, result, or error.
-     * 
+     * @param {Object} [params.connection=db] - Database connection to use.
+     * @returns {Promise<Object>} Response with status, result, or error.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 30 2025 6:45 pm
      */
@@ -116,9 +116,17 @@ class LeaveCreditModel{
     }
 
     /**
-     * Retrieve summarized leave credit totals per employee.
+     * Inserts yearly leave credit records in bulk.
      *
-     * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>}
+     * Workflow:
+     * 1. Performs bulk insert of yearly leave credits.
+     * 2. Returns success status with inserted record ID.
+     * 3. Returns error message if insertion fails.
+     * 4. Handles exceptions during query execution.
+     *
+     * @param {Object[]} employee_data - Array of yearly leave credit records.
+     * @returns {Promise<Object>} Response with status, result, or error.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm
      */
@@ -163,9 +171,16 @@ class LeaveCreditModel{
 
 
     /**
-     * Retrieve summarized leave credit totals per employee.
+     * Retrieves summarized leave credit totals for all employees with specific roles.
      *
-     * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>}
+     * Workflow:
+     * 1. Queries leave credit sums grouped by employee.
+     * 2. Filters employees by role (intern and employee).
+     * 3. Returns array of leave credit summaries on success.
+     * 4. Returns error if no records found or query fails.
+     *
+     * @returns {Promise<Object>} Response with status, result array, or error.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm
      */
@@ -214,11 +229,18 @@ class LeaveCreditModel{
         return response_data;
     }
 
-    /**
-     * Retrieves the latest leave credit record for the given employee.
+     /**
+     * Retrieves the most recent leave credit record for a specific employee.
      *
-     * @param {number} employee_id
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
+     * Workflow:
+     * 1. Selects leave credit record with latest creation date for given employee ID.
+     * 2. Returns the record ID if found.
+     * 3. Returns an error message if no records exist.
+     * 4. Handles any database errors.
+     *
+     * @param {number} employee_id - Employee identifier.
+     * @returns {Promise<Object>} Response with status, record ID, or error.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 12:10 am
      */
@@ -255,6 +277,20 @@ class LeaveCreditModel{
         return response_data;
     }
 
+    /**
+     * Retrieves total leave credits summary for a given employee.
+     *
+     * Workflow:
+     * 1. Aggregates earned, used, deducted, and latest leave credits by employee.
+     * 2. Returns the summarized credit data if found.
+     * 3. Returns an error if no records are found or on failure.
+     *
+     * @param {number} employee_id - Employee identifier.
+     * @returns {Promise<Object>} Response with status, summarized credits, or error.
+     *
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25 2025 12:10 am
+     */
     static async getTotalCredit(employee_id){
         const response_data = { status: false, result: null, error: null };
 
@@ -298,17 +334,25 @@ class LeaveCreditModel{
     }
 
     /**
-     * Updates the latest leave credit for an employee.
+     * Updates the latest leave credit record for an employee.
      *
-     * @param {Object} data
-     * @param {number} data.employee_id
-     * @param {number} data.leave_transaction_id
-     * @param {number} data.leave_type_id
-     * @param {number} data.used_credit
-     * @param {number} data.latest_credit
-     * @param {number} data.current_credit
-     * @param {number} data.deducted_credit
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
+     * Workflow:
+     * 1. Updates leave credit fields by leave_credit_id.
+     * 2. Returns updated credit details on success.
+     * 3. Returns error if no matching record found or update fails.
+     * 4. Handles exceptions during update.
+     *
+     * @param {Object} data - Data fields for update.
+     * @param {number} data.leave_credit_id - ID of leave credit record to update.
+     * @param {number} data.leave_transaction_id - Leave transaction reference.
+     * @param {number} data.leave_type_id - Type of leave.
+     * @param {number} data.used_credit - Used leave credits.
+     * @param {number} data.latest_credit - Latest leave credit total.
+     * @param {number} data.current_credit - Current leave credit.
+     * @param {number} data.deducted_credit - Deducted leave credits.
+     * @param {Object} [connection=db] - Database connection to use.
+     * @returns {Promise<Object>} Response with status, updated data, or error.
+     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 12:30 am
      */

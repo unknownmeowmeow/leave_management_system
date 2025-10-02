@@ -3,16 +3,19 @@ import db from "../Configs/database.js";
 class LeaveTypeGrantModel{
 
     /**
-     * Retrieves a grant type by its name.
+     * Retrieves the grant type record by its name.
      *
-     * - Executes a query to find a grant type with the provided name.
-     * - Returns the matched grant type object if found.
-     * - Handles cases where no grant type is found or an error occurs.
+     * Workflow:
+     * 1. Executes a SELECT query to find a grant type with the specified name.
+     * 2. If found, returns status `true` along with the grant type record(s).
+     * 3. If not found, returns status `false` with an error message.
+     * 4. Catches and handles any database or execution errors.
      *
-     * @param {string} name Grant type name to search for.
-     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>}
-     * created by: [Your Name or Team]
-     * updated at: September 25 2025
+     * @param {string} name - The name of the grant type to retrieve.
+     * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response object containing status, result array, or error message.
+     *
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25 2025 4:00 am
      */
     static async getGrantTypeName(name){
         const response_data = { status: false, result: null, error: null };
