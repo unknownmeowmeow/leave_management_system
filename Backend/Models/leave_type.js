@@ -24,7 +24,7 @@ class LeaveTypeModel{
         const response_data =  { status: false, result: null, error: null };
     
         try{
-            const [get_all_carry_over_leave_type_result] = await db.execute(`
+            const [get_carry_over_leave] = await db.execute(`
                 SELECT id, base_value 
                 FROM leave_types 
                 WHERE is_carried_over = ? 
@@ -32,9 +32,9 @@ class LeaveTypeModel{
                 AND id IN (?, ?)
             `, [IS_CARRIED_OVER.yes, LEAVE_STATUS.active, LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave]);
     
-            if(get_all_carry_over_leave_type_result.length){
+            if(get_carry_over_leave.length){
                 response_data.status = true;
-                response_data.result = get_all_carry_over_leave_type_result;
+                response_data.result = get_carry_over_leave;
             }
             else{
                 response_data.error = "No carry over leave type found";
@@ -66,15 +66,15 @@ class LeaveTypeModel{
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_all_yearly_leave_type_result] = await db.execute(`
+            const [get_yearly_add_leavetype] = await db.execute(`
                 SELECT * 
                 FROM leave_types 
                 WHERE id IN (?, ?, ?)
             `, [LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave, LEAVE_TYPE_ID.vacation_leave]);
 
-            if(get_all_yearly_leave_type_result.length){
+            if(get_yearly_add_leavetype.length){
                 response_data.status = true;
-                response_data.result = get_all_yearly_leave_type_result;
+                response_data.result = get_yearly_add_leavetype;
             }
             else{
                 response_data.error = "No carry over leave type found";  
@@ -105,7 +105,7 @@ class LeaveTypeModel{
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_all_leave_type_by_id_result] = await db.execute(`
+            const [get_leave_default_type] = await db.execute(`
                 SELECT 
                     leave_types.id, 
                     leave_types.name
@@ -114,9 +114,9 @@ class LeaveTypeModel{
                 WHERE leave_types.leave_type_grant_type_id = ? AND leave_types.is_active = ?
             `, [GRANT_TYPE_ID.default, LEAVE_STATUS.active]);
 
-            if(get_all_leave_type_by_id_result.length){
+            if(get_leave_default_type.length){
                 response_data.status = true;
-                response_data.result = get_all_leave_type_by_id_result;
+                response_data.result = get_leave_default_type;
             }
             else{
                 response_data.error = "No active default leave types found.";
@@ -147,7 +147,7 @@ class LeaveTypeModel{
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_all_special_and_rewarded_result] = await db.execute(`
+            const [get_special_rewarded_type] = await db.execute(`
                 SELECT 
                     leave_types.id, 
                     leave_types.name
@@ -156,9 +156,9 @@ class LeaveTypeModel{
                 WHERE leave_types.is_active = ? AND leave_types.leave_type_grant_type_id IN (?, ?)
             `, [LEAVE_STATUS.active, GRANT_TYPE_ID.special, GRANT_TYPE_ID.rewarded]);
 
-            if(get_all_special_and_rewarded_result.length){
+            if(get_special_rewarded_type.length){
                 response_data.status = true;
-                response_data.result = get_all_special_and_rewarded_result;
+                response_data.result = get_special_rewarded_type;
             }
             else{
                 response_data.error = "No active special and rewarded leave types found."; 
@@ -190,7 +190,7 @@ class LeaveTypeModel{
         const response_data =  { status: false, result: null, error: null };
 
         try {
-            const [get_leave_type_result] = await db.execute(`
+            const [get_leave_type_id] = await db.execute(`
                 SELECT 
                     id, 
                     name, 
@@ -203,9 +203,9 @@ class LeaveTypeModel{
                 WHERE id = ? AND is_active = ?
             `, [leave_type_id, LEAVE_STATUS.active]);
 
-            if(get_leave_type_result.length){
+            if(get_leave_type_id.length){
                 response_data.status = true;
-                response_data.result = get_leave_type_result[NUMBER.zero];
+                response_data.result = get_leave_type_id[NUMBER.zero];
             } 
             else{
                 response_data.error = "error in get all leave type by id";

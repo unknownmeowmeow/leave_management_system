@@ -18,15 +18,15 @@ class EmployeeGenderModel{
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_gender_by_id] = await db.execute(`
+            const [get_gender_id] = await db.execute(`
                 SELECT * 
                 FROM employee_genders 
                 WHERE id = ?
             `, [id]);
 
-            if(get_gender_by_id.length){
+            if(get_gender_id.length){
                 response_data.status = true;
-                response_data.result = get_gender_by_id;
+                response_data.result = get_gender_id;
             } 
             else{
                 response_data.error = "gender record not found in model";

@@ -41,7 +41,6 @@ class TimeValidationHelper{
     * updated at: October 1, 2025 04:05 PM
     */
     static calculateEmployeeWorkHour(time_in, time_out){
-        // Convert input strings to Date objects
         const start_time = new Date(time_in);
         const end_time = new Date(time_out);
     
@@ -89,7 +88,6 @@ class TimeValidationHelper{
             calculated = NUMBER.zero;
         }
     
-        // Return the final calculated work hours (can be negative if less than default work)
         return calculated;
     }
 

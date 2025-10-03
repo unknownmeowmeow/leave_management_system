@@ -1,6 +1,6 @@
 import db from "../Configs/database.js";
-import { ATTENDANCE_TYPE_ID,
-    NUMBER
+import { 
+    ATTENDANCE_TYPE_ID, NUMBER
 } from "../Constant/constants.js";
 
 class AttendanceModel{
@@ -65,7 +65,8 @@ class AttendanceModel{
             const [get_employee_time_in] = await db.execute(`
                 SELECT id, time_in 
                 FROM attendances
-                WHERE employee_id = ? AND DATE(time_in) = CURRENT_DATE()
+                WHERE employee_id = ? 
+                AND DATE(time_in) = CURRENT_DATE()
                 ORDER BY id DESC 
                 LIMIT ${NUMBER.one}
             `, [employee_id]);
@@ -105,7 +106,8 @@ class AttendanceModel{
             const [get_employee_time_out] = await db.execute(`
                 SELECT id, time_out 
                 FROM attendances
-                WHERE employee_id = ? AND DATE(time_out) = CURRENT_DATE()
+                WHERE employee_id = ? 
+                AND DATE(time_out) = CURRENT_DATE()
                 ORDER BY id DESC 
             `, [employee_id]);
 
@@ -227,7 +229,7 @@ class AttendanceModel{
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_attendance_by_employee_id] = await db.execute(`
+            const [get_attendance_employee_id] = await db.execute(`
                 SELECT 
                     attendances.employee_id, 
                     attendances.time_in, 
@@ -240,9 +242,9 @@ class AttendanceModel{
                 ORDER BY attendances.updated_at DESC
             `, [employee_id]);
 
-            if(get_attendance_by_employee_id.length){
+            if(get_attendance_employee_id.length){
                 response_data.status = true;
-                response_data.result = get_attendance_by_employee_id;
+                response_data.result = get_attendance_employee_id;
             }
             else{
                 response_data.error =  "no employee attendance records found in model";

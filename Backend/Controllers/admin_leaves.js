@@ -31,7 +31,7 @@ class AdminLeaveController{
             return res.json({ success: true, data: employee_leave_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: "failed to view all in controllers."});
+            return res.json({ success: false, message: "Failed to view all Employee Transaction in controller."});
         }
     }
 
@@ -53,7 +53,7 @@ class AdminLeaveController{
         const user = req.session.user;
 
         if(!user){
-            return res.json({ success: false, message: "User session not found in controllers." });
+            return res.json({ success: false, message: "User session not Found." });
         }
 
         const employee_id = user.employee_id;
@@ -68,7 +68,7 @@ class AdminLeaveController{
             return res.json({ success: true, data: leave_transaction_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: error.message || "Server error attendance in controller" });
+            return res.json({ success: false, message: error.message || "Server error in leave transaction employee controller" });
         }
     }
     
@@ -157,8 +157,7 @@ class AdminLeaveController{
                     throw new Error(deduction_credit_record.error);
                 }
             }
-    
-            /* Update the leave status in the database */
+            
             const update_status_record = await LeaveTransactionModel.updateStatus(leave_id, status_id, user.employee_id, connection);
                 
             /* Throw error if status update fails */
@@ -171,7 +170,7 @@ class AdminLeaveController{
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ success: false, message: error.message || "Server error admin in controller" });
+            return res.json({ success: false, message: error.message || "Server error in update status catch controller"});
         } 
         finally{
             connection.release();
@@ -210,7 +209,7 @@ class AdminLeaveController{
             return res.json({ success: true, data: employee_leave_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: error.message || "Server error admin in controller" });
+            return res.json({ success: false, message: error.message || "Server error in get employee catch controller"});
         }
     }
 }

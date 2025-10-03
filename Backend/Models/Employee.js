@@ -1,5 +1,5 @@
 import db from "../Configs/database.js";
-import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
+import { ROLE_TYPE_ID } from "../Constant/constants.js";
 
 class EmployeeModel{
 
@@ -149,15 +149,15 @@ class EmployeeModel{
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_employee_by_id_result] = await db.execute(`
+            const [get_employee_id] = await db.execute(`
                 SELECT *
                 FROM employees
                 WHERE id = ? 
             `, [employee_id]);
 
-            if(get_employee_by_id_result.length){
+            if(get_employee_id.length){
                 response_data.status = true;
-                response_data.result = get_employee_by_id_result[0];
+                response_data.result = get_employee_id[0];
             }
             else{
                 response_data.error =  "employee id not found in employee model.";

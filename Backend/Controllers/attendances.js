@@ -33,8 +33,8 @@ class AttendanceControllers{
             const employee_id = user.employee_id;
             const latest_timein_record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
 
-            if(!latest_timein_record.status || latest_timein_record.error){
-                throw new Error(latest_timein_record.error);
+            if(latest_timein_record.status){
+                throw new Error("Already time in this day");
             }
 
             const insert_employee_attendance_record = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id});
@@ -43,14 +43,10 @@ class AttendanceControllers{
                 throw new Error(insert_employee_attendance_record.error);
             }
 
-            await connection.commit();
             return res.json( { success: true, message: "Time IN recorded successfully" });
         } 
         catch(error){
             return res.json({ success: false, message: error.message || "Server error attendance in controller" });
-        }
-        finally{
-            connection.release();
         }
     }
 
@@ -89,15 +85,15 @@ class AttendanceControllers{
             const active_record_time_in = latest_time_record.result;
     
             // Validate if a Time In record exists
-            if(!latest_time_record.status || !active_record_time_in || latest_time_record.error){
-                throw new Error(latest_time_record.error);
+            if(!latest_time_record.status){
+                throw new Error("No Time In found for today");
             }
     
             // Check if employee already timed out today
             const latest_timeout_record = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
 
-            if(!latest_timeout_record.status || latest_timeout_record.error){
-                throw new Error(latest_timeout_record.error);
+            if(latest_timeout_record.status){
+                throw new Error("Already time Out today");
             }
     
             const id = active_record_time_in.id;

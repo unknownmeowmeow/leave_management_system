@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import EmployeeModel from "../Models/employee.js";
+import EmployeeModel from "../Models/employee.js"; 
 import EmployeeGenderModel from "../Models/employee_gender.js";
 import EmployeeRoleTypeModel from "../Models/employee_role_type.js";
 import ValidationHelper from '../Helpers/validation_helper.js';

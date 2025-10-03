@@ -15,50 +15,46 @@ class Credit{
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 12:05 PM
      */
-    static async runYearlyCreditInsertion(req, res){
-        
-        try{
-            const leave_type_carryover_record = await LeaveType.getAllCarryOverLeaveTypes();
-            console.log(leave_type_carryover_record);
-            if(!leave_type_carryover_record.status || leave_type_carryover_record.error){
-                throw new Error(leave_type_carryover_record.error);
-            }
+    static async runYearlyCreditInsertion(req, res){                  
+        try{             
+            // Fetch all leave types that allow carryover
+            const leave_type_carryover_record = await LeaveType.getAllCarryOverLeaveTypes();              
     
-            const employee_record = await EmployeeModel.getRoleByIdEmployee(ROLE_TYPE_ID.employee);
-            console.log(employee_record);
-            if(!employee_record.status || employee_record.error){
-                throw new Error(employee_record.error);
-            }
+            if(!leave_type_carryover_record.status || leave_type_carryover_record.error){                 
+                throw new Error(leave_type_carryover_record.error);             
+            }              
     
-            const leave_types = leave_type_carryover_record.result;
-            const employees = employee_record.result;
-            const total_base_value = CreditCalculationHelper.getTotalBaseValue(leave_types);
-            console.log(total_base_value);
-            const employee_data = employees.map(employee => [  
-                employee.id,        
-                null,               
-                null,               
-                null,             
-                total_base_value,  
-                NUMBER.zero_point_zero_zero,              
-                NUMBER.zero_point_zero_zero,               
-                total_base_value, 
-                total_base_value, 
-                new Date()          
-            ]);
-            const insert_yearly_credit = await LeaveCreditModel.insertYearlyCredit(employee_data);
-            console.log(insert_yearly_credit);
-            if(!insert_yearly_credit.status || insert_yearly_credit.error){
-                throw new Error(insert_yearly_credit.error);
-            }
+            // Fetch all employees with the role of 'employee'
+            const employee_record = await EmployeeModel.getRoleByIdEmployee(ROLE_TYPE_ID.employee);              
     
-            return res.json({ success: true, result: "Leave credits successfully added for all employees in controls." });
-        } 
-        catch(error){
-            return res.json({ success: false, message: error.message || "Server error admin in controller" });
-        } 
+            if(!employee_record.status || employee_record.error){                 
+                throw new Error(employee_record.error);             
+            }              
+    
+            // Extract results
+            const leave_types = leave_type_carryover_record.result;             
+            const employees = employee_record.result;             
+    
+            // Calculate total base leave value from all leave types
+            const total_base_value = CreditCalculationHelper.getTotalBaseValue(leave_types);             
+    
+            // Prepare employee leave credit data for insertion
+            // Each array contains: [employee_id, null placeholders, total_base_value, zero credits, total_base_value again, current date]
+            const employee_data = employees.map(employee => [ employee.id, null, null, null, total_base_value, NUMBER.zero_point_zero_zero, NUMBER.zero_point_zero_zero, total_base_value, total_base_value, new Date()]);             
+    
+            // Insert yearly leave credits for all employees
+            const insert_yearly_credit = await LeaveCreditModel.insertYearlyCredit(employee_data);             
+    
+            if(!insert_yearly_credit.status || insert_yearly_credit.error){                 
+                throw new Error(insert_yearly_credit.error);             
+            }              
+    
+            return res.json({ success: true, result: "Leave credits successfully added for all employees in controls." });         
+        }          
+        catch(error){             
+            return res.json({ success: false, message: error.message || "Server error admin in controller" });         
+        }      
     }
-    
     
     
     /**

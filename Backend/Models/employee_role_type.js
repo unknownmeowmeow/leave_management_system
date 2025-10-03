@@ -17,15 +17,15 @@ class EmployeeRoleTypeModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_role_by_id] = await db.execute(`
+            const [get_role_id] = await db.execute(`
                 SELECT * 
                 FROM employee_role_types 
                 WHERE id = ?
             `, [role_id]);
 
-            if(get_role_by_id.length){
+            if(get_role_id.length){
                 response_data.status = true;
-                response_data.result = get_role_by_id;
+                response_data.result = get_role_id;
             } 
             else{
                 response_data.error = "role record not found in model";
@@ -54,15 +54,15 @@ class EmployeeRoleTypeModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_employee_by_role_id] = await db.execute(`
+            const [get_employee_role_id] = await db.execute(`
                 SELECT id 
                 FROM employees 
                 WHERE employee_role_type_id = ?
             `, [role_id]);
 
-            if(get_employee_by_role_id.length){
+            if(get_employee_role_id.length){
                 response_data.status = true;
-                response_data.result = get_employee_by_role_id;
+                response_data.result = get_employee_role_id;
             } 
             else{
                 response_data.error = "No employees found for the given role in model.";
