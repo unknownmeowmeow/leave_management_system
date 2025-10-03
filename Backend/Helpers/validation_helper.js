@@ -4,34 +4,6 @@ class ValidationHelper{
     /**
      * Validates employee registration input fields for correctness and compliance.
      *
-     * Workflow:
-     * 1. **Required Fields**
-     *    - Ensures `first_name`, `last_name`, `email`, `password`, `confirm_password`, `role`, and `gender` are all provided.
-     *    - Returns: `["All fields are required."]` if any are missing.
-     *
-     * 2. **Name Validation**
-     *    - `first_name` and `last_name` must contain only letters and spaces (`/^[a-zA-Z\s]+$/`).
-     *    - Must be at least **3 characters long**.
-     *
-     * 3. **Email Validation**
-     *    - Checks if email matches standard format (`example@gmail.com`).
-     *
-     * 4. **Password Validation**
-     *    - Must be at least **8 characters long**.
-     *    - Must match `confirm_password`.
-     *
-     * 5. **Return Value**
-     *    - Returns an array of error messages:
-     *      - `[]` → No errors (valid input).
-     *      - `["<error message>"]` → One or more validation errors.
-     *    - In case of unexpected error → `["Error in validation registrations."]`.
-     *
-     * Example Success:
-     * []
-     *
-     * Example Failure:
-     * ["Password must be at least 8 characters."]
-     *
      * @param {Object} employee_data - Employee registration data.
      * @param {string} employee_data.first_name - Employee's first name.
      * @param {string} employee_data.last_name - Employee's last name.
@@ -99,27 +71,6 @@ class ValidationHelper{
     /**
      * Validates employee login input fields for correctness.
      *
-     * Workflow:
-     * 1. **Required Fields**
-     *    - Ensures `email` and `password` are provided.
-     *    - If missing → returns: `["All fields are required."]`.
-     *
-     * 2. **Email Format Validation**
-     *    - Validates `email` against standard email regex (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`).
-     *    - If invalid → returns: `["Please enter a valid email address."]`.
-     *
-     * 3. **Return Value**
-     *    - Returns an array of error messages:
-     *      - `[]` → No errors (valid input).
-     *      - `["<error message>"]` → One or more validation errors.
-     *    - On unexpected error → returns `["Error in validation login."]`.
-     *
-     * Example Success:
-     * []
-     *
-     * Example Failure:
-     * ["Please enter a valid email address."]
-     *
      * @param {Object} employee_data - Employee login data.
      * @param {string} employee_data.email - Employee's login email.
      * @param {string} employee_data.password - Employee's login password.
@@ -150,23 +101,6 @@ class ValidationHelper{
     
     /**
      * Validates leave application input fields for completeness.
-     *
-     * Workflow:
-     * 1. **Required Fields**
-     *    - Ensures `leave_type`, `start_date`, and `end_date` are provided.
-     *    - If any are missing → returns: `["All fields are required."]`.
-     *
-     * 2. **Return Value**
-     *    - Returns an array of error messages:
-     *      - `[]` → No errors (valid input).
-     *      - `["<error message>"]` → One or more validation errors.
-     *    - On unexpected error → returns `["Error in validating leave application."]`.
-     *
-     * Example Success:
-     * []
-     *
-     * Example Failure:
-     * ["All fields are required."]
      *
      * @param {Object} leave_data - Leave application data.
      * @param {string|number} leave_data.leave_type - Selected leave type.

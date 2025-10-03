@@ -23,22 +23,21 @@ class LeaveTypeRuleModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_rule_id_result] = await db.execute(`
+            const [get_rule_id] = await db.execute(`
                 SELECT id, rule_name
                 FROM leave_type_rules
                 WHERE id = ?
             `, [rule_id]);
 
-            if(get_rule_id_result.length){
+            if(get_rule_id.length){
                 response_data.status = true;
-                response_data.result = get_rule_id_result;
+                response_data.result = get_rule_id;
             } 
             else{
                 response_data.error = "Rule not found.";
             }
         } 
         catch(error){
-            response_data.status = false;
             response_data.error = error.message;
         }
 

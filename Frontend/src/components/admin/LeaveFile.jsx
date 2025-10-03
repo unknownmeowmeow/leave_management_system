@@ -23,28 +23,30 @@ export default function LeaveFile() {
                     withCredentials: true,
                 });
 
-                if (leaveRes.data.success) {
+                if (leaveRes.data.success && Array.isArray(leaveRes.data.data)) {
                     setLeaveTypes(leaveRes.data.data);
-                } 
-                else {
+                } else {
+                    setLeaveTypes([]);
                     setServerMessage("Failed to load leave types.");
                 }
 
+                // Fetch employees
                 const empRes = await axios.get("http://localhost:5000/api/employeesbyrole", {
                     withCredentials: true,
                 });
 
-                if (empRes.data.success) {
-                    setEmployees(empRes.data.result);
+                if (empRes.data.success && Array.isArray(empRes.data.data)) {
+                    setEmployees(empRes.data.data);
                 } else {
+                    setEmployees([]);
                     setServerMessage("Failed to load employee data.");
                 }
-            } 
-            catch (error) {
+            } catch (error) {
                 console.error("Fetch error:", error);
+                setEmployees([]);
+                setLeaveTypes([]);
                 setServerMessage("Failed to load data from server.");
-            } 
-            finally {
+            } finally {
                 setLoading(false);
             }
         };
@@ -68,11 +70,9 @@ export default function LeaveFile() {
             let msg = "";
             if (typeof response.data.message === "string") {
                 msg = response.data.message;
-            } 
-            else if(typeof response.data.message === "object" && response.data.message !== null) {
+            } else if (typeof response.data.message === "object" && response.data.message !== null) {
                 msg = response.data.message.message || JSON.stringify(response.data.message);
-            } 
-            else {
+            } else {
                 msg = "Unknown response from server.";
             }
 
@@ -126,7 +126,7 @@ export default function LeaveFile() {
                                 style={selectStyle}
                             >
                                 <option value="">Select Employee</option>
-                                {employees.map((emp) => (
+                                {Array.isArray(employees) && employees.map((emp) => (
                                     <option key={emp.id} value={emp.id}>
                                         {emp.first_name} {emp.last_name}
                                     </option>
@@ -143,7 +143,7 @@ export default function LeaveFile() {
                                 style={selectStyle}
                             >
                                 <option value="">Select Leave Type</option>
-                                {leaveTypes.map((type) => (
+                                {Array.isArray(leaveTypes) && leaveTypes.map((type) => (
                                     <option key={type.id} value={type.id}>{type.name}</option>
                                 ))}
                             </select>
@@ -172,6 +172,7 @@ export default function LeaveFile() {
     );
 }
 
+// Styles
 const linkStyle = { textDecoration: "none", color: "#007bff", fontSize: "16px", margin: "0 10px" };
 const formWrapperStyle = { backgroundColor: "#f9f9f9", padding: "30px", borderRadius: "8px", boxShadow: "0 0 10px rgba(0,0,0,0.1)" };
 const formHeaderStyle = { marginBottom: "20px", borderBottom: "1px solid #ccc", paddingBottom: "10px" };

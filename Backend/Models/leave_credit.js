@@ -8,12 +8,6 @@ class LeaveCreditModel{
     /**
      * Inserts multiple leave credit records into the database.
      *
-     * Workflow:
-     * 1. Executes a bulk INSERT query using provided employee leave credit data.
-     * 2. Returns success status with inserted row count and first insert ID if successful.
-     * 3. Returns an error message if insertion fails.
-     * 4. Catches and handles any database or execution errors.
-     *
      * @param {Object[]} employee_data - Array of leave credit records to insert.
      * @param {Object} [connection=db] - Database connection to use.
      * @returns {Promise<Object>} Response containing status, result, or error.
@@ -25,15 +19,12 @@ class LeaveCreditModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [insert_employee_credit_result] = await connection.query(`
+            const [insert_leave_credit] = await connection.query(`
                     INSERT INTO leave_credits (
                     employee_id,
                     leave_transaction_id,
                     attendance_id,
                     leave_type_id,
-                    earned_work_hour_credit,
-                    deducted_work_hour_credit,
-                    used_work_hour_credit,
                     earned_credit,
                     deducted_credit,
                     used_credit,
@@ -44,9 +35,9 @@ class LeaveCreditModel{
                 VALUES ?
             `, [employee_data]);            
 
-            if(insert_employee_credit_result.affectedRows){
+            if(insert_leave_credit.affectedRows){
                 response_data.status = true;
-                response_data.result = { first_insert_id: insert_employee_credit_result.insertId, total_inserted: insert_employee_credit_result.affectedRows };
+                response_data.result = { first_insert_id: insert_leave_credit.insertId, total_inserted: insert_leave_credit.affectedRows };
             }
             else{
                 response_data.error = "failed to insert in model";
@@ -62,12 +53,6 @@ class LeaveCreditModel{
 
     /**
      * Inserts a leave credit record earned from employee work hours.
-     *
-     * Workflow:
-     * 1. Inserts a single leave credit using attendance data and credits.
-     * 2. Returns the inserted record ID on success.
-     * 3. Returns error message if insertion fails.
-     * 4. Handles any exceptions during execution.
      *
      * @param {Object} params - Parameters required for insertion.
      * @param {number} params.employee_id - Employee identifier.
@@ -86,7 +71,7 @@ class LeaveCreditModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [insert_work_hour_result] = await connection.execute(`
+            const [insert_credit_work_hour] = await connection.execute(`
                 INSERT INTO leave_credits (
                     employee_id,
                     attendance_id,
@@ -96,13 +81,12 @@ class LeaveCreditModel{
                     latest_credit,
                     created_at
                 ) 
-                VALUES 
-                    (?, ?, ?, ?, ?, ?, NOW())
+                VALUES (?, ?, ?, ?, ?, ?, NOW())
             `, [employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit]);
 
-            if(insert_work_hour_result.insertId){
+            if(insert_credit_work_hour.insertId){
                 response_data.status = true;
-                response_data.result = { id: insert_work_hour_result.insertId };
+                response_data.result = { id: insert_credit_work_hour.insertId };
             }
             else{
                 response_data.error = "Failed to insert leave credit record in model.";   
@@ -118,12 +102,6 @@ class LeaveCreditModel{
     /**
      * Inserts yearly leave credit records in bulk.
      *
-     * Workflow:
-     * 1. Performs bulk insert of yearly leave credits.
-     * 2. Returns success status with inserted record ID.
-     * 3. Returns error message if insertion fails.
-     * 4. Handles exceptions during query execution.
-     *
      * @param {Object[]} employee_data - Array of yearly leave credit records.
      * @returns {Promise<Object>} Response with status, result, or error.
      *
@@ -134,15 +112,12 @@ class LeaveCreditModel{
         const response_data = { status: false, result: null, error: null };
 
         try {
-            const [insert_yearly_credit_result] = await db.query(`
+            const [insert_yearly_credit] = await db.query(`
                 INSERT INTO leave_credits (
                     employee_id,
                     leave_transaction_id,
                     attendance_id,
                     leave_type_id,
-                    earned_work_hour_credit,
-                    deducted_work_hour_credit,
-                    used_work_hour_credit,
                     earned_credit,
                     deducted_credit,
                     used_credit,
@@ -153,9 +128,9 @@ class LeaveCreditModel{
                 VALUES ?
             `, [employee_data]);
 
-            if(insert_yearly_credit_result.insertId){
+            if(insert_yearly_credit.insertId){
                 response_data.status = true;
-                response_data.result = { id: insert_yearly_credit_result.insertId };
+                response_data.result = { id: insert_yearly_credit.insertId };
             }
             else{
                 response_data.error = "Failed to insert yearly leave credit in model.";
@@ -173,22 +148,16 @@ class LeaveCreditModel{
     /**
      * Retrieves summarized leave credit totals for all employees with specific roles.
      *
-     * Workflow:
-     * 1. Queries leave credit sums grouped by employee.
-     * 2. Filters employees by role (intern and employee).
-     * 3. Returns array of leave credit summaries on success.
-     * 4. Returns error if no records found or query fails.
-     *
      * @returns {Promise<Object>} Response with status, result array, or error.
      *
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm
      */
-    static async getAllEmployeeCredits() {
+    static async getAllEmployeeCredit() {
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_all_employee_credit_result] = await db.execute(`
+            const [get_all_employee_credit] = await db.execute(`
                 SELECT 
                     leave_credits.employee_id,
                     employees.first_name,
@@ -198,25 +167,16 @@ class LeaveCreditModel{
                     SUM(leave_credits.used_credit) AS total_used_credit,
                     SUM(leave_credits.deducted_credit) AS total_deducted_credit,
                     SUM(leave_credits.latest_credit) AS total_latest_credit
-                FROM 
-                    leave_credits
-                LEFT JOIN 
-                    employees 
-                ON 
-                    leave_credits.employee_id = employees.id
-                WHERE 
-                    employees.employee_role_type_id 
-                IN 
-                    (?, ?)
-                GROUP BY 
-                    leave_credits.employee_id 
-                ORDER BY 
-                    leave_credits.employee_id DESC
+                FROM leave_credits
+                LEFT JOIN employees ON leave_credits.employee_id = employees.id
+                WHERE employees.employee_role_type_id IN (?, ?)
+                GROUP BY leave_credits.employee_id 
+                ORDER BY leave_credits.employee_id DESC
             `, [ROLE_TYPE_ID.intern, ROLE_TYPE_ID.employee]);
 
-            if(get_all_employee_credit_result.length){
+            if(get_all_employee_credit.length){
                 response_data.status = true;
-                response_data.result = get_all_employee_credit_result;
+                response_data.result = get_all_employee_credit;
             }
             else{
                 response_data.error = "no leave credit records found";
@@ -248,17 +208,16 @@ class LeaveCreditModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_all_latest_credit_result] = await db.execute(`
-                SELECT id
+            const [get_latest_employee_credit] = await db.execute(`
+                SELECT SUM(latest_credit) AS latest_credit_sum
                 FROM leave_credits
                 WHERE employee_id = ?
-                ORDER BY created_at DESC
                 LIMIT ${NUMBER.one}
             `, [employee_id]);
 
-            if(get_all_latest_credit_result.length){
+            if(get_latest_employee_credit.length){
                 response_data.status = true;
-                response_data.result = get_all_latest_credit_result;
+                response_data.result = get_latest_employee_credit[0].latest_credit_sum ;
             }
             else{
                 response_data.error = "No credit found in model";
@@ -275,11 +234,6 @@ class LeaveCreditModel{
     /**
      * Retrieves total leave credits summary for a given employee.
      *
-     * Workflow:
-     * 1. Aggregates earned, used, deducted, and latest leave credits by employee.
-     * 2. Returns the summarized credit data if found.
-     * 3. Returns an error if no records are found or on failure.
-     *
      * @param {number} employee_id - Employee identifier.
      * @returns {Promise<Object>} Response with status, summarized credits, or error.
      *
@@ -290,7 +244,7 @@ class LeaveCreditModel{
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_total_credit_result] = await db.execute(`
+            const [get_total_credit] = await db.execute(`
                     SELECT
                         leave_credits.employee_id,
                         employees.first_name,
@@ -300,26 +254,19 @@ class LeaveCreditModel{
                         SUM(leave_credits.used_credit) AS total_used_credit,
                         SUM(leave_credits.deducted_credit) AS total_deducted_credit,
                         SUM(leave_credits.latest_credit) AS total_latest_credit
-                    FROM 
-                        leave_credits
-                    LEFT JOIN 
-                        employees 
-                    ON 
-                        leave_credits.employee_id = employees.id
-                    WHERE 
-                        leave_credits.employee_id = ?
-                    GROUP BY 
-                        leave_credits.employee_id
-                    ORDER BY 
-                        leave_credits.employee_id DESC
+                    FROM leave_credits
+                    LEFT JOIN employees ON leave_credits.employee_id = employees.id
+                    WHERE leave_credits.employee_id = ?
+                    GROUP BY leave_credits.employee_id
+                    ORDER BY leave_credits.employee_id DESC
                     `, [employee_id]);
 
-            if(get_total_credit_result.length){
+            if(get_total_credit.length){
                 response_data.status = true;
-                response_data.result = get_total_credit_result;
+                response_data.result = get_total_credit;
             }
             else{
-                response_data.error = "No leave credit found for employee in credit model .";
+                response_data.error = "No leave credit found for employee in credit model.";
             }
         }
         catch(error){
@@ -330,12 +277,6 @@ class LeaveCreditModel{
 
     /**
      * Updates the latest leave credit record for an employee.
-     *
-     * Workflow:
-     * 1. Updates leave credit fields by leave_credit_id.
-     * 2. Returns updated credit details on success.
-     * 3. Returns error if no matching record found or update fails.
-     * 4. Handles exceptions during update.
      *
      * @param {Object} data - Data fields for update.
      * @param {number} data.leave_credit_id - ID of leave credit record to update.
@@ -355,9 +296,8 @@ class LeaveCreditModel{
         const response_data = { status: false, result: null, error: null };
 
         try {
-            const [update_latest_credit_result] = await connection.execute(`
-                UPDATE 
-                    leave_credits
+            const [update_latest_credit] = await connection.execute(`
+                UPDATE leave_credits
                 SET 
                     used_credit = ?, 
                     deducted_credit = ?, 
@@ -366,11 +306,10 @@ class LeaveCreditModel{
                     leave_transaction_id = ?, 
                     leave_type_id = ?, 
                     updated_at = CURRENT_TIMESTAMP
-                WHERE 
-                    id = ?
+                WHERE id = ?
             `, [used_credit, deducted_credit, current_credit, latest_credit, leave_transaction_id, leave_type_id, leave_credit_id]);
 
-            if(update_latest_credit_result.affectedRows){
+            if(update_latest_credit.affectedRows){
                 response_data.status = true;
                 response_data.result = { leave_credit_id, leave_transaction_id, leave_type_id, used_credit, deducted_credit, current_credit, latest_credit };
             }

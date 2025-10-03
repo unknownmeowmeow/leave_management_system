@@ -1,4 +1,4 @@
-import { NUMBER } from "../Constant/constants.js";
+import { DAY_COUNT, NUMBER, DAY_TIME, WORK_HOUR_MULTIPLIER, DAY_MONTH, ROLE_TYPE_ID } from "../Constant/constants.js";
 
 class TimeValidationHelper{
 
@@ -9,16 +9,6 @@ class TimeValidationHelper{
      *   the time is always localized to Philippine Standard Time (PST).
      * - Formats the output as `YYYY-MM-DD HH:mm:ss`.
      * - Ensures 24-hour format (`hour12: false`).
-     *
-     * Example Output:
-     * "2025-10-01 15:45:30"
-     *
-     * Workflow:
-     * 1. Generate localized datetime string → `"MM/DD/YYYY, HH:MM:SS"`.
-     * 2. Split into `date` and `time` parts.
-     * 3. Reorder `date` from `MM/DD/YYYY` → `YYYY-MM-DD`.
-     * 4. Return final formatted datetime string.
-     *
      * @returns {string} Current Philippines local datetime in `YYYY-MM-DD HH:mm:ss` format.
      *
      * created by: Rogendher Keith Lachica
@@ -43,25 +33,6 @@ class TimeValidationHelper{
 
     /**
     * Calculates the normalized work hours for an employee between `time_in` and `time_out`.
-    *
-    * Workflow:
-    * 1. Converts the worked time into a fraction of a day (24 hours).
-    * 2. Compares the actual fraction against the "default" fraction for 8 hours (1/3 of a day).
-    * 3. Rounds the result to 3 decimal places.
-    * 4. Handles weekends with special rules.
-    *
-    * Rules:
-    *  - If invalid dates or negative time range → returns 0.
-    *  - If working on a weekday:
-    *      > Example: 8 hrs → 0.333, 12 hrs → 0.5, etc.
-    *  - If working on a weekend:
-    *      > If `calculated <= 0` → returns absolute value or defaults to `0.33`.
-    *
-    * Formula:
-    *   worked_hours = (end_time - start_time) / (1000 * 60 * 60)
-    *   normalized   = (worked_hours / 24) - (8 / 24)
-    *   final        = round(normalized, 3)
-    *
     * @param {string|Date} time_in - Start time (ISO string or Date object).
     * @param {string|Date} time_out - End time (ISO string or Date object).
     * @returns {number} Normalized work hours (fraction of a day).
@@ -69,52 +40,62 @@ class TimeValidationHelper{
     * created by: Rogendher Keith Lachica
     * updated at: October 1, 2025 04:05 PM
     */
-    static calculateEmployeeWorkHour(time_in, time_out) {
+    static calculateEmployeeWorkHour(time_in, time_out){
+        // Convert input strings to Date objects
         const start_time = new Date(time_in);
         const end_time = new Date(time_out);
-
+    
+        // Validate the dates: check if either date is invalid or end_time is before start_time
         if(isNaN(start_time.getTime()) || isNaN(end_time.getTime()) || end_time < start_time){
             return NUMBER.zero;
         }
+    
+        // Ensure constants are valid numbers
+        const ms_one_thousand = DAY_TIME.ms_one_thousand || DAY_TIME.ms_one_thousand;
+        const ms_sixty = DAY_TIME.ms_sixty || DAY_TIME.sixty_hour;
+        const whole_day = DAY_TIME.whole_day || DAY_TIME.whole_day;
+        const default_work = DAY_TIME.default_work || DAY_TIME.default_work; 
+        const default_work_convertion = DAY_TIME.default_work_convertion || NUMBER.zero_point_zero_zero; 
+    
+        // Get the day of the week (0 = Sunday, 6 = Saturday)
         const day_of_week = start_time.getDay();
-        const is_weekend = (day_of_week === NUMBER.zero || day_of_week === NUMBER.six);
+        const is_weekend = (day_of_week === DAY_COUNT.sunday || day_of_week === DAY_COUNT.saturday);
+    
+        // Calculate the total time worked in milliseconds
         const milliseconds_worked = end_time - start_time;
-        const hours_worked = milliseconds_worked / ( NUMBER.one_thousand * NUMBER.sixty * NUMBER.sixty);
-        const default_day = NUMBER.twenty_four;
-        const default_hour_work = NUMBER.eight / default_day;
-        const default_day_converter = hours_worked / default_day;
-        const difference_day_work = default_day_converter - default_hour_work;
-        let calculated = Math.round(difference_day_work *  NUMBER.one_thousand) /  NUMBER.one_thousand;
-
+    
+        // Convert milliseconds to hours safely
+        const hours_worked = milliseconds_worked / (ms_one_thousand * ms_sixty * ms_sixty);
+    
+        // Convert default work hours to fraction of a day
+        const default_hour_work = default_work / whole_day;
+    
+        // Convert worked hours to fraction of a day
+        const default_day_converter = hours_worked / whole_day;
+    
+        // Calculate the difference between worked hours and default work hours
+        let difference_day_work = default_day_converter - default_hour_work;
+    
+        // Round the difference to the nearest thousandth
+        let calculated = Math.round(difference_day_work * ms_one_thousand) / ms_one_thousand;
+    
+        // Handle weekend calculation: if worked hours are less than or equal to 0, convert to positive value or default weekend work
         if(is_weekend && calculated <= NUMBER.zero){
-            calculated = Math.abs(calculated) || NUMBER.zero_point_thirty_three;
+            calculated = Math.abs(calculated) || default_work_convertion;
         }
-
+    
+        // Fallback: ensure calculated is a valid number
+        if(isNaN(calculated)){
+            calculated = NUMBER.zero;
+        }
+    
+        // Return the final calculated work hours (can be negative if less than default work)
         return calculated;
     }
 
-    /**
+
+    /** 
      * Computes leave credit adjustments based on employee work hours.
-     *
-     * Workflow:
-     * 1. If work hour is positive, employee earns credit:
-     *      > earned_credit = work_hour * 1.5
-     * 2. If work hour is negative, employee's credit is deducted:
-     *      > deducted_credit = absolute value of work_hour
-     * 3. Zero work hour means no change.
-     *
-     * Returns an object containing:
-     *  - earned_credit: number
-     *  - deducted_credit: number
-     *  - latest_credit: number (updated leave credit balance)
-     *
-     * Example:
-     *   computeLeaveCreditFromWorkHour(2, 10)
-     *   → { earned_credit: 3, deducted_credit: 0, latest_credit: 13 }
-     *
-     *   computeLeaveCreditFromWorkHour(-1, 10)
-     *   → { earned_credit: 0, deducted_credit: 1, latest_credit: 9 }
-     *
      * @param {number} work_hour - The normalized work hours (positive or negative).
      * @param {number} current_credit - The employee’s current leave credit balance.
      * @returns {object} Object containing earned, deducted, and latest credit values.
@@ -123,69 +104,33 @@ class TimeValidationHelper{
      * updated at: October 1, 2025 04:30 PM
      */
     static computeLeaveCreditFromWorkHour(work_hour, current_credit){
-        let earned_credit = NUMBER.zero;
-        let deducted_credit = NUMBER.zero;
-        let latest_credit = current_credit;
-
+        let earned_credit = NUMBER.zero;  
+        let deducted_credit = NUMBER.zero; 
+        let latest_credit = current_credit; 
+    
+        //  Employee worked extra hours (positive work_hour)
         if(work_hour > NUMBER.zero){
-            earned_credit = work_hour * NUMBER.one_point_fifty;
+            // Calculate earned leave credit using predefined multiplier
+            earned_credit = work_hour * WORK_HOUR_MULTIPLIER;
+    
+            // Update latest credit by adding earned credit
             latest_credit = current_credit + earned_credit;
         } 
+        //  Employee worked less than expected (negative work_hour)
         else if(work_hour < NUMBER.zero){
+            // Convert negative work hours to positive for deduction
             deducted_credit = Math.abs(work_hour);
+    
+            // Update latest credit by subtracting the deducted amount
             latest_credit = current_credit - deducted_credit;
         }
-
-        return{
-            earned_credit,
-            deducted_credit,
-            latest_credit
-        };
+    
+        return { earned_credit, deducted_credit, latest_credit};
     }
+    
 
     /**
      * Validates an employee's leave application based on company policies, leave type rules, and date restrictions.
-     *
-     * Workflow:
-     * 1. **Required Fields**
-     *    - Ensures `employee_id`, `leave_type_data`, `start_date`, `end_date`, and `reason` are provided.
-     *    - Returns: `{ is_valid: false, message: "All fields are required." }`.
-     *
-     * 2. **Date Validation**
-     *    - Checks if `start_date` and `end_date` are valid dates.
-     *    - Ensures `end_date` is not earlier than `start_date`.
-     *
-     * 3. **Weekend Restrictions**
-     *    - Start and end dates cannot fall on a Saturday or Sunday.
-     *    - Leave period cannot include weekends in between.
-     *
-     * 4. **Leave Type Rules**
-     *    - If `is_carried_over === 0` → leave must be within the current year only.
-     *    - If `notice_day > 0` → future leave requires notice days in advance.
-     *    - If `notice_day < 0` → allows backdated leave within limited days.
-     *    - If `rule_id === 3` and `notice_day === 0` → leave can only be filed on the same day.
-     *
-     * 5. **Duration Calculation**
-     *    - Counts total working days (weekdays only) between `start_date` and `end_date`.
-     *    - If leave exceeds `base_value` → reject with message.
-     *
-     * 6. **Error Handling**
-     *    - Returns consistent JSON: `{ is_valid: false, message: "<error reason>" }`.
-     *
-     * Example Success:
-     * {
-     *   is_valid: true,
-     *   message: null,
-     *   duration: 3,
-     *   adjusted_end_date: "2025-10-05"
-     * }
-     *
-     * Example Failure (invalid notice period):
-     * {
-     *   is_valid: false,
-     *   message: "This leave type requires at least 3 days' notice."
-     * }
-     *
      * @param {Object} params - Validation parameters.
      * @param {number} params.employee_id - ID of the employee applying.
      * @param {Object} params.leave_type_data - Leave type details including rules.
@@ -202,107 +147,141 @@ class TimeValidationHelper{
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 01:55 PM
      */
-    static async validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason }) {
+    static async validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason }){
+        const response = { is_valid: true, message: { success: false, message: null}, duration: NUMBER.zero, adjusted_end_date: end_date }; 
     
         try{
             if(!employee_id || !leave_type_data || !start_date || !end_date || !reason){
-                return { is_valid: false, message: { success: false, message: "All Fields are Required" } };
+                response.is_valid = false;
+                response.message = "All Fields are Required";
             }
     
             const start_date_day = new Date(start_date);
             let end_date_day = new Date(end_date);
     
+            // Check if the dates are valid
             if(isNaN(start_date_day.getTime()) || isNaN(end_date_day.getTime())){
-                return { is_valid: false, message: "Invalid date format." };
+                response.is_valid = false;
+                response.message = "Invalid date format.";
             }
     
-            if([NUMBER.zero, NUMBER.six].includes(start_date_day.getDay()) || [NUMBER.zero, NUMBER.six].includes(end_date_day.getDay())){
-                return { is_valid: false, message: "Leave cannot start or end on a weekend." };
+            // Prevent leave from starting or ending on weekends
+            if([DAY_COUNT.sunday, DAY_COUNT.saturday].includes(start_date_day.getDay()) || [DAY_COUNT.sunday, DAY_COUNT.saturday].includes(end_date_day.getDay())){
+                response.is_valid = false;
+                response.message = "Leave cannot start or end on a weekend.";
             }
     
+            // Normalize today's date to midnight for accurate comparisons
             const today_only = new Date();
             today_only.setHours(NUMBER.zero, NUMBER.zero, NUMBER.zero, NUMBER.zero);
-            let adjusted_end_date = end_date_day;
     
+            // Adjust end date if leave started in the past but extends beyond today
+            let adjusted_end_date = end_date_day;
+
             if(start_date_day < today_only && end_date_day > today_only){
                 adjusted_end_date = today_only;
             }
+
+            response.adjusted_end_date = adjusted_end_date;
     
+            // Check if leave type is not carried over; restrict usage to current year
             if(leave_type_data.is_carried_over === NUMBER.zero){
-                const now = new Date();
-                const year = now.getFullYear();
-                const january_start = new Date(year, NUMBER.zero, NUMBER.one);
-                const december_end = new Date(year, NUMBER.eleven, NUMBER.thirty_one, NUMBER.twenty_three, NUMBER.fifty_nine, NUMBER.fifty_nine, NUMBER.nine_houndred_nine);
+                const today_day = new Date();
+                const year = today_day.getFullYear(); 
     
-                if(start_date_day < january_start || start_date_day > december_end || end_date_day < january_start || end_date_day > december_end){
-                    return { is_valid: false, message: `The selected leave type "${leave_type_data.name}" can only be used within the current year (${year}).` };
+                if(start_date_day < new Date(year, DAY_MONTH.january, DAY_MONTH.january_first) || start_date_day > new Date(year, DAY_MONTH.december_eleven, DAY_MONTH.december_thirty_one, DAY_TIME.twenty_three_hour, DAY_TIME.fifty_nine_minutes, DAY_TIME.fifty_nine_minutes, DAY_TIME.ms_nine_houndred_ninety_nine) ||end_date_day < new Date(year, DAY_MONTH.january, DAY_MONTH.january_first) || end_date_day > new Date(year, DAY_MONTH.december_eleven, DAY_MONTH.december_thirty_one, DAY_TIME.twenty_three_hour, DAY_TIME.fifty_nine_minutes, DAY_TIME.fifty_nine_minutes, DAY_TIME.ms_nine_houndred_ninety_nine)){
+                    response.is_valid = false;
+                    response.message = `The selected leave type "${leave_type_data.name}" can only be used within the current year (${year}).`;
                 }
             }
     
-            const notice_day = Number(leave_type_data.notice_day) || NUMBER.zero;
+            // Extract notice day and leave type rule from leave_type_data
+            const notice_day = Number(leave_type_data.notice_day) || NUMBER.zero; 
             const rule_id = leave_type_data.leave_type_rule_id;
+    
+            // Normalize start and end dates to midnight (ignore time component)
             const start_only = new Date(start_date_day.getFullYear(), start_date_day.getMonth(), start_date_day.getDate());
             const end_only = new Date(end_date_day.getFullYear(), end_date_day.getMonth(), end_date_day.getDate());
-            let total_leave_day = NUMBER.zero;
     
-            for(let except = new Date(start_only); except <= end_only; except.setDate(except.getDate() + NUMBER.one)){
-                const day = except.getDay();
+            // Count total leave days excluding weekends
+            let total_leave_day = NUMBER.zero; 
 
-                if(day !== NUMBER.zero && day !== NUMBER.six){ 
+            for(let except = new Date(start_only); except <= end_only; except.setDate(except.getDate() + NUMBER.one)){
+                const day = except.getDay(); 
+
+                if(day !== DAY_COUNT.sunday && day !== DAY_COUNT.saturday){ 
                     total_leave_day++;
                 }
             }
+
+            response.duration = total_leave_day;
     
-            const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (NUMBER.one_thousand * NUMBER.sixty * NUMBER.sixty * NUMBER.twenty_four));
+            // Calculate difference in days between start date and today
+            const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (DAY_TIME.ms_one_thousand * DAY_TIME.sixty_hour * DAY_TIME.sixty_hour * DAY_TIME.whole_day));
     
-            if(notice_day > NUMBER.zero){
+            // Validate leave notice period
+            if(notice_day > NUMBER.one){
+                // Leave requires advance notice
                 if(different_days < notice_day){
-                    return { is_valid: false, message: `This leave type requires a notice period of at least ${notice_day} days.` };
+                    response.is_valid = false;
+                    response.message = `This leave type requires a notice period of at least ${notice_day} days.`;
+                }
+    
+                // End date cannot be before start date for future notice leave
+                if(end_only < start_only){ 
+                    response.is_valid = false; 
+                    response.message = `End date cannot be before start date for this leave type with future notice.`;
                 }
             } 
             else if(notice_day === NUMBER.zero){
-                if(rule_id === NUMBER.three){
-                    if(start_only.getTime() !== today_only.getTime() || end_only.getTime() !== today_only.getTime()){
-                        return { is_valid: false, message: `This leave type "${leave_type_data.name}" can only be used on the current date.` };
-                    }
-                } 
-                else if(different_days < NUMBER.zero){
-                    return { is_valid: false, message: `This leave type cannot be applied for past dates.` };
-                }
+                // Leave cannot be applied for past dates
+                if(rule_id === ROLE_TYPE_ID.employee && different_days < NUMBER.zero){
+                    response.is_valid = false;
+                    response.message = "This leave type cannot be applied for past dates.";
+                }   
             }
             else if(notice_day < NUMBER.zero){
+                // Allow past date leave within allowed negative notice period
                 const allowed_past_date = new Date(today_only);
-                allowed_past_date.setDate(today_only.getDate() + notice_day);
+                allowed_past_date.setDate(today_only.getDate() + notice_day); 
                 const valid_start = start_only >= allowed_past_date && start_only <= today_only;
                 const valid_end = end_only >= allowed_past_date && end_only <= today_only;
-                
+    
                 if(!valid_start || !valid_end){
-                    return { is_valid: false, message: `This leave type allows past date leave only within ${Math.abs(notice_day)} days from today.` };
+                   response.is_valid = false;
+                   response.message  = `This leave type allows past date leave only within ${Math.abs(notice_day)} days from today.`;
                 }
-                
+    
+                // Adjust end date if it exceeds today
                 if(end_only > today_only){
                     adjusted_end_date = today_only;
                 }
+                response.adjusted_end_date = adjusted_end_date;
             }
     
+            // Ensure start and end dates are not the same
             if(start_only.getTime() === end_only.getTime()){
-                return { is_valid: false, message: "Start date and End date cannot be the same." };
+                response.is_valid = false;
+                response.message = "Start date and End date cannot be the same.";
             }
     
+            // Check if total leave exceeds maximum allowed days for the leave type
             const max_days_allowed = Number(leave_type_data.base_value);
 
             if(!isNaN(max_days_allowed) && max_days_allowed > NUMBER.zero && total_leave_day > max_days_allowed){
-                return { is_valid: false, message: `Leave exceeds max allowed (${max_days_allowed} days).` };
+                response.is_valid = false;
+                response.message = `Leave exceeds max allowed ${max_days_allowed} days).`;
             }
-    
-            return {is_valid: true,message: null, duration: total_leave_day, adjusted_end_date};
-    
-        } 
-        catch(error){
-            return { is_valid: false, message: "Error validating leave application." };
         }
+        catch(error){
+            response.is_valid = false;
+            response.message =  "Error validating leave application.";
+        }
+
+        return response;
     }
-    
 }
+
+
 
 export default TimeValidationHelper;
