@@ -131,7 +131,7 @@ class EmployeeControllers{
                 const carry_over_leave_type_record = await LeaveTypeModel.getAllCarryOverLeaveTypes();
                 
                 // If leave types exist, prepare data for insertion
-                if(carry_over_leave_type_record.status && carry_over_leave_type_record.result.length) {
+                if(carry_over_leave_type_record.status && carry_over_leave_type_record.result.length){
                     const employee_record = carry_over_leave_type_record.result.map(leave_type => [employee_id, null, null, leave_type.id, leave_type.base_value, NUMBER.zero_point_zero_zero, NUMBER.zero_point_zero_zero, leave_type.base_value, leave_type.base_value, new Date()]);
                     const leave_credit_record = await LeaveCreditModel.insertLeaveCredit({ employee_record, connection });
             

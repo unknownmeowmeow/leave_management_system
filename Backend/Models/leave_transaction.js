@@ -51,7 +51,7 @@ class leaveTransactionModel{
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend, is_active, start_date, end_date, filed_date, year, rewarded_by_id,  approved_by_id ]);
             
-            if (insert_transaction.insertId) {
+            if(insert_transaction.insertId){
                 response_data.status = true;
                 response_data.result = { leave_id: insert_transaction.insertId };
             } 
@@ -100,6 +100,7 @@ class leaveTransactionModel{
         catch(error){
             response_data.error = error.message;
         }
+
         return response_data;
     }
 
@@ -143,6 +144,7 @@ class leaveTransactionModel{
         catch(error){
             response_data.error = error.message;
         }
+
         return response_data;
     }
 

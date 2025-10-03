@@ -38,6 +38,7 @@ class LeaveTypeGrantModel{
         catch(error){
             response_data.error = error.message;
         }
+        
         return response_data;
     }
 

@@ -43,6 +43,7 @@ class AttendanceModel{
         catch(error){
             response_data.error = error.message;
         }
+
         return response_data;
     }
 
@@ -119,7 +120,7 @@ class AttendanceModel{
                 response_data.error = "no time out record found in model";
             }
         }
-        catch (error){
+        catch(error){
             response_data.error = error.message;
         }
 
@@ -168,6 +169,7 @@ class AttendanceModel{
         catch(error){
             response_data.error = error.message;
         }
+
         return response_data;
     }
 
@@ -210,6 +212,7 @@ class AttendanceModel{
         catch(error){
             response_data.error = error.message;
         }
+
         return response_data;
     }
 
@@ -253,6 +256,7 @@ class AttendanceModel{
         catch(error){
             response_data.error = error.message;
         }
+        
         return response_data;
     }
 }

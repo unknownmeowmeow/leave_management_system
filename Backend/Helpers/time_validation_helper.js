@@ -25,9 +25,9 @@ class TimeValidationHelper{
             second: '2-digit',
             hour12: false
         });
+
         const [date, time] = philippines_local_datetime.split(', ');
         const [month, day, year] = date.split('/');
-
         return `${year}-${month}-${day} ${time}`;
     }
 
@@ -106,7 +106,7 @@ class TimeValidationHelper{
         let deducted_credit = NUMBER.zero; 
         let latest_credit = current_credit; 
     
-        //  Employee worked extra hours (positive work_hour)
+            //  Employee worked extra hours (positive work_hour)
         if(work_hour > NUMBER.zero){
             // Calculate earned leave credit using predefined multiplier
             earned_credit = work_hour * WORK_HOUR_MULTIPLIER;
@@ -114,7 +114,7 @@ class TimeValidationHelper{
             // Update latest credit by adding earned credit
             latest_credit = current_credit + earned_credit;
         } 
-        //  Employee worked less than expected (negative work_hour)
+            // Employee worked less than expected (negative work_hour)
         else if(work_hour < NUMBER.zero){
             // Convert negative work hours to positive for deduction
             deducted_credit = Math.abs(work_hour);

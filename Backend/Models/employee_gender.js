@@ -38,7 +38,6 @@ class EmployeeGenderModel{
 
         return response_data;
     }
-
 }
 
 export default EmployeeGenderModel;

@@ -186,10 +186,10 @@ class LeaveTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
-    static async getLeaveTypeById(leave_type_id) {
+    static async getLeaveTypeById(leave_type_id){
         const response_data =  { status: false, result: null, error: null };
 
-        try {
+        try{
             const [get_leave_type_id] = await db.execute(`
                 SELECT 
                     id, 
@@ -288,10 +288,10 @@ class LeaveTypeModel{
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
-    static async getAllLeaveTransactionByEmployeeId(employee_id) {
+    static async getAllLeaveTransactionByEmployeeId(employee_id){
         const response_data = { status: false, result: null, error: null };
     
-        try {
+        try{
             const [get_transaction_by_id] = await db.execute(`
                 SELECT 
                     leave_transactions.id,
@@ -421,8 +421,7 @@ class LeaveTypeModel{
         }
     
         return response_data;
-    }
-    
+    }  
 }
 
 export default LeaveTypeModel; 

@@ -204,7 +204,7 @@ class LeaveController{
      */
     static async getLatestCredit(req, res){
 
-        try {
+        try{
             const employee_id = req.session.user?.employee_id;
         
             if(!employee_id){
@@ -219,10 +219,8 @@ class LeaveController{
             return res.json({success: true,latest_credit: parseFloat(employee_credit_record.result)});
         } 
         catch(error){
-            return res.json({success: false,message: error.message || "Server error registered in controller"
-            });
+            return res.json({success: false,message: error.message || "Server error registered in controller"});
         }
-        
     }
     
 }

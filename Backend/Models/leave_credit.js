@@ -67,7 +67,7 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 30 2025 6:45 pm
      */
-    static async insertEmployeeLeaveCreditFromWorkHour({ employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit, connection = db }) {
+    static async insertEmployeeLeaveCreditFromWorkHour({ employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit, connection = db }){
         const response_data = { status: false, result: null, error: null };
 
         try{
@@ -108,10 +108,10 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 24 2025 1:25 pm
      */
-    static async insertYearlyCredit(employee_data) {
+    static async insertYearlyCredit(employee_data){
         const response_data = { status: false, result: null, error: null };
 
-        try {
+        try{
             const [insert_yearly_credit] = await db.query(`
                 INSERT INTO leave_credits (
                     employee_id,
@@ -272,6 +272,7 @@ class LeaveCreditModel{
         catch(error){
             response_data.error = error.message;
         }
+
         return response_data;
     }
 
@@ -292,10 +293,10 @@ class LeaveCreditModel{
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 12:30 am
      */
-    static async updateLatestCredit({ leave_credit_id, leave_transaction_id, leave_type_id, used_credit, latest_credit, current_credit, deducted_credit, connection = db }) {
+    static async updateLatestCredit({ leave_credit_id, leave_transaction_id, leave_type_id, used_credit, latest_credit, current_credit, deducted_credit, connection = db }){
         const response_data = { status: false, result: null, error: null };
 
-        try {
+        try{
             const [update_latest_credit] = await connection.execute(`
                 UPDATE leave_credits
                 SET 
@@ -323,8 +324,6 @@ class LeaveCreditModel{
 
         return response_data;
     }
-
-
 }
 
 export default LeaveCreditModel; 
