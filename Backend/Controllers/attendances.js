@@ -1,11 +1,11 @@
-import AttendanceModel from "../Models/attendance.js";
-import TimeValidationHelper from "../Helpers/time_validation_helper.js";
-import LeaveCreditModel from "../Models/leave_credit.js";   
-import WorkTimeValidationHelper from "../Helpers/work_time_validation_helper.js";
-import database from "../Configs/database.js";
-import { ATTENDANCE_TYPE_ID, NUMBER } from "../Constant/constants.js";
+import attendance from "../models/attendance.js";
+import timeValidation from "../helpers/time_validation_helper.js";
+import leaveCredit from "../models/leave_credit.js";   
+import workValidation from "../helpers/work_time_validation_helper.js";
+import database from "../config/database.js";
+import { ATTENDANCE_TYPE_ID, NUMBER } from "../constant/constants.js";
 
-class AttendanceControllers{
+class Attendance{
 
     /**
      * Handles the employee time-in process.
@@ -23,27 +23,22 @@ class AttendanceControllers{
      * updated at: September 24, 2025 10:45 PM
      */
     static async employeetimeIn(req, res){
-        const user = req.session.user;
-
-        if(!user){
-            throw new Error("No User Found");
-        }
 
         try{
-            const employee_id = user.employee_id;
-            const latest_timein_record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
+            const employee_id = req.session.user;
+            const latest_timein_record = await attendance.checkEmployeeLatestTimeIn(employee_id);
 
             if(latest_timein_record.status){
                 throw new Error("Already time in this day");
             }
 
-            const insert_employee_attendance_record = await AttendanceModel.insertEmployeeTimeInAttendance({ employee_id});
+            const insert_employee_attendance_record = await attendance.insertEmployeeTimeInAttendance({employee_id});
 
             if(!insert_employee_attendance_record.status || insert_employee_attendance_record.error){
                 throw new Error(insert_employee_attendance_record.error);
             }
 
-            return res.json( { success: true, message: "Time IN recorded successfully" });
+            return res.json({ success: true, message: "Time IN recorded successfully" });
         } 
         catch(error){
             return res.json({ success: false, message: error.message || "Server error attendance in controller" });
@@ -66,12 +61,6 @@ class AttendanceControllers{
      * updated at: September 24, 2025 11:30 PM
      */
     static async updateEmployeeTimeOut(req, res){
-        const user = req.session.user;
-    
-        if(!user){
-            return res.json({ success: false, message: "User session not found." });
-        }
-    
         const connection = await database.getConnection();
     
         try{
@@ -81,7 +70,7 @@ class AttendanceControllers{
             const attendance_type_id = ATTENDANCE_TYPE_ID.time_out;
     
             // Get the latest Time In record for the employee
-            const latest_time_record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
+            const latest_time_record = await attendance.checkEmployeeLatestTimeIn(employee_id);
             const active_record_time_in = latest_time_record.result;
     
             // Validate if a Time In record exists
@@ -90,7 +79,7 @@ class AttendanceControllers{
             }
     
             // Check if employee already timed out today
-            const latest_timeout_record = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
+            const latest_timeout_record = await attendance.checkLatestEmployeeTimeOut(employee_id);
 
             if(latest_timeout_record.status){
                 throw new Error("Already time Out today");
@@ -105,32 +94,32 @@ class AttendanceControllers{
             }
     
             // Get current time for Time Out
-            const time_out = TimeValidationHelper.checkEmployeeCurrentTime();
+            const time_out = timeValidation.checkEmployeeCurrentTime();
     
             // Calculate work hours between Time In and Time Out
-            const work_hour = TimeValidationHelper.calculateEmployeeWorkHour(time_in, time_out);
+            const work_hour = timeValidation.calculateEmployeeWorkHour(time_in, time_out);
     
             // Validate Time Out based on business rules
-            const validation_check_time = WorkTimeValidationHelper.validateEmployeeTimeOut({ id, time_out, work_hour });
+            const validation_check_time = workValidation.validateEmployeeTimeOut({ id, time_out, work_hour });
 
             if(!validation_check_time.is_valid){
                 throw new Error("Failed to Time Out in controller");
             }
     
             // Update attendance record with Time Out and work hours
-            const update_attendance_record = await AttendanceModel.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
+            const update_attendance_record = await attendance.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
 
             if(!update_attendance_record.status || update_attendance_record.error){
                 throw new Error(update_attendance_record.error);
             }
     
             // Fetch latest leave credit for employee
-            const latest_credit_record = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
+            const latest_credit_record = await leaveCredit.getLatestEmployeeLeaveCredit(employee_id);
             const current_credit = latest_credit_record.latest_credit || NUMBER.zero;
     
             // Compute earned or deducted leave credits based on work hours
-            const { earned_credit, deducted_credit, latest_credit } = TimeValidationHelper.computeLeaveCreditFromWorkHour(work_hour, current_credit);
-            const update_latest_credit_record = await LeaveCreditModel.insertEmployeeLeaveCreditFromWorkHour({ employee_id, attendance_id: id, earned_credit, deducted_credit, current_credit, latest_credit, connection});
+            const { earned_credit, deducted_credit, latest_credit } = timeValidation.computeLeaveCreditFromWorkHour(work_hour, current_credit);
+            const update_latest_credit_record = await leaveCredit.insertEmployeeLeaveCreditFromWorkHour({ employee_id, attendance_id: id, earned_credit, deducted_credit, current_credit, latest_credit, connection});
             
             if(!update_latest_credit_record.status || update_latest_credit_record.error){
                 throw new Error(update_latest_credit_record.error);
@@ -161,25 +150,9 @@ class AttendanceControllers{
      * updated at: September 26, 2025 11:45 AM
      */
     static async employeeRecord(req, res){
-        const user = req.session.user;
-
-        if(!user){
-            throw new Error("No User Found");
-        }
-
-        try{
-            const employee_id = user.employee_id;
-            const employee_record = await AttendanceModel.getAllTimeInAndTimeOutByEmployeeId(employee_id);
-
-            if(!employee_record.status || employee_record.error){
-                throw new Error(employee_record.error);
-            }
-
-            return res.json({ success: true, records: employee_record.result });
-        } 
-        catch(error){
-            return res.json({ success: false, message: error.message || "Server error admin in controller" });
-        }
+        const employee_id = req.session.user;
+        const employee_record = await attendance.getAllTimeInAndTimeOutByEmployeeId(employee_id);
+        return res.json({ success: true, records: employee_record.result });
     }
 
     /**
@@ -192,25 +165,9 @@ class AttendanceControllers{
      * updated at: September 26, 2025 11:55 AM
      */
     static async allEmployeesAttendanceRecord(req, res){
-        const user = req.session.user;
-
-        if(!user){
-           throw new Error("User Not Found");
-        }
-
-        try{
-            const attendance_record = await AttendanceModel.getAllEmployeeTimeInAndTimeOut();
-
-            if(!attendance_record.status || attendance_record.error){
-                throw new Error(attendance_record.error);
-            }
-
-            return res.json({ success: true, result: attendance_record.result });
-        } 
-        catch(error){
-            return res.json({ success: false, message: error.message || "Server error admin in controller" });
-        }
+        const attendance_record = await attendance.getAllEmployeeTimeInAndTimeOut();
+        return res.json({ success: true, result: attendance_record.result });
     }
 }
 
-export default AttendanceControllers;
+export default Attendance;

@@ -1,4 +1,4 @@
-class WorkTimeValidationHelper{
+class WorkValidation{
     
     /**
      * Validates the required fields for employee time-out entry.
@@ -9,9 +9,8 @@ class WorkTimeValidationHelper{
      * @param {number} param0.work_hour - Total computed work hours (numeric).
      *
      * @returns {Object} Validation result.
-     * @returns {boolean} return.is_valid - `true` if all validations pass, otherwise `false`.
-     * @returns {string|null} return.error - Error message if invalid, otherwise `null`.
-     *
+     * @returns {boolean} return.is_valid 
+     * @returns {string|null} return.error
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 02:32 PM
      */
@@ -35,4 +34,4 @@ class WorkTimeValidationHelper{
     }
 }
 
-export default WorkTimeValidationHelper;
+export default WorkValidation;

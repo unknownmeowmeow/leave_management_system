@@ -1,21 +1,13 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 
 
 
-class LeaveTypeRuleModel{
+class LeaveRuleType{
 
     /**
      * Retrieves a leave type rule by its ID.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find the leave type rule with the specified ID.
-     * 2. If found, returns status `true` with the rule data.
-     * 3. If not found, returns status `false` with an error message.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @param {number} rule_id - The ID of the leave type rule to retrieve.
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing status, rule data array, or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -45,4 +37,4 @@ class LeaveTypeRuleModel{
     }
 }
 
-export default LeaveTypeRuleModel;
+export default LeaveRuleType;

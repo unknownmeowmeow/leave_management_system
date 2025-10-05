@@ -1,19 +1,11 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 
-class LeaveTypeGrantModel{
+class LeaveTypeGrant{
 
     /**
      * Retrieves the grant type record by its name.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find a grant type with the specified name.
-     * 2. If found, returns status `true` along with the grant type record(s).
-     * 3. If not found, returns status `false` with an error message.
-     * 4. Catches and handles any database or execution errors.
-     *
      * @param {string} name - The name of the grant type to retrieve.
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response object containing status, result array, or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 4:00 am
      */
@@ -44,4 +36,4 @@ class LeaveTypeGrantModel{
 
 }
 
-export default LeaveTypeGrantModel; 
+export default LeaveTypeGrant; 

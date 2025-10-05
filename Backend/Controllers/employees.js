@@ -1,16 +1,16 @@
 import bcrypt from "bcrypt";
-import EmployeeModel from "../Models/employee.js"; 
-import EmployeeGenderModel from "../Models/employee_gender.js";
-import EmployeeRoleTypeModel from "../Models/employee_role_type.js";
-import ValidationHelper from '../Helpers/validation_helper.js';
-import LeaveTypeModel from "../Models/leave_type.js";
-import LeaveCreditModel from "../Models/leave_credit.js";
-import database from "../Configs/database.js";
-import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
+import employee from "../models/employee.js"; 
+import employeeGender from "../models/employee_gender.js";
+import employeeRoleType from "../models/employee_role_type.js";
+import validationHelper from '../helpers/validation_helper.js';
+import leaveType from "../models/leave_type.js";
+import leaveCredit from "../models/leave_credit.js";
+import database from "../config/database.js";
+import { DECIMAL_NUMBER, NUMBER, ROLE_TYPE_ID } from "../constant/constants.js";
 
 
 
-class EmployeeControllers{
+class Employee{
 
     /**
      * Fetches all employee role types from the database.
@@ -24,7 +24,7 @@ class EmployeeControllers{
     static async employeeRole(req, res){
 
         try{
-            const role_record = await EmployeeRoleTypeModel.getAllRoles();
+            const role_record = await employeeRoleType.getAllRoles();
 
             if(!role_record.status || role_record.error){
                 throw new Error(role_record.error)
@@ -49,7 +49,7 @@ class EmployeeControllers{
     static async employeeGender(req, res){
 
         try{
-            const gender_record = await EmployeeGenderModel.getAllGenders();
+            const gender_record = await employeeGender.getAllGenders();
 
             if(!gender_record.status || gender_record.error){
                 throw new Error(gender_record.error);
@@ -77,7 +77,7 @@ class EmployeeControllers{
     
         try{
             await connection.beginTransaction();
-            const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
+            const validation_error = validationHelper.validateEmployeeRegistration(req.body);
     
             // If there are validation errors
             if(validation_error.length){
@@ -88,7 +88,7 @@ class EmployeeControllers{
             const { first_name, last_name, email, password, role, gender } = req.body;
     
             // Check if the email already exists in the database
-            const email_exist = await EmployeeModel.getEmployeeEmail(email);
+            const email_exist = await employee.getEmployeeEmail(email);
     
             // If email exists, throw an error to prevent duplicate registration
             if(email_exist.status){
@@ -96,7 +96,7 @@ class EmployeeControllers{
             }
     
             // Get role data based on provided role ID
-            const role_record = await EmployeeRoleTypeModel.getRoleTypeById(role);
+            const role_record = await employeeRoleType.getRoleTypeById(role);
     
             // If role data is invalid or contains an error, throw an error
             if(!role_record.status || role_record.error){
@@ -104,7 +104,7 @@ class EmployeeControllers{
             }
     
             // Get gender data based on provided gender ID
-            const gender_record = await EmployeeGenderModel.getGenderById(gender);
+            const gender_record = await employeeGender.getGenderById(gender);
     
             // If gender data is invalid or contains an error, throw an error
             if(!gender_record.status || gender_record.error){
@@ -115,7 +115,7 @@ class EmployeeControllers{
             const hash_password = await bcrypt.hash(password, NUMBER.twelve);
     
             // Create a new employee account record in the database
-            const employee_new_account_record = await EmployeeModel.createEmployeeAccount({ first_name, last_name, email, role, gender, password: hash_password }, connection);
+            const employee_new_account_record = await employee.createEmployeeAccount({ first_name, last_name, email, role, gender, password: hash_password }, connection);
     
             // If creation failed, throw an error with details
             if(!employee_new_account_record.status || employee_new_account_record.error){
@@ -128,12 +128,14 @@ class EmployeeControllers{
             // If the employee role is a regular employee, assign initial leave credits
             if(parseInt(role, NUMBER.ten) === ROLE_TYPE_ID.employee){
                 // Fetch all leave types that carry over
-                const carry_over_leave_type_record = await LeaveTypeModel.getAllCarryOverLeaveTypes();
-                
+                const carry_over_leave_type_record = await leaveType.getAllCarryOverLeaveTypes();
+            
                 // If leave types exist, prepare data for insertion
-                if(carry_over_leave_type_record.status && carry_over_leave_type_record.result.length){
-                    const employee_record = carry_over_leave_type_record.result.map(leave_type => [employee_id, null, null, leave_type.id, leave_type.base_value, NUMBER.zero_point_zero_zero, NUMBER.zero_point_zero_zero, leave_type.base_value, leave_type.base_value, new Date()]);
-                    const leave_credit_record = await LeaveCreditModel.insertLeaveCredit({ employee_record, connection });
+                if(carry_over_leave_type_record.status && carry_over_leave_type_record.result.length) {
+                    // Map leave types into batch insert array
+                    const employee_data = carry_over_leave_type_record.result.map(leave_type => [employee_id,null, null, leave_type.id,leave_type.base_value,DECIMAL_NUMBER.zero_point_zero_zero, DECIMAL_NUMBER.zero_point_zero_zero, leave_type.base_value, leave_type.base_value,new Date()]);
+                    // Insert leave credits in batch
+                    const leave_credit_record = await leaveCredit.insertLeaveCredit({ employee_data, connection });
             
                     // If insertion failed, throw an error
                     if(!leave_credit_record.status || leave_credit_record.error){
@@ -168,14 +170,14 @@ class EmployeeControllers{
     static async employeeLogin(req, res){
 
         try{
-            const validation_error = ValidationHelper.validateEmployeeLogin(req.body);
+            const validation_error = validationHelper.validateEmployeeLogin(req.body);
     
             if(validation_error.length){
                 return res.json({ success: false, errors: validation_error });
             }
     
             const { email, password } = req.body;
-            const employee_record = await EmployeeModel.getEmployeeEmail(email);
+            const employee_record = await employee.getEmployeeEmail(email);
     
             if(!employee_record.status || employee_record.error){
                 throw new Error(employee_record.error);
@@ -231,4 +233,4 @@ class EmployeeControllers{
     }
 }
 
-export default EmployeeControllers; 
+export default Employee; 

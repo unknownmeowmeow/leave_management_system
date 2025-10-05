@@ -1,5 +1,5 @@
 
-class ValidationHelper{
+class EmployeeValidation{
 
     /**
      * Validates employee registration input fields for correctness and compliance.
@@ -14,7 +14,6 @@ class ValidationHelper{
      * @param {string} employee_data.gender - Gender of employee.
      *
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 02:05 PM
      */
@@ -76,7 +75,6 @@ class ValidationHelper{
      * @param {string} employee_data.password - Employee's login password.
      *
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 02:15 PM
      */
@@ -106,9 +104,7 @@ class ValidationHelper{
      * @param {string|number} leave_data.leave_type - Selected leave type.
      * @param {string} leave_data.start_date - Leave start date (YYYY-MM-DD).
      * @param {string} leave_data.end_date - Leave end date (YYYY-MM-DD).
-     *
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 02:25 PM
      */
@@ -129,4 +125,4 @@ class ValidationHelper{
     }
 }
 
-export default ValidationHelper;
+export default EmployeeValidation;

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-class Database {
+class Database{
     constructor(){
         
         this.pool = mysql.createPool({
@@ -19,4 +19,5 @@ class Database {
 }
 
 const database = new Database().db;
+
 export default database;

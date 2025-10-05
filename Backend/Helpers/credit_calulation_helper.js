@@ -1,6 +1,6 @@
-import { NUMBER } from "../Constant/constants.js";
+import { NUMBER } from "../constant/constants.js";
 
-class CreditCalculationHelper{
+class CreditCalculation{
     
     /**
      * Calculates the total base value from a collection of leave type records (2D Array format).
@@ -8,7 +8,7 @@ class CreditCalculationHelper{
      * updated at: October 1, 2025 02:35 PM
      */
     static getTotalBaseValue(leave_types){
-        return leave_types.reduce((total, leave_type) => { return total + (Number(leave_type.base_value) || NUMBER.zero_point_zero_zero); }, NUMBER.zero_point_zero_zero);
+        return leave_types.reduce((total, leave_type) => { return total + (Number(leave_type.base_value) || DECIMAL_NUMBER.zero_point_zero_zero); }, DECIMAL_NUMBER.zero_point_zero_zero);
     }
     
 
@@ -31,7 +31,6 @@ class CreditCalculationHelper{
      * This is functionally identical to `getTotalBaseValueFromLeaveTypes` but ensures a safe, reusable name.
      * @param {Array<Object>} leaveTypes - Array of leave type objects, each containing a `base_value` property (string or number).
      * @returns {number} The total sum of all `base_value` fields.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2, 2025 03:30 PM
      */
@@ -45,4 +44,4 @@ class CreditCalculationHelper{
     }
 }
 
-export default CreditCalculationHelper;
+export default CreditCalculation;

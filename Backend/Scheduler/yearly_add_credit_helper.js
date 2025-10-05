@@ -1,6 +1,6 @@
 
 import cron from "node-cron";
-import CreditControllers from "../Controllers/credits.js";
+import credit from "../controllers/credits.js";
 
 /**
  * Schedules a cron job to run yearly credit insertion.
@@ -19,5 +19,5 @@ cron.schedule("0 0 0 1 1 *", async () => {
         }
     };
 
-    return await CreditControllers.runYearlyCreditInsertion(mock_request, mock_response);
+    return await credit.runYearlyCreditInsertion(mock_request, mock_response);
 });

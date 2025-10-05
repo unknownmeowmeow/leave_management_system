@@ -1,9 +1,9 @@
-import LeaveTypeModel from "../Models/leave_type.js";
-import LeaveTransactionModel from "../Models/leave_transaction.js";
-import database from "../Configs/database.js";
-import { NUMBER, APPROVED_LEAVE_STATUS } from "../Constant/constants.js";
+import leaveType from "../models/leave_type.js";
+import leaveTransaction from "../models/leave_transaction.js";
+import database from "../config/database.js";
+import { NUMBER, APPROVED_LEAVE_STATUS } from "../constant/constants.js";
 
-class AdminLeaveController{
+class AdminLeave{
 
     /**
      * Retrieves all leave transactions in the system.
@@ -13,29 +13,16 @@ class AdminLeaveController{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object used to send JSON.
      * @returns {Object} JSON response:
-     *  - { success: true, data: Array } on success.
-     *  - { success: false, message: string } on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 10:15 AM
      */
     static async getAllEmployeeTransaction(req, res){
-
-        try{
-            const employee_leave_record = await LeaveTypeModel.getAllEmployeeLeaveTransaction();
-
-            if(!employee_leave_record.status || employee_leave_record.error){
-               throw new Error(employee_leave_record.error);
-            }
-
-            return res.json({ success: true, data: employee_leave_record.result });
-        } 
-        catch(error){
-            return res.json({ success: false, message: "Failed to view all Employee Transaction in controller."});
-        }
+        const employee_leave_record = await leaveType.getAllEmployeeLeaveTransaction();
+        return res.json({ success: true, data: employee_leave_record.result });
     }
+    
 
-    /**
+    /** 
      * Retrieves all leave transactions for the logged-in employee.
      *
      * This controller returns every leave transaction record associated 
@@ -50,27 +37,12 @@ class AdminLeaveController{
      * updated at: September 26, 2025 9:30 AM
      */
     static async getAllLeaveTransactionByEmployee(req, res){
-        const user = req.session.user;
-
-        if(!user){
-            return res.json({ success: false, message: "User session not Found." });
-        }
-
-        const employee_id = user.employee_id;
-
-        try{
-            const leave_transaction_record = await LeaveTypeModel.getAllLeaveTransactionByEmployeeId(employee_id);
-
-            if(!leave_transaction_record.status || leave_transaction_record.error){
-                throw new Error(leave_transaction_record.error);
-            }
-
-            return res.json({ success: true, data: leave_transaction_record.result });
-        } 
-        catch(error){
-            return res.json({ success: false, message: error.message || "Server error in leave transaction employee controller" });
-        }
+        const employee_id = req.session.user;
+        const leave_transaction_record = await leaveType.getAllLeaveTransactionByEmployeeId(employee_id);
+        return res.json({ success: true, data: leave_transaction_record.result });
     }
+    
+    
     
     /**
      * Updates the status of a specific leave transaction.
@@ -85,36 +57,23 @@ class AdminLeaveController{
      * @param {Object} res - Express response object used to return JSON.
      * 
      * @returns {Object} JSON response:
-     * - { success: true, data: Object } → On successful status update.
-     * - { success: false, message: string } → On validation failure, insufficient credit, or DB error.
-     *
-     * Transactional Safety:
-     * - Uses MySQL transaction (BEGIN, COMMIT, ROLLBACK).
-     * - Ensures credits are only deducted if status update succeeds.
-     * - Prevents partial updates that could corrupt data.
-     *
      * Created by: Rogendher Keith Lachica
      * Updated at: September 26, 2025 8:55 AM
      */
     static async updateLeaveStatus(req, res){
         const { leave_id, status_id } = req.body;
-        const user = req.session.user;
+        const approver_id = req.session.user.employee_id;
 
-        if(!user){
-            throw new Error("No User Found");
-        }
-    
         /* Throw error if leave_id or status_id is missing */
         if(!leave_id || !status_id){
             throw new Error("No leave id found or status");
         }
     
         const connection = await database.getConnection();
-        
+
         try{
             await connection.beginTransaction();
-            const employee_leave_transaction_record = await LeaveTransactionModel.getLeaveTransactionById(leave_id);
-                
+            const employee_leave_transaction_record = await leaveTransaction.getLeaveTransactionById(leave_id);
             /* Throw error if record retrieval fails */
             if(!employee_leave_transaction_record.status || employee_leave_transaction_record.error){
                 throw new Error(employee_leave_transaction_record.error);
@@ -128,8 +87,7 @@ class AdminLeaveController{
     
             /* If the leave is approved, handle leave credit deduction */
             if(Number(status_id) === APPROVED_LEAVE_STATUS){
-                const employee_total_credit_record = await LeaveTransactionModel.getTotalCredit(employee_id);
-    
+                const employee_total_credit_record = await leaveTransaction.getTotalCredit(employee_id);
                 /* Throw error if total credit retrieval fails */
                 if(!employee_total_credit_record.status || employee_total_credit_record.error){
                    throw new Error(employee_total_credit_record.error);
@@ -143,23 +101,22 @@ class AdminLeaveController{
                     throw new Error(`No credit available: ${available_credit} days.`)
                 }
     
-                const latest_employee_credit_record = await LeaveTransactionModel.getLatestCreditRecord(employee_id);
-                   
+                const latest_employee_credit_record = await leaveTransaction.getLatestCreditRecord(employee_id);
                 /* Throw error if latest credit record retrieval fails */
                 if(!latest_employee_credit_record.status || latest_employee_credit_record.error){
                     throw new Error(latest_employee_credit_record.error);
                 }
-    
-                const deduction_credit_record = await LeaveTransactionModel.deductCredit(latest_employee_credit_record.result.id, total_leave, connection);
-              
+
+                const deduction_credit_record = await leaveTransaction.deductCredit({ credit_id: latest_employee_credit_record.result.id, total_leave }, connection);
+                console.log(deduction_credit_record);
+
                 /* Throw error if deduction fails */
                 if(!deduction_credit_record.status || deduction_credit_record.error){
                     throw new Error(deduction_credit_record.error);
                 }
             }
             
-            const update_status_record = await LeaveTransactionModel.updateStatus(leave_id, status_id, user.employee_id, connection);
-                
+            const update_status_record = await leaveTransaction.updateStatus({ leave_id, status_id, approver_id }, connection);
             /* Throw error if status update fails */
             if(!update_status_record.status || update_status_record.error){
                 throw new Error(update_status_record.error);
@@ -182,36 +139,18 @@ class AdminLeaveController{
      * Retrieves all leave transactions for the logged-in employee.
      *
      * This controller provides employees with their complete leave records 
-     * (approved, pending, rejected, etc.) by querying the `LeaveTypeModel`.
+     * (approved, pending, rejected, etc.) by querying the `leaveType`.
      * @param {Object} req - Express request object containing session data.
      * @param {Object} res - Express response object used to send JSON.
      * @returns {Object} JSON response:
-     *  - { success: true, data: Array } on success.
-     *  - { success: false, message: string } on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 9:20 AM
      */
     static async getAllEmployeeLeaveTransaction(req, res){
-        const user = req.session.user;
-
-        if(!user){
-            throw new Error("No User Found");
-        }
-        
-        try{
-            const employee_leave_record = await LeaveTypeModel.getAllByEmployeeRecordLeaves();
-
-            if(!employee_leave_record.status || employee_leave_record.error){
-                throw new Error(employee_leave_record.error);
-            }
-
-            return res.json({ success: true, data: employee_leave_record.result });
-        } 
-        catch(error){
-            return res.json({ success: false, message: error.message || "Server error in get employee catch controller"});
-        }
+        const employee_leave_record = await leaveType.getAllByEmployeeRecordLeaves();
+        return res.json({ success: true, data: employee_leave_record.result });
     }
+    
 }
 
-export default AdminLeaveController;
+export default AdminLeave;

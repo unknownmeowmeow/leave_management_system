@@ -1,14 +1,11 @@
-import { DAY_COUNT, NUMBER, DAY_TIME, WORK_HOUR_MULTIPLIER, DAY_MONTH, ROLE_TYPE_ID } from "../Constant/constants.js";
+import { DAY_COUNT, NUMBER,  DAY_MONTH, ROLE_TYPE_ID, TIME_HOUR, TIME_MILISECOND,
+    DEFAULT_TIME_CONVERSION,DECIMAL_NUMBER, FIFTY_NINE_MINUTE, MONTH
+} from "../constant/constants.js";
 
-class TimeValidationHelper{
+class TimeValidation{
 
     /**
      * Gets the current date and time in the Philippines (Asia/Manila timezone).
-     *
-     * - Uses `toLocaleString` with the `"Asia/Manila"` timezone to ensure 
-     *   the time is always localized to Philippine Standard Time (PST).
-     * - Formats the output as `YYYY-MM-DD HH:mm:ss`.
-     * - Ensures 24-hour format (`hour12: false`).
      * @returns {string} Current Philippines local datetime in `YYYY-MM-DD HH:mm:ss` format.
      *
      * created by: Rogendher Keith Lachica
@@ -36,7 +33,6 @@ class TimeValidationHelper{
     * @param {string|Date} time_in - Start time (ISO string or Date object).
     * @param {string|Date} time_out - End time (ISO string or Date object).
     * @returns {number} Normalized work hours (fraction of a day).
-    *
     * created by: Rogendher Keith Lachica
     * updated at: October 1, 2025 04:05 PM
     */
@@ -49,38 +45,31 @@ class TimeValidationHelper{
             return NUMBER.zero;
         }
     
-        // Ensure constants are valid numbers
-        const ms_one_thousand = DAY_TIME.ms_one_thousand || DAY_TIME.ms_one_thousand;
-        const ms_sixty = DAY_TIME.ms_sixty || DAY_TIME.sixty_hour;
-        const whole_day = DAY_TIME.whole_day || DAY_TIME.whole_day;
-        const default_work = DAY_TIME.default_work || DAY_TIME.default_work; 
-        const default_work_convertion = DAY_TIME.default_work_convertion || NUMBER.zero_point_zero_zero; 
-    
         // Get the day of the week (0 = Sunday, 6 = Saturday)
         const day_of_week = start_time.getDay();
         const is_weekend = (day_of_week === DAY_COUNT.sunday || day_of_week === DAY_COUNT.saturday);
     
         // Calculate the total time worked in milliseconds
-        const milliseconds_worked = end_time - start_time;
+        const milisecond_work = end_time - start_time;
     
         // Convert milliseconds to hours safely
-        const hours_worked = milliseconds_worked / (ms_one_thousand * ms_sixty * ms_sixty);
+        const work_hour_conversion = milisecond_work / (TIME_MILISECOND.milisecond_one_thousand * TIME_MILISECOND.milisecond_sixty * TIME_MILISECOND.milisecond_sixty);
     
         // Convert default work hours to fraction of a day
-        const default_hour_work = default_work / whole_day;
+        const default_work_hour = TIME_HOUR.default_work / TIME_HOUR.twenty_four_hour;
     
         // Convert worked hours to fraction of a day
-        const default_day_converter = hours_worked / whole_day;
+        const default_day_converter = work_hour_conversion / TIME_HOUR.twenty_four_hour;
     
         // Calculate the difference between worked hours and default work hours
-        let difference_day_work = default_day_converter - default_hour_work;
+        let difference_work_hour = default_day_converter - default_work_hour;
     
         // Round the difference to the nearest thousandth
-        let calculated = Math.round(difference_day_work * ms_one_thousand) / ms_one_thousand;
+        let calculated = Math.round(difference_work_hour * milisecond_one_thousand) / milisecond_one_thousand;
     
         // Handle weekend calculation: if worked hours are less than or equal to 0, convert to positive value or default weekend work
         if(is_weekend && calculated <= NUMBER.zero){
-            calculated = Math.abs(calculated) || default_work_convertion;
+            calculated = Math.abs(calculated) || DEFAULT_TIME_CONVERSION;
         }
     
         // Fallback: ensure calculated is a valid number
@@ -97,7 +86,6 @@ class TimeValidationHelper{
      * @param {number} work_hour - The normalized work hours (positive or negative).
      * @param {number} current_credit - The employee’s current leave credit balance.
      * @returns {object} Object containing earned, deducted, and latest credit values.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 04:30 PM
      */
@@ -109,7 +97,7 @@ class TimeValidationHelper{
             //  Employee worked extra hours (positive work_hour)
         if(work_hour > NUMBER.zero){
             // Calculate earned leave credit using predefined multiplier
-            earned_credit = work_hour * WORK_HOUR_MULTIPLIER;
+            earned_credit = work_hour * DECIMAL_NUMBER.one_point_fifty;
     
             // Update latest credit by adding earned credit
             latest_credit = current_credit + earned_credit;
@@ -137,11 +125,6 @@ class TimeValidationHelper{
      * @param {string} params.reason - Reason for leave.
      *
      * @returns {Object} Result object with:
-     * - `is_valid` {boolean} → Whether the leave is valid.
-     * - `message` {string|null} → Error message if invalid.
-     * - `duration` {number} → Number of leave days (if valid).
-     * - `adjusted_end_date` {Date} → Corrected end date if adjusted.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 01:55 PM
      */
@@ -187,7 +170,7 @@ class TimeValidationHelper{
                 const today_day = new Date();
                 const year = today_day.getFullYear(); 
     
-                if(start_date_day < new Date(year, DAY_MONTH.january, DAY_MONTH.january_first) || start_date_day > new Date(year, DAY_MONTH.december_eleven, DAY_MONTH.december_thirty_one, DAY_TIME.twenty_three_hour, DAY_TIME.fifty_nine_minutes, DAY_TIME.fifty_nine_minutes, DAY_TIME.ms_nine_houndred_ninety_nine) ||end_date_day < new Date(year, DAY_MONTH.january, DAY_MONTH.january_first) || end_date_day > new Date(year, DAY_MONTH.december_eleven, DAY_MONTH.december_thirty_one, DAY_TIME.twenty_three_hour, DAY_TIME.fifty_nine_minutes, DAY_TIME.fifty_nine_minutes, DAY_TIME.ms_nine_houndred_ninety_nine)){
+                if(start_date_day < new Date(year, DAY_MONTH.january, DAY_MONTH.january_first) || start_date_day > new Date(year, DAY_MONTH.december, DAY_MONTH.december_thirty_one, TIME_HOUR.twenty_three_hour, FIFTY_NINE_MINUTE, FIFTY_NINE_MINUTE, TIME_MILISECOND.milisecond_nine_houndred_ninety_nine) ||end_date_day < new Date(year, MONTH.january, DAY_MONTH.january_first) || end_date_day > new Date(year, MONTH.december, DAY_MONTH.december_thirty_one, TIME_HOUR.twenty_three_hour, FIFTY_NINE_MINUTE, FIFTY_NINE_MINUTE, TIME_MILISECOND.milisecond_nine_houndred_ninety_nine)){
                     response.is_valid = false;
                     response.message = `The selected leave type "${leave_type_data.name}" can only be used within the current year (${year}).`;
                 }
@@ -215,7 +198,7 @@ class TimeValidationHelper{
             response.duration = total_leave_day;
     
             // Calculate difference in days between start date and today
-            const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (DAY_TIME.ms_one_thousand * DAY_TIME.sixty_hour * DAY_TIME.sixty_hour * DAY_TIME.whole_day));
+            const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (TIME_MILISECOND.milisecond_one_thousand * TIME_HOUR.sixty_hour * TIME_HOUR.sixty_hour * TIME_HOUR.twenty_four_hour));
     
             // Validate leave notice period
             if(notice_day > NUMBER.one){
@@ -272,6 +255,7 @@ class TimeValidationHelper{
             }
         }
         catch(error){
+            console.log("Error validating leave application:", error.message || error);
             response.is_valid = false;
             response.message =  "Error validating leave application.";
         }
@@ -282,4 +266,4 @@ class TimeValidationHelper{
 
 
 
-export default TimeValidationHelper;
+export default TimeValidation;

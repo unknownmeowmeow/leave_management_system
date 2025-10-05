@@ -1,7 +1,7 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 import { 
     ATTENDANCE_TYPE_ID, NUMBER
-} from "../Constant/constants.js";
+} from "../constant/constants.js";
 
 class AttendanceModel{
 
@@ -11,15 +11,12 @@ class AttendanceModel{
      *    @param {number} employee_id - The ID of the employee.
      *    @param {number} [attendance_type_id=ATTENDANCE_TYPE_ID.time_in] - The attendance type ID, defaulting to "time in".
      * @returns {Promise<Object>} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Inserted record info (ID) if successful.
-     *    - error: Error message if failed.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */
-    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in }){
+    static async insertEmployeeTimeInAttendance(time_in_data){
         const response_data =  { status: false, result: null, error: null };
+        const { employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in } = time_in_data;
 
         try{
             const [insert_time_in] = await db.execute(`
@@ -52,10 +49,6 @@ class AttendanceModel{
      *
      * @param {number} employee_id - The ID of the employee.
      * @returns {Promise<Object>} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array with the latest time in record if successful.
-     *    - error: Error message if failed or no record found.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */
@@ -92,10 +85,6 @@ class AttendanceModel{
      *
      * @param {number} employee_id - The ID of the employee.
      * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array with the latest time out record if successful.
-     *    - error: Error message if failed or no record found.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */
@@ -136,16 +125,13 @@ class AttendanceModel{
      *    @param {number} attendance_type_id - The attendance type identifier.
      *    @param {Object} [connection=db] - Optional database connection for transaction support.
      * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Update operation result if successful.
-     *    - error: Error message if update failed or no row affected.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */
 
-    static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection = db }){
+    static async updateEmployeeTimeOutAttendance(update_attendance, connection = db){
         const response_data =  { status: false, result: null, error: null };
+        const { time_out, work_hour, attendance_type_id, id } = update_attendance;
 
         try{
             const [update_time_out] = await connection.execute(`
@@ -156,7 +142,7 @@ class AttendanceModel{
                     attendance_type_id = ?, 
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            `, [time_out, work_hour, attendance_type_id, id]);
+            `, [time_out, work_hour,attendance_type_id, id]);
 
             if(update_time_out.affectedRows){
                 response_data.status = true;
@@ -177,10 +163,6 @@ class AttendanceModel{
      * Retrieves all employee attendance records including time in and time out details,
      * along with the employee's first and last names.
      * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array of attendance records with employee details if successful.
-     *    - error: Error message if no records found or on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */
@@ -221,10 +203,6 @@ class AttendanceModel{
      * including the employee's first and last names.
      * @param {number} employee_id - The ID of the employee to fetch attendance records for.
      * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array of attendance records if successful.
-     *    - error: Error message if no records found or on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */

@@ -1,4 +1,4 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 
 class EmployeeGenderModel{
 
@@ -7,10 +7,6 @@ class EmployeeGenderModel{
      *
      * @param {number} id - The ID of the gender to retrieve.
      * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array with the gender record if successful.
-     *    - error: Error message if not found or on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 03:18 PM
      */ 

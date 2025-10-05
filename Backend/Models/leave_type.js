@@ -1,22 +1,14 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 import {
     LEAVE_STATUS, IS_CARRIED_OVER, GRANT_TYPE_ID, LEAVE_TYPE_ID,
     NUMBER
-} from "../Constant/constants.js";
+} from "../constant/constants.js";
 
-class LeaveTypeModel{
+class LeaveType{
 
      /**
      * Retrieves all leave types that can be carried over.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find leave types marked as carried over and active.
-     * 2. Returns status `true` with the leave types if any are found.
-     * 3. Returns status `false` with an error message if none are found.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing leave types or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -50,15 +42,7 @@ class LeaveTypeModel{
 
     /**
      * Retrieves yearly leave types for adding leave credits.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find yearly leave types by their IDs.
-     * 2. Returns status `true` with the leave types if found.
-     * 3. Returns status `false` with an error message if none are found.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing yearly leave types or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -89,15 +73,7 @@ class LeaveTypeModel{
 
     /**
      * Retrieves all default leave types.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find leave types with a default grant type and active status.
-     * 2. Returns status `true` with the leave types if found.
-     * 3. Returns status `false` with an error message if none are found.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing default leave types or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -131,15 +107,7 @@ class LeaveTypeModel{
 
     /**
      * Retrieves all special and rewarded leave types.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find leave types with special or rewarded grant types and active status.
-     * 2. Returns status `true` with the leave types if found.
-     * 3. Returns status `false` with an error message if none are found.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing special and rewarded leave types or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -173,16 +141,8 @@ class LeaveTypeModel{
     
      /**
      * Retrieves leave type details by its ID.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to find the leave type with the specified ID and active status.
-     * 2. If found, returns status `true` with the leave type data.
-     * 3. If not found, returns status `false` with an error message.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @param {number} leave_type_id - The ID of the leave type to retrieve.
      * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response containing leave type data or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -220,15 +180,7 @@ class LeaveTypeModel{
 
     /**
      * Retrieves all leave transactions from all employees.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to get all leave transactions joined with employee, leave type, grant type, and status details.
-     * 2. Returns status `true` with leave transaction records if found.
-     * 3. Returns status `false` with an error message if none are found.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing leave transactions or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -275,16 +227,8 @@ class LeaveTypeModel{
 
      /**
      * Retrieves all leave transactions for a specific employee.
-     *
-     * Workflow:
-     * 1. Executes a SELECT query to get leave transactions filtered by employee ID.
-     * 2. Returns status `true` with leave transaction records if found.
-     * 3. Returns status `false` with an error message if none are found.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @param {number} employee_id - The ID of the employee to filter leave transactions.
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing leave transactions or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -332,17 +276,9 @@ class LeaveTypeModel{
 
     /**
      * Updates the status of a leave transaction.
-     *
-     * Workflow:
-     * 1. Executes an UPDATE query to change the leave transaction status for a given leave ID.
-     * 2. Returns status `true` with updated leave ID and status if the update is successful.
-     * 3. Returns status `false` with an error message if no rows were affected or status unchanged.
-     * 4. Handles any database or execution errors gracefully.
-     *
      * @param {number} leave_id - The ID of the leave transaction to update.
      * @param {number} status_id - The new status ID to set.
      * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response indicating success or failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -378,7 +314,6 @@ class LeaveTypeModel{
      * @param {number} employee_id - The ID of the employee to filter leaves.
      * @param {number} [status=2] - The status ID to filter leave transactions (default is 2).
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response containing leave transactions or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2 2025 9:30 am
      */
@@ -424,4 +359,4 @@ class LeaveTypeModel{
     }  
 }
 
-export default LeaveTypeModel; 
+export default LeaveType; 

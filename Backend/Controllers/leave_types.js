@@ -1,6 +1,6 @@
-import LeaveTypeModel from "../Models/leave_type.js";
+import leaveType from "../models/leave_type.js";
 
-class LeaveTypeController{
+class LeaveType{
 
     /**
      * Retrieves all default leave types from the system.
@@ -14,7 +14,7 @@ class LeaveTypeController{
     static async getAllDefaultLeaveType(req, res){
         
         try{
-            const get_all_default_leave_record = await LeaveTypeModel.getAllLeaveDefaultType(); 
+            const get_all_default_leave_record = await leaveType.getAllLeaveDefaultType(); 
     
             if(!get_all_default_leave_record.status || get_all_default_leave_record.error){
                throw new Error(get_all_default_leave_record.error);
@@ -39,7 +39,7 @@ class LeaveTypeController{
     static async getAllRewardedAndSpecialLeave(req, res){
         
         try{
-            const get_all_rewarded_special_leave_record = await LeaveTypeModel.getAllSpecialAndRewardedLeaveType();
+            const get_all_rewarded_special_leave_record = await leaveType.getAllSpecialAndRewardedLeaveType();
     
             if(!get_all_rewarded_special_leave_record.status || get_all_rewarded_special_leave_record.error){
                throw new Error(get_all_rewarded_special_leave_record.error);
@@ -53,4 +53,4 @@ class LeaveTypeController{
     }
 }
 
-export default LeaveTypeController;
+export default LeaveType;

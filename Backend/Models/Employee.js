@@ -1,17 +1,13 @@
-import db from "../Configs/database.js";
-import { ROLE_TYPE_ID } from "../Constant/constants.js";
+import db from "../config/database.js";
+import { ROLE_TYPE_ID } from "../constant/constants.js";
 
-class EmployeeModel{
+class Employee{
 
     /**
      * Retrieves an employee record by email.
      *
      * @param {string} email - The email of the employee to retrieve.
      * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Employee record if found.
-     *    - error: Error message if not found or on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 20 2025 10:38 pm
      */
@@ -52,16 +48,13 @@ class EmployeeModel{
      * @param {string} userData.password - Hashed password.
      * @param {Object} [connection=db] - Optional database connection.
      * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - insert_employee_result: Object with inserted record ID if successful.
-     *    - error: Error message if insert fails.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 21 2025 11:38 pm
      */
-    static async createEmployeeAccount({ first_name, last_name, email, role, gender, password }, connection = db) {
+    static async createEmployeeAccount( employee_data, connection = db) {
         const response_data = { status: false, insert_employee_result: null, error: null };
-    
+        const { first_name, last_name, email, role, gender, password } = employee_data;
+
         try{
             const [insert_employee_account] = await connection.execute(`
                 INSERT INTO employees (
@@ -93,12 +86,7 @@ class EmployeeModel{
 
      /**
      * Retrieves all employees where role type is intern or employee.
-     *
      * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array of employee records if successful.
-     *    - error: Error message if none found or on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25, 2025 - 4:30 PM
      */
@@ -138,10 +126,6 @@ class EmployeeModel{
      *
      * @param {number} employee_id - The ID of the employee to retrieve.
      * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Employee record if found.
-     *    - error: Error message if not found or on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26 2025 5:00 pm
      */
@@ -172,4 +156,4 @@ class EmployeeModel{
 
 }
 
-export default EmployeeModel;
+export default Employee;

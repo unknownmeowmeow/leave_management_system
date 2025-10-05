@@ -1,5 +1,8 @@
 export const MY_SECRET_SERVER_SESSION =  "mysecret";
 export const APPROVED_LEAVE_STATUS = 2;
+export const DEFAULT_TIME_CONVERSION =  0.33;
+export const FIFTY_NINE_MINUTE = 59;
+export const WORK_HOUR_MULTIPLIER = 1.50;
 
 export const IS_CARRIED_OVER = { 
     yes: 1, 
@@ -17,10 +20,14 @@ export const GRANT_TYPE_ID = {
     special: 3,
 }
 
-export const NUMBER ={
+export const DECIMAL_NUMBER = {
     zero_point_zero_zero: 0.00,
     zero_point_thirty_three: 0.33,
     one_point_fifty: 1.50,
+    
+}   
+
+export const NUMBER = {
     zero: 0,
     one: 1,
     two: 2,
@@ -49,7 +56,6 @@ export const ROLE_TYPE_ID = {
     employee: 3
 }
 
-
 export const ATTENDANCE_TYPE_ID = {
     time_in: 1,
     time_out: 2
@@ -59,29 +65,31 @@ export const DAY_COUNT = {
     saturday: 6
 }
 
-export const DAY_TIME = {
-    ms_one_thousand: 1000,
-    ms_nine_houndred_ninety_nine: 999,
-    sixty_hour: 60,
-    sixty_minutes: 60,
-    fifty_nine_minutes: 59,
-    default_work_convertion: 0.33,
-    twenty_three_hour: 23,
-    whole_day: 24,
-    eleven_hour: 11,
-    default_work: 8
+export const TIME_MILISECOND = {
+    milisecond_one_thousand: 1000,
+    milisecond_nine_houndred_ninety_nine: 999,
+    milisecond_sixty: 60,
+    
+}
 
+export const TIME_HOUR = {
+    sixty_hour: 60,
+    twenty_three_hour: 23,
+    eleven_hour: 11,
+    twenty_four_hour: 24,
+    eight_hour: 8,
+}
+
+export const MONTH = {
+    january: 0,
+    december: 11
 }
 
 export const DAY_MONTH = {
-    january: 0,
     january_first: 1,
-    december_eleven: 11,
-    december_thirty_one: 31,
-
+    december_thirty_one: 31
 }
 
-export const WORK_HOUR_MULTIPLIER = 1.50;
 
 export const IS_WEEKEND = {
     yes: 1,

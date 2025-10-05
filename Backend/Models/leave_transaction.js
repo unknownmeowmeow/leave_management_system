@@ -1,13 +1,12 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 import {
       NUMBER
-} from "../Constant/constants.js"
+} from "../constant/constants.js"
 
-class leaveTransactionModel{
+class LeaveTransaction{
 
     /**
      * Inserts a new leave transaction record into the database.
-     *
      * @param {Object} params - Parameters for the leave transaction.
      * @param {number} params.employee_id - ID of the employee filing the leave.
      * @param {number} params.leave_transaction_status_id - Status ID of the leave transaction.
@@ -22,15 +21,14 @@ class leaveTransactionModel{
      * @param {number} params.year - Year of the leave transaction.
      * @param {number|null} [params.rewarded_by_id=null] - ID of the user who rewarded the leave, if applicable.
      * @param {number|null} [params.approved_by_id=null] - ID of the user who approved the leave, if applicable.
-     * 
      * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response object containing status, inserted ID or error message.
-     * 
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 3:00 am
      */
-    static async insertTransaction({ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = NUMBER.zero,is_active = NUMBER.one, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null}){
+    static async insertTransaction(insert_transaction_data){
         const response_data = { status: false, result: null, error: null };
-    
+        const { employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = NUMBER.zero,is_active = NUMBER.one, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null} = insert_transaction_data;
+
         try{
             const [insert_transaction] = await db.execute(`
                 INSERT INTO leave_transactions (
@@ -71,7 +69,6 @@ class leaveTransactionModel{
      * Retrieves a leave transaction record by its ID.
      * @param {number} leave_id - The unique identifier of the leave transaction.
      * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response object containing status, result, or error.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 2:00 am
      */
@@ -108,7 +105,6 @@ class leaveTransactionModel{
      * Retrieves the aggregated leave credit summary for a specific employee.
      * @param {number} employee_id - The ID of the employee to get leave credit totals for.
      * @returns {Promise<{status: boolean, result: Array<Object>|null, error: string|null}>} Response object containing status, results, or error.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 1:30 am
      */
@@ -152,7 +148,6 @@ class leaveTransactionModel{
     * Retrieves the most recent leave credit record for a specific employee.
     * @param {number} employee_id - The ID of the employee whose latest leave credit is requested.
     * @returns {Promise<{status: boolean, result: Object|null, error: string|null}>} Response object with status, result, or error.
-    *
     * created by: Rogendher Keith Lachica
     * updated at: September 25 2025 1:15 am
     */
@@ -191,13 +186,13 @@ class leaveTransactionModel{
      * @param {number} total_leave - The amount of leave credit to deduct.
      * @param {Object} [connection=db] - Optional database connection.
      * @returns {Promise<Object>} Response object with status, result, or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 1:00 am
      */
-    static async deductCredit(credit_id, total_leave, connection = db){
+    static async deductCredit( deduct_credit_data, connection = db){
         const response_data = { status: false, result: null, error: null };
-    
+        const { credit_id, total_leave} = deduct_credit_data;
+
         try{
             const [deduct_leave_credit] = await connection.execute(`
                 UPDATE leave_credits
@@ -207,8 +202,6 @@ class leaveTransactionModel{
                     latest_credit = latest_credit - ?,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-                
-                
             `, [total_leave, total_leave, total_leave, credit_id]);
             
             if(deduct_leave_credit.affectedRows){
@@ -235,13 +228,13 @@ class leaveTransactionModel{
      * @param {number} approver_id - The ID of the approver making the update.
      * @param {Object} [connection=db] - Optional database connection.
      * @returns {Promise<Object>} Response with status, result, or error.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 25 2025 12:45 am
      */
-    static async updateStatus(leave_id, status_id, approver_id, connection = db){
+    static async updateStatus(update_status_data, connection = db){
         const response_data = { status: false, result: null, error: null };
-    
+        const { leave_id, status_id, approver_id } = update_status_data;
+
         try{
             const [update_leave_status] = await connection.execute(`
                 UPDATE leave_transactions
@@ -270,4 +263,4 @@ class leaveTransactionModel{
     
 
 }
-export default leaveTransactionModel;
+export default LeaveTransaction;

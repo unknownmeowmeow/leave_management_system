@@ -1,4 +1,4 @@
-class AuthMiddleware{
+class AuthEmployee{
     /**
      * Middleware to require user login by checking session.
      * @param {object} req - The request object.
@@ -18,4 +18,4 @@ class AuthMiddleware{
     }
 }
 
-export default AuthMiddleware;
+export default AuthEmployee;

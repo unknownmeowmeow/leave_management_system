@@ -1,12 +1,12 @@
-import TimeValidationHelper from "../Helpers/time_validation_helper.js";
-import EmployeeModel from "../Models/employee.js";
-import LeaveTransactionModel from "../Models/leave_transaction.js";
-import LeaveCreditModel from "../Models/leave_credit.js";
-import LeaveTypeModel from "../Models/leave_type.js";
-import ValidationHelper from "../Helpers/validation_helper.js";
-import { IS_ACTIVE, IS_WEEKEND, LEAVE_TRANSACTION_STATUS, NUMBER } from "../Constant/constants.js";
+import timeValidation from "../helpers/time_validation_helper.js";
+import employee from "../models/employee.js";
+import leaveTransaction from "../models/leave_transaction.js";
+import leaveCredit from "../models/leave_credit.js";
+import leaveType from "../models/leave_type.js";
+import validationHelper from "../helpers/validation_helper.js";
+import { IS_ACTIVE, IS_WEEKEND, LEAVE_TRANSACTION_STATUS, NUMBER } from "../constant/constants.js";
 
-class LeaveController{
+class LeaveFile{
 
     /**
      * Applies a leave request for an employee.
@@ -21,15 +21,9 @@ class LeaveController{
     static async applyLeave(req, res){
 
         try{
-            const user = req.session.user;
-
-            if(!user || !user.employee_id){
-                return res.json({ success: false, message: "User session not found in controllers." });
-            }
-
-            const rewarded_by_id = user.employee_id;
+            const rewarded_by_id = req.session.user.employee_id;
             const { employee_id, leave_type, start_date, end_date, reason } = req.body;
-            const leave_type_record = await LeaveTypeModel.getLeaveTypeById(leave_type);
+            const leave_type_record = await leaveType.getLeaveTypeById(leave_type);
             
             // Validate leave type exists
             if(!leave_type_record.status || leave_type_record.error) 
@@ -39,7 +33,7 @@ class LeaveController{
             const leave_type_data = leave_type_record.result;
 
             // Perform basic leave validation
-            const leave_validation = ValidationHelper.validateLeaveApplication({ leave_type, start_date, end_date});
+            const leave_validation = validationHelper.validateLeaveApplication({ leave_type, start_date, end_date});
 
             // Return first validation error if exists
             if(leave_validation.is_valid) 
@@ -49,14 +43,14 @@ class LeaveController{
             const year = new Date().getFullYear();
 
             // Detailed leave validation including duration, weekend adjustment, and notice period
-            const { is_valid, message, duration, adjusted_end_date } = await TimeValidationHelper.validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason});
+            const { is_valid, message, duration, adjusted_end_date } = await timeValidation.validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason});
     
             // Stop if leave validation fails
             if(!is_valid){
                 return res.json({ success: false, message });
             }
 
-            const check_credit_employee_record = await LeaveTransactionModel.getTotalCredit(employee_id);
+            const check_credit_employee_record = await leaveTransaction.getTotalCredit(employee_id);
 
             // Ensure employee has leave credits
             if(!check_credit_employee_record.status || check_credit_employee_record.error) 
@@ -74,7 +68,7 @@ class LeaveController{
                 throw new Error(`Insufficient leave credit. Available: ${available_credit} days.`);
 
             // Insert leave transaction into database
-            const leave_transaction_data = await LeaveTransactionModel.insertTransaction({employee_id,leave_type_id: leave_type,rewarded_by_id, start_date,end_date: adjusted_end_date,reason,total_leave: duration,leave_transaction_status_id: LEAVE_TRANSACTION_STATUS.pending,is_weekend: IS_WEEKEND.no,is_active: IS_ACTIVE.yes,filed_date: new Date(),year});
+            const leave_transaction_data = await leaveTransaction.insertTransaction({employee_id, leave_type_id: leave_type, rewarded_by_id, start_date,end_date: adjusted_end_date,reason,total_leave: duration,leave_transaction_status_id: LEAVE_TRANSACTION_STATUS.pending,is_weekend: IS_WEEKEND.no,is_active: IS_ACTIVE.yes,filed_date: new Date(),year});
 
             // Validate transaction insert
             if(!leave_transaction_data.status || leave_transaction_data.error){
@@ -103,15 +97,9 @@ class LeaveController{
     static async applyEmployeeLeave(req, res){
 
         try{
-            const user = req.session.user;
-    
-            if(!user){
-                return res.json({ success: false, message: "User session not found in controllers." });
-            }
-    
-            const employee_id = user.employee_id;
+            const employee_id = req.session.user.employee_id;
             const { leave_type, start_date, end_date, reason } = req.body;
-            const leave_type_id_record = await LeaveTypeModel.getLeaveTypeById(leave_type);
+            const leave_type_id_record = await leaveType.getLeaveTypeById(leave_type);
     
             // Validate the fetched leave type record
             if (!leave_type_id_record.status || !leave_type_id_record.result || leave_type_id_record.error){
@@ -121,7 +109,7 @@ class LeaveController{
             const leave_type_data = leave_type_id_record.result;
     
             // Perform detailed leave validation (e.g., overlapping dates, policy rules)
-            const validation_result = await TimeValidationHelper.validateLeaveApplication({employee_id,leave_type_data,start_date,end_date,reason});
+            const validation_result = await timeValidation.validateLeaveApplication({employee_id, leave_type_data, start_date, end_date, reason});
     
             // Return validation error if leave is not valid
             if(!validation_result.is_valid){
@@ -129,7 +117,7 @@ class LeaveController{
             }
     
             // Get employee's available leave credit
-            const employee_credit_data = await LeaveTransactionModel.getTotalCredit(employee_id);
+            const employee_credit_data = await leaveTransaction.getTotalCredit(employee_id);
     
             // Validate if employee credit data is fetched properly
             if(!employee_credit_data.status || !employee_credit_data.result || employee_credit_data.error){
@@ -149,7 +137,7 @@ class LeaveController{
             }
     
             // Insert leave transaction into the database
-            const employee_transaction_record = await LeaveTransactionModel.insertTransaction({employee_id,leave_type_id: leave_type,rewarded_by_id: null,start_date,end_date: validation_result.adjusted_end_date, reason: reason,total_leave: validation_result.duration,leave_transaction_status_id: LEAVE_TRANSACTION_STATUS.pending,is_weekend: IS_WEEKEND.no,is_active: IS_ACTIVE.yes,filed_date: new Date(),year: new Date().getFullYear()});
+            const employee_transaction_record = await leaveTransaction.insertTransaction({employee_id,leave_type_id: leave_type,rewarded_by_id: null,start_date,end_date: validation_result.adjusted_end_date, reason: reason,total_leave: validation_result.duration,leave_transaction_status_id: LEAVE_TRANSACTION_STATUS.pending,is_weekend: IS_WEEKEND.no,is_active: IS_ACTIVE.yes,filed_date: new Date(),year: new Date().getFullYear()});
     
             // Validate if leave transaction was inserted successfully
             if (!employee_transaction_record.status || employee_transaction_record.error) {
@@ -164,34 +152,18 @@ class LeaveController{
         }
     }
     
-    
-    
-     
     /**
      * Retrieves all employees and interns from the database.
      * @param {Object} req - Express request object (not used in this method).
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response containing employees and interns or an error.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 01:50 PM
      */
     static async getAllEmployeeAndIntern(req, res){
-
-        try{
-            const get_all_employee_intern_record = await EmployeeModel.getAllEmployeeAndIntern();
-    
-            if(!get_all_employee_intern_record.status || get_all_employee_intern_record.error){
-                throw new Error(get_all_employee_intern_record.error);
-            }
-    
-            return res.json({ success: true, data: get_all_employee_intern_record.result });
-        } 
-        catch(error){
-            return res.json({ success: false, result: null, error: error.message });
-        }
+        const get_all_employee_intern_record = await employee.getAllEmployeeAndIntern();
+        return res.json({ success: true, data: get_all_employee_intern_record.result });
     }
-    
 
     /**
      * Retrieves the latest leave credit for the currently logged-in employee.
@@ -203,26 +175,10 @@ class LeaveController{
      * updated at: October 1, 2025 01:57 PM
      */
     static async getLatestCredit(req, res){
-
-        try{
-            const employee_id = req.session.user?.employee_id;
-        
-            if(!employee_id){
-                throw new Error("No user Found");
-            }
-            const employee_credit_record = await LeaveCreditModel.getLatestEmployeeLeaveCredit(employee_id);
-        
-            if(!employee_credit_record.status || employee_credit_record.error){
-                throw new Error(employee_credit_record.error);
-            }
-        
-            return res.json({success: true,latest_credit: parseFloat(employee_credit_record.result)});
-        } 
-        catch(error){
-            return res.json({success: false,message: error.message || "Server error registered in controller"});
-        }
+        const employee_id = req.session.user.employee_id;
+        const employee_credit_record = await leaveCredit.getLatestEmployeeLeaveCredit(employee_id);
+        return res.json({success: true,latest_credit: parseFloat(employee_credit_record.result)});
     }
-    
 }
 
-export default LeaveController;
+export default LeaveFile;
