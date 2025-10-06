@@ -31,7 +31,7 @@ class AdminLeave{
      * updated at: September 26, 2025 9:30 AM
      */
     static async getAllLeaveTransactionByEmployee(req, res){
-        const employee_id = req.session.user.employee_id;
+        const employee_id = req.user.employee_id;
         const leave_transaction_record = await leaveType.getAllLeaveTransactionByEmployeeId(employee_id);
         return res.json({ success: true, data: leave_transaction_record.result });
     }
@@ -49,7 +49,7 @@ class AdminLeave{
      */
     static async updateLeaveStatus(req, res){
         const { leave_id, status_id } = req.body;
-        const approver_id = req.session.user.employee_id;
+        const approver_id = req.user.employee_id;
 
         /* Throw error if leave_id or status_id is missing */
         if(!leave_id || !status_id){

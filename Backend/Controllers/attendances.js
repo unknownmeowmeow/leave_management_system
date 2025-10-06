@@ -15,12 +15,12 @@ class Attendance{
      * created by: Rogendher Keith Lachica
      * updated at: September 24, 2025 10:45 PM
      */
-    static async employeetimeIn(req, res) {
-        try {    
-            const employee_id = req.session.user;
+    static async employeetimeIn(req, res){
+        try{    
+            const employee_id = req.user?.employee_id;
             const latest_timein_record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
             
-            if (latest_timein_record.status) {
+            if(latest_timein_record.status){
                 throw new Error("Already timed in today");
             }
     
@@ -53,7 +53,7 @@ class Attendance{
         try{
             await connection.beginTransaction();
     
-            const employee_id = req.session.user.employee_id;
+            const employee_id = req.user?.employee_id;
             const attendance_type_id = ATTENDANCE_TYPE_ID.time_out;
     
             // Get the latest Time In record for the employee
@@ -138,7 +138,7 @@ class Attendance{
      * updated at: September 26, 2025 11:45 AM
      */
     static async employeeRecord(req, res){
-        const employee_id = req.session.user.employee_id;
+        const employee_id = req.user?.employee_id;
         const employee_record = await AttendanceModel.getAllTimeInAndTimeOutByEmployeeId(employee_id);
         return res.json({ success: true, records: employee_record.result });
     }

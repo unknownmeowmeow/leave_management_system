@@ -162,7 +162,14 @@ class Employee{
                 throw new Error("Password does not match");
             }
     
-            req.session.user = { employee_id: user.id, first_name: user.first_name, last_name: user.last_name,email: user.email, role: user.employee_role_type_id };
+            req.session.user = {
+                employee_id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
+                role: user.employee_role_type_id
+            };
+
             return res.json({ success: true, message: "Login successful", user: req.session.user });
     
         } 

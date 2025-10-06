@@ -13,7 +13,8 @@ class AuthEmployee{
             return res.json({ success: false, message: "User session not found." });
         }
         
-        req.user = req.session.user;
+        req.user = req.session.user;                 
+        req.employee_id = req.session.user.employee_id;
         next();
     }
 }

@@ -133,11 +133,19 @@ class TimeValidation{
         const response = { is_valid: true, message: { success: false, message: null}, duration: NUMBER.zero, adjusted_end_date: end_date }; 
     
         try{
-            if(!employee_id || !leave_type_data || !start_date || !end_date || !reason){
+            if(!employee_id || !leave_type_data || !start_date || !end_date || !reason.trim()){
+                console.log("Validating leave application with values:", {
+                    employee_id,
+                    leave_type_data,
+                    start_date,
+                    end_date,
+                    reason
+                });
+                
                 response.is_valid = false;
                 response.message = "All Fields are Required";
             }
-    
+            
             const start_date_day = new Date(start_date);
             let end_date_day = new Date(end_date);
     
@@ -159,11 +167,11 @@ class TimeValidation{
     
             // Adjust end date if leave started in the past but extends beyond today
             let adjusted_end_date = end_date_day;
-
+    
             if(start_date_day < today_only && end_date_day > today_only){
                 adjusted_end_date = today_only;
             }
-
+    
             response.adjusted_end_date = adjusted_end_date;
     
             // Check if leave type is not carried over; restrict usage to current year
@@ -187,15 +195,15 @@ class TimeValidation{
     
             // Count total leave days excluding weekends
             let total_leave_day = NUMBER.zero; 
-
+    
             for(let except = new Date(start_only); except <= end_only; except.setDate(except.getDate() + NUMBER.one)){
                 const day = except.getDay(); 
-
+    
                 if(day !== DAY_COUNT.sunday && day !== DAY_COUNT.saturday){ 
                     total_leave_day++;
                 }
             }
-
+    
             response.duration = total_leave_day;
     
             // Calculate difference in days between start date and today
@@ -203,27 +211,22 @@ class TimeValidation{
     
             // Validate leave notice period
             if(notice_day > NUMBER.one){
-                // Leave requires advance notice
                 if(different_days < notice_day){
                     response.is_valid = false;
                     response.message = `This leave type requires a notice period of at least ${notice_day} days.`;
                 }
-    
-                // End date cannot be before start date for future notice leave
                 if(end_only < start_only){ 
                     response.is_valid = false; 
                     response.message = `End date cannot be before start date for this leave type with future notice.`;
                 }
             } 
             else if(notice_day === NUMBER.zero){
-                // Leave cannot be applied for past dates
                 if(rule_id === ROLE_TYPE_ID.employee && different_days < NUMBER.zero){
                     response.is_valid = false;
                     response.message = "This leave type cannot be applied for past dates.";
                 }   
             }
             else if(notice_day < NUMBER.zero){
-                // Allow past date leave within allowed negative notice period
                 const allowed_past_date = new Date(today_only);
                 allowed_past_date.setDate(today_only.getDate() + notice_day); 
                 const valid_start = start_only >= allowed_past_date && start_only <= today_only;
@@ -234,22 +237,19 @@ class TimeValidation{
                    response.message  = `This leave type allows past date leave only within ${Math.abs(notice_day)} days from today.`;
                 }
     
-                // Adjust end date if it exceeds today
                 if(end_only > today_only){
                     adjusted_end_date = today_only;
                 }
                 response.adjusted_end_date = adjusted_end_date;
             }
     
-            // Ensure start and end dates are not the same
             if(start_only.getTime() === end_only.getTime()){
                 response.is_valid = false;
                 response.message = "Start date and End date cannot be the same.";
             }
     
-            // Check if total leave exceeds maximum allowed days for the leave type
             const max_days_allowed = Number(leave_type_data.base_value);
-
+    
             if(!isNaN(max_days_allowed) && max_days_allowed > NUMBER.zero && total_leave_day > max_days_allowed){
                 response.is_valid = false;
                 response.message = `Leave exceeds max allowed ${max_days_allowed} days).`;
@@ -259,7 +259,7 @@ class TimeValidation{
             response.is_valid = false;
             response.message =  "Error validating leave application.";
         }
-
+    
         return response;
     }
 }

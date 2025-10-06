@@ -3,12 +3,12 @@ import session from "express-session";
 import cors from "cors";
 import path from "path";
 
-import employeeRoutes from "./routes/employee_routes.js";
-import attendanceRoutes from "./routes/time_routes.js";
-import adminRoutes from "./routes/admin_routes.js";
+import employeeRoutes from "./routes/employee.js";
+import attendanceRoutes from "./routes/time.js";
+import adminRoutes from "./routes/admin.js";
 import leaveRoutes from "./routes/leave_file.js";
-import creditRoutes from "./routes/leave_credit_routes.js";
-
+import creditRoutes from "./routes/leave_credit.js";
+import leaveTypeRoutes from "./routes/leave_file.js";
 import { MY_SECRET_SERVER_SESSION } from "./constant/constants.js";
 import "./scheduler/yearly_add_credit_helper.js";
 
@@ -27,6 +27,7 @@ app.use("/api/auth", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/leave", leaveRoutes);
+app.use("/", leaveTypeRoutes);
 app.use("/api/credit", creditRoutes);
 
 

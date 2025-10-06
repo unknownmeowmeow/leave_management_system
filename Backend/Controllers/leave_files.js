@@ -21,7 +21,7 @@ class LeaveFile{
     static async applyLeave(req, res){
 
         try{
-            const rewarded_by_id = req.session.user.employee_id;
+            const rewarded_by_id =   req.employee_id;
             const { employee_id, leave_type, start_date, end_date, reason } = req.body;
             const leave_type_record = await leaveType.getLeaveTypeById(leave_type);
             
@@ -97,9 +97,9 @@ class LeaveFile{
     static async applyEmployeeLeave(req, res){
 
         try{
-            const employee_id = req.session.user.employee_id;
+            const employee_id = req.employee_id;
             const { leave_type, start_date, end_date, reason } = req.body;
-            const leave_type_id_record = await leaveType.getLeaveTypeById(leave_type);
+            const leave_type_id_record = await leaveType.getLeaveTypeById(Number(leave_type));
     
             // Validate the fetched leave type record
             if (!leave_type_id_record.status || !leave_type_id_record.result || leave_type_id_record.error){
@@ -109,8 +109,8 @@ class LeaveFile{
             const leave_type_data = leave_type_id_record.result;
     
             // Perform detailed leave validation (e.g., overlapping dates, policy rules)
-            const validation_result = await timeValidation.validateLeaveApplication({employee_id, leave_type_data, start_date, end_date, reason});
-    
+            const validation_result = await timeValidation.validateLeaveApplication({employee_id, leave_type_data, start_date, end_date, reason: reason.trim()});
+
             // Return validation error if leave is not valid
             if(!validation_result.is_valid){
                 return res.json({ success: false, message: validation_result.message });
@@ -137,11 +137,11 @@ class LeaveFile{
             }
     
             // Insert leave transaction into the database
-            const employee_transaction_record = await leaveTransaction.insertTransaction({employee_id,leave_type_id: leave_type,rewarded_by_id: null,start_date,end_date: validation_result.adjusted_end_date, reason: reason,total_leave: validation_result.duration,leave_transaction_status_id: LEAVE_TRANSACTION_STATUS.pending,is_weekend: IS_WEEKEND.no,is_active: IS_ACTIVE.yes,filed_date: new Date(),year: new Date().getFullYear()});
+            const employee_transaction_record = await leaveTransaction.insertTransaction({employee_id,leave_type_id: leave_type, rewarded_by_id: null, start_date,end_date: validation_result.adjusted_end_date, reason: reason,total_leave: validation_result.duration,leave_transaction_status_id: LEAVE_TRANSACTION_STATUS.pending,is_weekend: IS_WEEKEND.no,is_active: IS_ACTIVE.yes,filed_date: new Date(),year: new Date().getFullYear()});
     
             // Validate if leave transaction was inserted successfully
             if (!employee_transaction_record.status || employee_transaction_record.error) {
-                throw new Error(employee_transaction_record.error);
+                throw new Error(employee_transaction_record.error); 
             }
 
             return res.json({ success: true, message: "Leave successfully filed." });
@@ -174,7 +174,7 @@ class LeaveFile{
      * updated at: October 1, 2025 01:57 PM
      */
     static async getLatestCredit(req, res){
-        const employee_id = req.session.user;
+        const employee_id =  req.employee_id;
         const employee_credit_record = await leaveCredit.getLatestEmployeeLeaveCredit(employee_id);
         return res.json({success: true, latest_credit: parseFloat(employee_credit_record.result)});
     }

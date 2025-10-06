@@ -127,12 +127,6 @@ export default function EmployeeApply() {
                     </select>
                 </label>
 
-                {selectedLeaveType?.notice_day < 0 && (
-                    <div style={{ marginBottom: "10px", color: "orange" }}>
-                        This leave type allows past date leave within {Math.abs(selectedLeaveType.notice_day)} days.
-                    </div>
-                )}
-
                 <label style={{ display: "block", marginBottom: "10px" }}>
                     Start Date:
                     <input
