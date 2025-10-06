@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function RecordFile() {
-    const [leaves, setLeaves] = useState([]);
+    const [leaves, setLeaves] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
@@ -11,18 +11,21 @@ export default function RecordFile() {
         setLoading(true);
         try {
             const res = await axios.get("http://localhost:5000/api/leave/leave_transaction", { withCredentials: true });
-            if (res.data.success) setLeaves(res.data.data);
-            else setError(res.data.message);
-        } catch {
-            setError("Failed to fetch leave records.");
+            if (res.data.success) {
+                setLeaves(res.data.data || []);
+                setError(null);
+            } else {
+                setError(res.data.message || "Failed to fetch leave records.");
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Server error.");
         } finally {
-            setLoading(false);
+            setLoading(false); 
         }
     };
+    
 
-    useEffect(() => {
-        fetchLeaves();
-    }, []);
+    useEffect(() => { fetchLeaves(); }, []);
 
     const updateStatus = async (leave_id, status_id) => {
         try {
@@ -35,7 +38,7 @@ export default function RecordFile() {
             if (res.data.success) {
                 setMessage("Leave updated successfully.");
                 setError(null);
-                fetchLeaves(); // refresh table
+                fetchLeaves(); 
             } else {
                 setError(res.data.message || "Failed to update leave.");
                 setMessage(null);
@@ -53,8 +56,23 @@ export default function RecordFile() {
     const buttonStyle = { padding: "6px 12px", margin: "0 2px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: "#dc3545", color: "#fff" };
 
     const renderRows = () => {
-        if (loading) return <tr><td colSpan="10" style={{ textAlign: "center", padding: "12px" }}>Loading...</td></tr>;
-        if (error || leaves.length === 0) return <tr><td colSpan="10" style={{ textAlign: "center", padding: "12px" }}>{error || "No approved leaves found."}</td></tr>;
+        if (loading) {
+            return (
+                <tr>
+                    <td colSpan="10" style={{ textAlign: "center", padding: "12px" }}>Loading...</td>
+                </tr>
+            );
+        }
+
+        if (!leaves || leaves.length === 0) {
+            return (
+                <tr>
+                    <td colSpan="10" style={{ textAlign: "center", padding: "12px" }}>
+                        {error || "No leave records found."}
+                    </td>
+                </tr>
+            );
+        }
 
         return leaves.map((leave, i) => {
             const startDateISO = leave.start_date ? new Date(leave.start_date).toISOString().split("T")[0] : "";

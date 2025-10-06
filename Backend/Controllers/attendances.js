@@ -9,23 +9,16 @@ class Attendance{
 
     /**
      * Handles the employee time-in process.
-     *
-     * This controller records the start of an employee’s workday.
-     * It ensures that the employee has not already timed-in for the day,
-     * then inserts a new attendance record with the time-in value.
      * @param {Object} req - Express request object containing session data.
      * @param {Object} res - Express response object used to send JSON.
      * @returns {Object} JSON response:
-     *  - { success: true, message: string } on success.
-     *  - { success: false, message: string } on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 24, 2025 10:45 PM
      */
     static async employeetimeIn(req, res){
 
         try{
-            const employee_id = req.session.user;
+            const employee_id = req.session.user.employee_id;
             const latest_timein_record = await attendance.checkEmployeeLatestTimeIn(employee_id);
 
             if(latest_timein_record.status){
@@ -47,16 +40,9 @@ class Attendance{
 
     /**
      * Handles the employee time-out process.
-     *
-     * This controller finalizes an employee's daily attendance by recording their time-out, 
-     * computing total work hours, and updating leave credits accordingly.
-     *
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response:
-     *  - { success: true, message: string, time_out, work_hour, earned_credit, deducted_credit, latest_credit }
-     *  - { success: false, message: string } on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 24, 2025 11:30 PM
      */
@@ -66,7 +52,7 @@ class Attendance{
         try{
             await connection.beginTransaction();
     
-            const employee_id = user.employee_id;
+            const employee_id = req.session.user;
             const attendance_type_id = ATTENDANCE_TYPE_ID.time_out;
     
             // Get the latest Time In record for the employee
@@ -145,7 +131,6 @@ class Attendance{
      * @param {Object} req - Express request object with session info.
      * @param {Object} res - Express response object used to send JSON.
      * @returns {Object} JSON response with either records or error message.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 11:45 AM
      */
@@ -160,7 +145,6 @@ class Attendance{
      * @param {Object} req - Express request object with session info.
      * @param {Object} res - Express response object for sending JSON.
      * @returns {Object} JSON response with employee attendance records or error.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 11:55 AM
      */

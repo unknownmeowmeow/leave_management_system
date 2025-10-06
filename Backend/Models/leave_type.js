@@ -20,8 +20,7 @@ class LeaveType{
                 SELECT id, base_value 
                 FROM leave_types 
                 WHERE is_carried_over = ? 
-                AND is_active = ? 
-                AND id IN (?, ?)
+                AND is_active = ? AND id IN (?, ?)
             `, [IS_CARRIED_OVER.yes, LEAVE_STATUS.active, LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave]);
     
             if(get_carry_over_leave.length){

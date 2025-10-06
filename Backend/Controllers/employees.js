@@ -17,24 +17,12 @@ class Employee{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2, 2025 03:30 PM
      */
     static async employeeRole(req, res){
-
-        try{
-            const role_record = await employeeRoleType.getAllRoles();
-
-            if(!role_record.status || role_record.error){
-                throw new Error(role_record.error)
-            }
-
-            return res.json({ success: true, result: "Successfully get all employee role" });
-        }
-        catch{
-            return res.json({ success: false, message: error.message || "Server error employee role in controller" });
-        }
+        const role_record = await employeeRoleType.getAllRoles();
+        return res.json({ success: true, data: role_record.result });
     }
 
     /**
@@ -42,33 +30,20 @@ class Employee{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2, 2025 03:30 PM
      */
-    static async employeeGender(req, res){
-
-        try{
-            const gender_record = await employeeGender.getAllGenders();
-
-            if(!gender_record.status || gender_record.error){
-                throw new Error(gender_record.error);
-            }
-
-            return res.json({ success: true, result: "Successfully get all gender" });
-        }
-        catch{
-            return res.json({ success: false, message: error.message || "Server error employee gender" });
-        }
+    static async employeeGender(req, res) {
+        const gender_record = await employeeGender.getAllGenders();
+        return res.json({ success: true, data: gender_record.result });
     }
-
+    
     /**
      * Registers a new employee in the system, including validation, role and gender verification,
      * password hashing, and initial leave credit assignment if applicable.
      * @param {Object} req - Express request object containing registration details in req.body.
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response indicating the success or failure of the registration process.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2, 2025 03:30 PM
      */
@@ -157,12 +132,9 @@ class Employee{
     }
     
     /**
-     * Handles employee login by validating credentials, verifying email existence,
-     * comparing passwords, and establishing a user session.
      * @param {Object} req - Express request object containing login credentials.
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response indicating the success or failure of login.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 2, 2025 03:30 PM
      */
@@ -202,11 +174,9 @@ class Employee{
 
     /**
      * Logs out the currently logged-in employee by destroying the session.
-     *
      * @param {Object} req - Express request object containing session data.
      * @param {Object} res - Express response object for sending JSON.
      * @returns {Object} JSON response indicating success or failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 12:25 PM
      */

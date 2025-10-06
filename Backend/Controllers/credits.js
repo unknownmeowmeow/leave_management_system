@@ -11,7 +11,6 @@ class CreditLeave{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 12:05 PM
      */
@@ -59,11 +58,9 @@ class CreditLeave{
     
     /**
      * Retrieves all leave credit records for employees.
-     *
      * @param {Object} req - Express request object with session info.
      * @param {Object} res - Express response object used to send JSON.
      * @returns {Object} JSON response with leave credits or error.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 12:15 PM
      */

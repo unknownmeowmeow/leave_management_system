@@ -24,38 +24,25 @@ class AdminLeave{
 
     /** 
      * Retrieves all leave transactions for the logged-in employee.
-     *
-     * This controller returns every leave transaction record associated 
-     * with the employee currently logged into the session.
      * @param {Object} req - Express request object containing session user data.
      * @param {Object} res - Express response object used to send JSON.
      * @returns {Object} JSON response:
-     *  - { success: true, data: Array } on success.
-     *  - { success: false, message: string } on failure.
-     *
      * created by: Rogendher Keith Lachica
      * updated at: September 26, 2025 9:30 AM
      */
     static async getAllLeaveTransactionByEmployee(req, res){
-        const employee_id = req.session.user;
+        const employee_id = req.session.user.employee_id;
         const leave_transaction_record = await leaveType.getAllLeaveTransactionByEmployeeId(employee_id);
         return res.json({ success: true, data: leave_transaction_record.result });
     }
     
-    
-    
     /**
      * Updates the status of a specific leave transaction.
-     *
-     * This controller is responsible for changing the approval/denial status 
-     * of an employee's leave request. It supports transactional safety by 
-     * ensuring that credit deduction and status updates are atomic operations.
      * @param {Object} req - Express request object containing:
-     *   @param {number} req.body.leave_id - ID of the leave transaction to update.
-     *   @param {number} req.body.status_id - New status ID (e.g., approved/rejected).
-     *   @param {Object} req.session.user - Logged-in user session data.
+     * @param {number} req.body.leave_id - ID of the leave transaction to update.
+     * @param {number} req.body.status_id - New status ID (e.g., approved/rejected).
+     * @param {Object} req.session.user - Logged-in user session data.
      * @param {Object} res - Express response object used to return JSON.
-     * 
      * @returns {Object} JSON response:
      * Created by: Rogendher Keith Lachica
      * Updated at: September 26, 2025 8:55 AM
@@ -108,7 +95,6 @@ class AdminLeave{
                 }
 
                 const deduction_credit_record = await leaveTransaction.deductCredit({ credit_id: latest_employee_credit_record.result.id, total_leave }, connection);
-                console.log(deduction_credit_record);
 
                 /* Throw error if deduction fails */
                 if(!deduction_credit_record.status || deduction_credit_record.error){

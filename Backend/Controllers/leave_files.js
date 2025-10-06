@@ -170,14 +170,13 @@ class LeaveFile{
      * @param {Object} req - Express request object containing employee session data.
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response with success status and latest leave credit (if available).
-     *
      * created by: Rogendher Keith Lachica
      * updated at: October 1, 2025 01:57 PM
      */
     static async getLatestCredit(req, res){
         const employee_id = req.session.user.employee_id;
         const employee_credit_record = await leaveCredit.getLatestEmployeeLeaveCredit(employee_id);
-        return res.json({success: true,latest_credit: parseFloat(employee_credit_record.result)});
+        return res.json({success: true, latest_credit: parseFloat(employee_credit_record.result)});
     }
 }
 

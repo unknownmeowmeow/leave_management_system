@@ -13,7 +13,6 @@ export default function EmployeeApply() {
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
 
-    // Fetch leave types and latest leave credit
     useEffect(() => {
         const fetchData = async () => {
             try {

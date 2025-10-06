@@ -65,7 +65,7 @@ class TimeValidation{
         let difference_work_hour = default_day_converter - default_work_hour;
     
         // Round the difference to the nearest thousandth
-        let calculated = Math.round(difference_work_hour * milisecond_one_thousand) / milisecond_one_thousand;
+        let calculated = Math.round(difference_work_hour * TIME_MILISECOND.milisecond_one_thousand) / TIME_MILISECOND.milisecond_one_thousand;
     
         // Handle weekend calculation: if worked hours are less than or equal to 0, convert to positive value or default weekend work
         if(is_weekend && calculated <= NUMBER.zero){
@@ -255,7 +255,6 @@ class TimeValidation{
             }
         }
         catch(error){
-            console.log("Error validating leave application:", error.message || error);
             response.is_valid = false;
             response.message =  "Error validating leave application.";
         }

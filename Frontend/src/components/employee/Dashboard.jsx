@@ -6,10 +6,19 @@ export default function Dashboard() {
 
     useEffect(() => {
         axios.post("http://localhost:5000/api/attendance/record", {}, { withCredentials: true })
-            .then(res => res.data.success && setRecords(res.data.records))
-            .catch(err => alert(err.response?.data?.message || "Failed to fetch records."));
+            .then(res => {
+                if (res.data.success) {
+                    setRecords(res.data.records ?? []);
+                } else {
+                    setRecords([]);
+                }
+            })
+            .catch(err => {
+                alert(err.response?.data?.message || "Failed to fetch records.");
+                setRecords([]); 
+            });
     }, []);
-
+    
     const containerStyle = { maxWidth: "900px", margin: "50px auto", padding: "20px", fontFamily: "Arial, sans-serif", backgroundColor: "#fafafa", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" };
     const navLinkStyle = { marginRight: "15px", textDecoration: "none", color: "#007bff", fontWeight: 500 };
     const cellStyle = { padding: "12px", border: "1px solid #ccc", textAlign: "center" };
