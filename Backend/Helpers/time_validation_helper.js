@@ -68,8 +68,9 @@ class TimeValidation{
         let calculated = Math.round(difference_work_hour * TIME_MILISECOND.milisecond_one_thousand) / TIME_MILISECOND.milisecond_one_thousand;
     
         // Handle weekend calculation: if worked hours are less than or equal to 0, convert to positive value or default weekend work
-        if(is_weekend && calculated <= NUMBER.zero){
-            calculated = Math.abs(calculated) || DEFAULT_TIME_CONVERSION;
+        if(calculated < NUMBER.Z && !is_weekend){
+            // Apply minimum undertime if negative
+            calculated = Math.max(calculated, -DEFAULT_TIME_CONVERSION); 
         }
     
         // Fallback: ensure calculated is a valid number

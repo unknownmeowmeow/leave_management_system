@@ -26,29 +26,19 @@ export default function Dashboard() {
         fontSize: "16px",
         margin: "0 10px",
     };
-
     useEffect(() => {
-        const fetchRecords = async () => {
-
-            try {
-                const response = await axios.post(
-                    "http://localhost:5000/api/attendance/record",
-                    {},
-                    { withCredentials: true }
-                );
-
-                if (response.data.success) {
-                    setRecords(response.data.records);
+        axios.post("http://localhost:5000/api/attendance/record", {}, { withCredentials: true })
+            .then(res => {
+                if (res.data.success) {
+                    setRecords(res.data.records ?? []);
+                } else {
+                    setRecords([]);
                 }
-                else {
-                }
-            }
-            catch (error) {
-                alert(error.response?.data?.message);
-            }
-        };
-
-        fetchRecords();
+            })
+            .catch(err => {
+                alert(err.response?.data?.message || "Failed to fetch records.");
+                setRecords([]); 
+            });
     }, []);
 
     const handleTimeIn = async () => {

@@ -26,13 +26,18 @@ export default function Dashboard() {
     const buttonStyle = { padding: "10px 20px", margin: "0 10px", cursor: "pointer" };
 
     const handleAction = async (url) => {
+    
         try {
             const res = await axios.post(url, {}, { withCredentials: true });
+            console.log("✅ Response:", res);
             alert(res.data.message);
         } catch (err) {
+            console.error("❌ Error object:", err);
             alert(err.response?.data?.message || "Action failed.");
         }
     };
+    
+    
 
     return (
         <div style={containerStyle}>

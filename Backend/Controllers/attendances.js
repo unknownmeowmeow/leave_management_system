@@ -1,9 +1,9 @@
-import attendance from "../models/attendance.js";
 import timeValidation from "../helpers/time_validation_helper.js";
 import leaveCredit from "../models/leave_credit.js";   
 import workValidation from "../helpers/work_time_validation_helper.js";
 import database from "../config/database.js";
 import { ATTENDANCE_TYPE_ID, NUMBER } from "../constant/constants.js";
+import AttendanceModel from "../models/attendance.js";
 
 class Attendance{
 
@@ -15,28 +15,29 @@ class Attendance{
      * created by: Rogendher Keith Lachica
      * updated at: September 24, 2025 10:45 PM
      */
-    static async employeetimeIn(req, res){
-
-        try{
-            const employee_id = req.session.user.employee_id;
-            const latest_timein_record = await attendance.checkEmployeeLatestTimeIn(employee_id);
-
-            if(latest_timein_record.status){
-                throw new Error("Already time in this day");
+    static async employeetimeIn(req, res) {
+        try {    
+            const employee_id = req.session.user;
+            const latest_timein_record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
+            
+            if (latest_timein_record.status) {
+                throw new Error("Already timed in today");
             }
-
-            const insert_employee_attendance_record = await attendance.insertEmployeeTimeInAttendance({employee_id});
-
+    
+            // Insert new time in record
+            const insert_employee_attendance_record = await AttendanceModel.insertEmployeeTimeInAttendance(employee_id);
+    
             if(!insert_employee_attendance_record.status || insert_employee_attendance_record.error){
-                throw new Error(insert_employee_attendance_record.error);
+                throw new Error(insert_employee_attendance_record.error || "Failed to insert time in");
             }
-
+    
             return res.json({ success: true, message: "Time IN recorded successfully" });
         } 
         catch(error){
             return res.json({ success: false, message: error.message || "Server error attendance in controller" });
         }
     }
+    
 
     /**
      * Handles the employee time-out process.
@@ -52,11 +53,11 @@ class Attendance{
         try{
             await connection.beginTransaction();
     
-            const employee_id = req.session.user;
+            const employee_id = req.session.user.employee_id;
             const attendance_type_id = ATTENDANCE_TYPE_ID.time_out;
     
             // Get the latest Time In record for the employee
-            const latest_time_record = await attendance.checkEmployeeLatestTimeIn(employee_id);
+            const latest_time_record = await AttendanceModel.checkEmployeeLatestTimeIn(employee_id);
             const active_record_time_in = latest_time_record.result;
     
             // Validate if a Time In record exists
@@ -65,7 +66,7 @@ class Attendance{
             }
     
             // Check if employee already timed out today
-            const latest_timeout_record = await attendance.checkLatestEmployeeTimeOut(employee_id);
+            const latest_timeout_record = await AttendanceModel.checkLatestEmployeeTimeOut(employee_id);
 
             if(latest_timeout_record.status){
                 throw new Error("Already time Out today");
@@ -87,13 +88,15 @@ class Attendance{
     
             // Validate Time Out based on business rules
             const validation_check_time = workValidation.validateEmployeeTimeOut({ id, time_out, work_hour });
-
+            console.log("id:", id, "time_in:", time_in, "time_out:", time_out, "work_hour:", work_hour);
+            console.log("Validation result:", validation_check_time);
+            
             if(!validation_check_time.is_valid){
                 throw new Error("Failed to Time Out in controller");
             }
     
             // Update attendance record with Time Out and work hours
-            const update_attendance_record = await attendance.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
+            const update_attendance_record = await AttendanceModel.updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection});
 
             if(!update_attendance_record.status || update_attendance_record.error){
                 throw new Error(update_attendance_record.error);
@@ -135,8 +138,8 @@ class Attendance{
      * updated at: September 26, 2025 11:45 AM
      */
     static async employeeRecord(req, res){
-        const employee_id = req.session.user;
-        const employee_record = await attendance.getAllTimeInAndTimeOutByEmployeeId(employee_id);
+        const employee_id = req.session.user.employee_id;
+        const employee_record = await AttendanceModel.getAllTimeInAndTimeOutByEmployeeId(employee_id);
         return res.json({ success: true, records: employee_record.result });
     }
 
@@ -149,7 +152,7 @@ class Attendance{
      * updated at: September 26, 2025 11:55 AM
      */
     static async allEmployeesAttendanceRecord(req, res){
-        const attendance_record = await attendance.getAllEmployeeTimeInAndTimeOut();
+        const attendance_record = await AttendanceModel.getAllEmployeeTimeInAndTimeOut();
         return res.json({ success: true, result: attendance_record.result });
     }
 }

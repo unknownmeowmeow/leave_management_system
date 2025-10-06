@@ -174,7 +174,7 @@ class LeaveFile{
      * updated at: October 1, 2025 01:57 PM
      */
     static async getLatestCredit(req, res){
-        const employee_id = req.session.user.employee_id;
+        const employee_id = req.session.user;
         const employee_credit_record = await leaveCredit.getLatestEmployeeLeaveCredit(employee_id);
         return res.json({success: true, latest_credit: parseFloat(employee_credit_record.result)});
     }
