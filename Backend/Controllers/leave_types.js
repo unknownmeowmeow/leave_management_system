@@ -1,29 +1,31 @@
 import LeaveTypeModel from "../Models/leave_type.js";
 
 class LeaveTypeController{
+    constructor(){
+        this.leaveTypeModel = LeaveTypeModel;
+    }
 
     /**
      * Retrieves all default leave types from the system.
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response containing default leave types or an error message.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 02:10 PM
+     * Last Updated At: October 1, 2025 
+     * @author Keith
      */
-    static async getAllDefaultLeaveType(req, res){
+    async allDefaultLeaveType(req, res){
         
         try{
-            const get_all_default_leave_record = await LeaveTypeModel.getAllLeaveDefaultType(); 
-    
-            if(!get_all_default_leave_record.status || get_all_default_leave_record.error){
-               throw new Error(get_all_default_leave_record.error);
+            const get_all_default_leave_record = await this.leaveTypeModel.getDefaultLeave(); 
+        
+            if(!get_all_default_leave_record.status){
+                throw new Error(get_all_default_leave_record.error);
             }
-    
-            return res.json({ success: true, data: get_all_default_leave_record.result });
+
+            return res.json({ status: true, result: get_all_default_leave_record.result });
         } 
-        catch(error){ 
-            return res.json({ success: false, message: error.message || "Server error register in controller" });      
+        catch(error){
+            return res.json({ status: false, result: error.message });
         }
     }
 
@@ -32,25 +34,23 @@ class LeaveTypeController{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object used to send JSON responses.
      * @returns {Object} JSON response containing rewarded & special leave types or an error message.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 02:20 PM
+     * Last Updated At: October 1, 2025 
+     * @author Keith
      */
-    static async getAllRewardedAndSpecialLeave(req, res){
-        
+    async allRewardedLeave(req, res){
         try{
-            const get_all_rewarded_special_leave_record = await LeaveTypeModel.getAllSpecialAndRewardedLeaveType();
-    
-            if(!get_all_rewarded_special_leave_record.status || get_all_rewarded_special_leave_record.error){
-               throw new Error(get_all_rewarded_special_leave_record.error);
+            const get_all_rewarded_special_leave_record = await this.leaveTypeModel.getRewardedLeave(); 
+
+            if(!get_all_rewarded_special_leave_record.status){
+                throw new Error(get_all_rewarded_special_leave_record.error);
             }
 
-            return res.json({ success: true, data: get_all_rewarded_special_leave_record.result });
+            return res.json({ status: true, result: get_all_rewarded_special_leave_record.result });
         } 
         catch(error){
-            return res.json({ success: false, message: error.message || "Server error register in controller" });
+            return res.json({ status: false, result: error.message });
         }
     }
 }
 
-export default LeaveTypeController;
+export default new LeaveTypeController();

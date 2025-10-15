@@ -1,36 +1,38 @@
 import db from "../Configs/database.js";
-import { ROLE_TYPE_ID } from "../Constant/constants.js";
+import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
 
 class EmployeeModel{
+    constructor(connection = db){
+        this.db = connection;
+    }
 
     /**
-     * Retrieves an employee record by email.
-     *
-     * @param {string} email - The email of the employee to retrieve.
-     * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Employee record if found.
-     *    - error: Error message if not found or on failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: September 20 2025 10:38 pm
+     * Retrieves an employee record by ID.
+     * @param {number} employee_id - The ID of the employee to retrieve.
+     * @returns {Promise<Object>} response_data - Contains status, result, or error.
+     * Last Updated At: September 26, 2025 5:00 PM
+     * @author Keith
      */
-    static async getEmployeeEmail(email){
+    async getEmployeeId(employee_data){
         const response_data =  { status: false, result: null, error: null };
-
+        const { employee_id = null, email = null, role_id = null } = employee_data;
+        
         try{
-            const [get_all_employee_email] = await db.execute(`
-                SELECT * 
+            const [get_employee_id] = await this.db.execute(`
+                SELECT *
                 FROM employees
-                WHERE email = ?
-            `, [email]);
+                WHERE (? IS NULL OR id = ?)
+                AND (? IS NULL OR email = ?)
+                AND (? IS NULL OR employee_role_type_id = ?)
+                LIMIT ${NUMBER.one}
+            `, [employee_id, employee_id, email, email, role_id, role_id]);
 
-            if(get_all_employee_email.length){
+            if(get_employee_id.length){
                 response_data.status = true;
-                response_data.result = get_all_employee_email[0];
+                response_data.result = get_employee_id[NUMBER.zero];
             }
             else{
-                response_data.error = "email not found in model";
+                response_data.error =  "Employee ID not Found.";
             }
         }
         catch(error){
@@ -42,26 +44,22 @@ class EmployeeModel{
 
     /**
      * Creates a new employee record.
-     *
-     * @param {Object} userData - The user data to insert.
-     * @param {string} userData.first_name - First name of the employee.
-     * @param {string} userData.last_name - Last name of the employee.
-     * @param {string} userData.email - Email address of the employee.
-     * @param {number} userData.role - Role ID of the employee.
-     * @param {number} userData.gender - Gender ID of the employee.
-     * @param {string} userData.password - Hashed password.
+     * @param {Object} create_employee - The user data to insert.
+     * @param {string} create_employee.first_name - First name of the employee.
+     * @param {string} create_employee.last_name - Last name of the employee.
+     * @param {string} create_employee.email - Email address of the employee.
+     * @param {number} create_employee.role - Role ID of the employee.
+     * @param {number} create_employee.gender - Gender ID of the employee.
+     * @param {string} create_employee.password - Hashed password.
      * @param {Object} [connection=db] - Optional database connection.
-     * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - insert_employee_result: Object with inserted record ID if successful.
-     *    - error: Error message if insert fails.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: September 21 2025 11:38 pm
+     * @returns {Promise<Object>} response_data - Contains status, inserted employee ID, or error.
+     * Last Updated At: September 21, 2025 11:38 PM
+     * @author Keith
      */
-    static async createEmployeeAccount({ first_name, last_name, email, role, gender, password }, connection = db) {
+    async createEmployeeAccount(create_employee, connection = this.db) {
         const response_data = { status: false, insert_employee_result: null, error: null };
-    
+        const { first_name, last_name, email, role, gender, password } = create_employee;
+        
         try{
             const [insert_employee_account] = await connection.execute(`
                 INSERT INTO employees (
@@ -70,10 +68,9 @@ class EmployeeModel{
                     first_name, 
                     last_name, 
                     email, 
-                    password, 
-                    created_at
+                    password
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, NOW())
+                VALUES (?, ?, ?, ?, ?, ?)
             `, [role, gender, first_name, last_name, email, password]);
     
             if(insert_employee_account.insertId){
@@ -81,7 +78,7 @@ class EmployeeModel{
                 response_data.insert_employee_result = { id: insert_employee_account.insertId };
             } 
             else{
-                response_data.error = "insert employee data error in model";
+                response_data.error = "Insert employee data error";
             }
         } 
         catch(error){
@@ -93,29 +90,20 @@ class EmployeeModel{
 
      /**
      * Retrieves all employees where role type is intern or employee.
-     *
-     * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array of employee records if successful.
-     *    - error: Error message if none found or on failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: September 25, 2025 - 4:30 PM
+     * @returns {Promise<Object>} response_data - Contains status, result, or error.
+     * Last Updated At: September 25, 2025 4:30 PM
+     * @author Keith
      */
-    static async getAllEmployeeAndIntern(){
-        const response_data =  { status: false, result: null, error: null };
+    async getAllWorker(){
+        const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_all_employee_intern] = await db.execute(`
-                SELECT 
-                    id, 
-                    first_name, 
-                    last_name, 
-                    email, 
-                    employee_role_type_id
+            const [get_all_employee_intern] = await this.db.execute(`
+                SELECT *
                 FROM employees
                 WHERE employee_role_type_id 
                 IN (?, ?)
+                ORDER BY id DESC
             `, [ROLE_TYPE_ID.intern, ROLE_TYPE_ID.employee]);
 
             if(get_all_employee_intern.length){
@@ -123,7 +111,7 @@ class EmployeeModel{
                 response_data.result = get_all_employee_intern;
             }
             else{
-                response_data.error = "no employee data found";
+                response_data.error = "No employee data Found";
             }
         }
         catch(error){
@@ -133,43 +121,6 @@ class EmployeeModel{
         return response_data;
     }
     
-    /**
-     * Retrieves an employee record by ID.
-     *
-     * @param {number} employee_id - The ID of the employee to retrieve.
-     * @returns {Promise<Object>} response_data - Contains:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Employee record if found.
-     *    - error: Error message if not found or on failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: September 26 2025 5:00 pm
-     */
-    static async getById(employee_id){
-        const response_data =  { status: false, result: null, error: null };
-
-        try{
-            const [get_employee_id] = await db.execute(`
-                SELECT *
-                FROM employees
-                WHERE id = ? 
-            `, [employee_id]);
-
-            if(get_employee_id.length){
-                response_data.status = true;
-                response_data.result = get_employee_id[0];
-            }
-            else{
-                response_data.error =  "employee id not found in employee model.";
-            }
-        }
-        catch(error){
-            response_data.error = error.message;
-        }
-
-        return response_data;
-    }
-
 }
 
-export default EmployeeModel;
+export default new EmployeeModel();

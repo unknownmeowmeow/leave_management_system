@@ -10,55 +10,41 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
 
         try {
-            const response = await axios.post(
+            const { data } = await axios.post(
                 "http://localhost:5000/api/auth/login",
                 { email, password },
                 { withCredentials: true }
             );
 
-            if (response.data.success) {
-                const user = response.data.user;
-                const role = user.role;
+            if (data.status) {
+                const user = data.user;
+                const role = Number(user.role);
 
-                if (role === 1) {
-                    navigate("/admin");
+                if (!isNaN(role)) {
+                    if (role === 1) navigate("/admin");
+                    else if (role === 2) navigate("/interndashboard");
+                    else if (role === 3) navigate("/dashboard");
+                    else setError("Unknown role type");
+                } else {
+                    setError("Role not recognized. Please contact admin.");
                 }
-                else if (role === 2) {
-                    navigate("/interndashboard");
-                }
-                else if (role === 3) {
-                    navigate("/dashboard");
-                }
-                else {
-                    setError("Unknown role");
-                }
+            } else {
+                setError(data.result || "Invalid email or password");
             }
-            else {
-                if (response.data.errors && response.data.errors.length) {
-                    setError(response.data.errors.join(", "));
-                }
-                else if (response.data.message) {
-                    setError(response.data.message);
-                }
-                else {
-                    setError("An unknown error occurred.");
-                }
-            }
-        }
-        catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setError(error.response.data.message);
-            }
-            else {
-                setError("Server Error in Login Frontend");
-            }
+        } catch (error) {
+            const msg = error?.response?.data?.result || error?.message || "Server error occurred.";
+            setError(msg);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -99,8 +85,8 @@ export default function Login() {
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-primary w-100">
-                        Login
+                    <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                        {loading ? "Logging in..." : "Login"}
                     </button>
                 </form>
 

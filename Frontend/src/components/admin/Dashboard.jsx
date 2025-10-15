@@ -19,8 +19,10 @@ export default function Dashboard() {
                     {},
                     { withCredentials: true }
                 );
-                if (response.data.success) {
-                    setRecords(response.data.result);
+    
+                if (response.data.status) {
+                
+                    setRecords(response.data.result || []);
                 } else {
                     alert(response.data.message);
                 }
@@ -33,6 +35,7 @@ export default function Dashboard() {
     }, []);
     
 
+
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
             <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
@@ -43,6 +46,8 @@ export default function Dashboard() {
                     <a href="/employeecredit" style={link_style}>Employee Credit</a>
                     <a href="/adminleavefile" style={link_style}>Leave File Application</a>
                     <a href="/adminrecordfile" style={link_style}>Employee Leave Record</a>
+                    <a href="/adminleavetypehistoryperemployee" style={link_style}>Employee Leave History</a>
+                    <a href="/adminrewardedfile" style={link_style}>Leave Rewarded Employee History</a>                     
                     <a href="/admin" style={link_style}>Employee Attendance</a>
                 </div>
             </div>
@@ -58,14 +63,14 @@ export default function Dashboard() {
                     </tr>
                 </thead>
                 <tbody>
-                    {records.length === 0 ? (
+                    {(records || []).length === 0 ? (
                         <tr>
                             <td colSpan="4" style={{ textAlign: "center", padding: "10px" }}>
                                 No records found.
                             </td>
                         </tr>
                     ) : (
-                        records.map((record, index) => {
+                        (records || []).map((record, index) => {
                             const fullName = `${record.first_name} ${record.last_name}`;
                             const timeIn = record.time_in ? new Date(record.time_in).toLocaleTimeString() : "N/A";
                             const timeOut = record.time_out ? new Date(record.time_out).toLocaleTimeString() : "N/A";
@@ -81,6 +86,7 @@ export default function Dashboard() {
                             );
                         })
                     )}
+
                 </tbody>
             </table>
         </div>

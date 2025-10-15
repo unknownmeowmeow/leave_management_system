@@ -3,7 +3,6 @@ class ValidationHelper{
 
     /**
      * Validates employee registration input fields for correctness and compliance.
-     *
      * @param {Object} employee_data - Employee registration data.
      * @param {string} employee_data.first_name - Employee's first name.
      * @param {string} employee_data.last_name - Employee's last name.
@@ -12,13 +11,11 @@ class ValidationHelper{
      * @param {string} employee_data.confirm_password - Confirmation of password.
      * @param {string|number} employee_data.role - Role assigned to employee.
      * @param {string} employee_data.gender - Gender of employee.
-     *
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 02:05 PM
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-    static validateEmployeeRegistration(employee_data){
+    validateEmployeeRegistration(employee_data){
 
         try{
             const { first_name, last_name, email, password, confirm_password, role, gender } = employee_data;
@@ -70,17 +67,14 @@ class ValidationHelper{
 
     /**
      * Validates employee login input fields for correctness.
-     *
      * @param {Object} employee_data - Employee login data.
      * @param {string} employee_data.email - Employee's login email.
      * @param {string} employee_data.password - Employee's login password.
-     *
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 02:15 PM
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-    static validateEmployeeLogin(employee_data){
+    validateEmployeeLogin(employee_data){
 
         try{
             const { email, password } = employee_data;
@@ -101,18 +95,15 @@ class ValidationHelper{
     
     /**
      * Validates leave application input fields for completeness.
-     *
      * @param {Object} leave_data - Leave application data.
      * @param {string|number} leave_data.leave_type - Selected leave type.
      * @param {string} leave_data.start_date - Leave start date (YYYY-MM-DD).
      * @param {string} leave_data.end_date - Leave end date (YYYY-MM-DD).
-     *
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 02:25 PM
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-     static validateLeaveApplication(leave_data){
+    validateLeaveApplication(leave_data){
 
         try{
             const { leave_type, start_date, end_date } = leave_data;
@@ -129,4 +120,4 @@ class ValidationHelper{
     }
 }
 
-export default ValidationHelper;
+export default new ValidationHelper();

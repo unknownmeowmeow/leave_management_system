@@ -19,16 +19,16 @@ export default function EmployeeApply() {
             try {
                 const [resTypes, resCredit] = await Promise.all([
                     axios.get("http://localhost:5000/api/leave_types", { withCredentials: true }),
-                    axios.get("http://localhost:5000/api/leave/latest_credit", { withCredentials: true }),
+                    axios.get("http://localhost:5000/api/credits/latest_credit", { withCredentials: true }),
                 ]);
 
-                if (resTypes.data.success) setLeaveTypes(resTypes.data.data);
-                if (resCredit.data.success) setLeaveCredit(resCredit.data.latest_credit);
+                if (resTypes.data.status) setLeaveTypes(resTypes.data.result);
+                if (resCredit.data.status) setLeaveCredit(resCredit.data.result);
             } catch (err) {
+              
                 setError("Failed to load data.");
             }
         };
-
         fetchData();
     }, []);
 
@@ -40,6 +40,48 @@ export default function EmployeeApply() {
         setError(null);
         setMessage(null);
 
+        const selectedLeaveType = leaveTypes.find(
+            (t) => t.id === Number(form.leave_type)
+        );
+
+        if (!selectedLeaveType) {
+            setError("Please select a leave type.");
+            return;
+        }
+
+        const start = new Date(form.start_date);
+        const end = new Date(form.end_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // normalize to midnight
+
+        // Past date leave validation
+        if (selectedLeaveType.notice_day < 0) {
+            const allowedPast = new Date(today);
+            allowedPast.setDate(today.getDate() + selectedLeaveType.notice_day); // negative notice_day
+
+            if (start < allowedPast || start > today) {
+                setError(
+                    `This leave type allows past date leave only within ${Math.abs(
+                        selectedLeaveType.notice_day
+                    )} days from today or today.`
+                );
+                return;
+            }
+
+            // Adjust end date max to today
+            if (end > today) {
+                setForm({ ...form, end_date: today.toISOString().split("T")[0] });
+                setError(`End date cannot exceed today for past date leave.`);
+                return;
+            }
+        }
+
+        // Optional: check end date >= start date
+        if (end < start) {
+            setError("End date cannot be before start date.");
+            return;
+        }
+
         try {
             const res = await axios.post(
                 "http://localhost:5000/api/leave/apply",
@@ -47,33 +89,35 @@ export default function EmployeeApply() {
                 { withCredentials: true }
             );
 
-            if (res.data.success) {
-                setMessage(
-                    typeof res.data.message === "string"
-                        ? res.data.message
-                        : JSON.stringify(res.data.message)
-                );
+            if (res.data.status) {
+                setMessage(res.data.result);
                 setForm({ leave_type: "", start_date: "", end_date: "", reason: "" });
 
-                // Refresh leave credit after successful leave application
+                // Refresh leave credit
                 const resCredit = await axios.get(
-                    "http://localhost:5000/api/leave/latest_credit",
+                    "http://localhost:5000/api/credits/latest_credit",
                     { withCredentials: true }
                 );
-                if (resCredit.data.success) setLeaveCredit(resCredit.data.latest_credit);
+                if (resCredit.data.status) setLeaveCredit(resCredit.data.result);
             } else {
-                setError(
-                    typeof res.data.message === "string"
-                        ? res.data.message
-                        : JSON.stringify(res.data.message)
-                );
+                const errorMsg =
+                    typeof res.data.result === "string"
+                        ? res.data.result
+                        : JSON.stringify(res.data.result);
+                setError(errorMsg);
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Server error.");
+          
+            const errMsg =
+                err.response?.data?.result
+                    ? typeof err.response.data.result === "string"
+                        ? err.response.data.result
+                        : JSON.stringify(err.response.data.result)
+                    : "Server error.";
+            setError(errMsg);
         }
     };
 
-    // Styles
     const containerStyle = {
         maxWidth: "900px",
         margin: "50px auto",
@@ -98,6 +142,7 @@ export default function EmployeeApply() {
                 <a href="/application" style={navLinkStyle}>Leave File</a>
                 <a href="/dashboard" style={navLinkStyle}>Dashboard</a>
                 <a href="/recordfile" style={navLinkStyle}>RecordFile</a>
+                <a href="/leavetypecredit" style={navLinkStyle}>Leave Credit Balances</a>
                 <a href="/" style={navLinkStyle}>Logout</a>
             </div>
 
@@ -105,11 +150,6 @@ export default function EmployeeApply() {
 
             {error && <div style={{ color: "red", marginBottom: "15px" }}>{error}</div>}
             {message && <div style={{ color: "green", marginBottom: "15px" }}>{message}</div>}
-
-            {/* Display leave credit */}
-            <div style={{ marginBottom: "15px", color: "blue", fontWeight: "bold" }}>
-                Available Leave Credit: {leaveCredit} days
-            </div>
 
             <h2 style={{ marginBottom: "20px" }}>Leave Application Form</h2>
             <form onSubmit={handleSubmit}>

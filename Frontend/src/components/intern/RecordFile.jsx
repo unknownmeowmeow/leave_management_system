@@ -47,10 +47,10 @@ export default function RecordFile() {
   };
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/leave/leave_transaction", { withCredentials: true })
+    axios.get("http://localhost:5000/api/transaction/leave_transaction", { withCredentials: true })
       .then(res => {
-        if (res.data.success) setLeaves(res.data.data);
-        else setError(res.data.message);
+        if (res.result.status) setLeaves(res.result.result);
+        else setError(res.result.message);
       })
       .catch(() => setError("Failed to fetch leave records."))
       .finally(() => setLoading(false));
@@ -63,9 +63,9 @@ export default function RecordFile() {
         {},
         { withCredentials: true }
       );
-      alert(response.data.message);
+      alert(response.result.message);
     } catch (error) {
-      alert(error.response?.data?.message);
+      alert(error.response?.result?.message);
     }
   };
 
@@ -76,9 +76,9 @@ export default function RecordFile() {
         {},
         { withCredentials: true }
       );
-      alert(response.data.message);
+      alert(response.result.message);
     } catch (error) {
-      alert(error.response?.data?.message);
+      alert(error.response?.result?.message);
     }
   };
 

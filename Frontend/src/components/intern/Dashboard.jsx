@@ -37,14 +37,14 @@ export default function Dashboard() {
                     { withCredentials: true }
                 );
 
-                if (response.data.success) {
-                    setRecords(response.data.records);
+                if (response.result.status) {
+                    setRecords(response.result.records);
                 }
                 else {
                 }
             }
             catch (error) {
-                alert(error.response?.data?.message);
+                alert(error.response?.result?.message);
             }
         };
 
@@ -58,10 +58,10 @@ export default function Dashboard() {
                 {},
                 { withCredentials: true }
             );
-            alert(response.data.message);
+            alert(response.result.message);
         }
         catch (error) {
-            alert(error.response?.data?.message);
+            alert(error.response?.result?.message);
         }
     };
 
@@ -72,9 +72,9 @@ export default function Dashboard() {
                 {},
                 { withCredentials: true }
             );
-            alert(response.data.message);
+            alert(response.result.message);
         } catch (error) {
-            alert(error.response?.data?.message);
+            alert(error.response?.result?.message);
         }
     };
 

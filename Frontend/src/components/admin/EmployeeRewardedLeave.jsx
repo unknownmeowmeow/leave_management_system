@@ -12,7 +12,6 @@ export default function RecordFile() {
     const table_cell = { border: "1px solid #ccc", padding: "12px", textAlign: "left" };
     const header_row = { backgroundColor: "#f0f0f0" };
     const link_style = { textDecoration: "none", color: "#007bff", fontSize: "16px", margin: "0 10px" };
-    const button_style = { margin: "0 5px", padding: "5px 10px", cursor: "pointer" };
 
     const statusStyle = (status) => {
         switch ((status || "").toLowerCase()) {
@@ -29,37 +28,15 @@ export default function RecordFile() {
 
     const fetchLeaves = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/transaction/leave_transactions", { withCredentials: true });
+            const res = await axios.get("http://localhost:5000/api/transaction/rewarded_transactions", { withCredentials: true });
             if (res.data.status) setLeaves(res.data.result || []);
             else setError(displayMessage(res.data.message || "Failed to fetch leave records."));
         } catch (err) {
-            setError(displayMessage(err.response?.result?.message || "Server error."));
+            setError(displayMessage(err.response?.data?.message || "Server error."));
         }
     };
 
     useEffect(() => { fetchLeaves(); }, []);
-
-    const updateStatus = async (leave_id, status_id) => {
-        try {
-            const res = await axios.post(
-                "http://localhost:5000/api/transaction/update_leave_status",
-                { leave_id, status_id },
-                { withCredentials: true }
-            );
-
-            if (res.data.status) {
-                setMessage("Leave updated statusfully.");
-                setError(null);
-                fetchLeaves();
-            } else {
-                setError(displayMessage(res.data.message));
-                setMessage(null);
-            }
-        } catch (err) {
-            setError(displayMessage(err.response?.data?.message || "Server error."));
-            setMessage(null);
-        }
-    };
 
     const formatDate = (dateStr) => {
         if (!dateStr) return "-";
@@ -92,41 +69,26 @@ export default function RecordFile() {
                     <tr style={header_row}>
                         <th style={table_cell}>Employee Name</th>
                         <th style={table_cell}>Leave Type</th>
-                        <th style={table_cell}>Start Date</th>
-                        <th style={table_cell}>End Date</th>
-                        <th style={table_cell}>Total Leave</th>
-                        <th style={table_cell}>Reason</th>
                         <th style={table_cell}>Grant Type</th>
-                        <th style={table_cell}>Decision By</th>
+                        <th style={table_cell}>Total Credit</th>
+                        <th style={table_cell}>Rewarded By</th>
                         <th style={table_cell}>Status</th>
-                        <th style={table_cell}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {leaves.length === 0 ? (
                         <tr>
-                            <td colSpan="11" style={{ ...table_cell, textAlign: "center" }}>No leave records found.</td>
+                            <td colSpan="10" style={{ ...table_cell, textAlign: "center" }}>No leave records found.</td>
                         </tr>
                     ) : (
                         leaves.map((leave) => (
                             <tr key={leave.id}>
                                 <td style={table_cell}>{leave.employee_name}</td>
                                 <td style={table_cell}>{leave.leave_type}</td>
-                                <td style={table_cell}>{formatDate(leave.start_date)}</td>
-                                <td style={table_cell}>{formatDate(leave.end_date)}</td>
-                                <td style={table_cell}>{Math.floor(leave.total_leave) || 0}</td> {/* total_leave as integer */}
-                                <td style={table_cell}>{leave.reason || "-"}</td>
                                 <td style={table_cell}>{leave.grant_type_name || "-"}</td>
-                                <td style={table_cell}>{leave.approved_by || "-"}</td>
+                                <td style={table_cell}>{Math.floor(leave.total_leave) || 0}</td>
+                                <td style={table_cell}>{leave.rewarded_by || "-"}</td>
                                 <td style={{ ...table_cell, ...statusStyle(leave.status) }}>{leave.status || "-"}</td>
-                                <td style={table_cell}>
-                                    {(leave.status?.toLowerCase() === "pending" || leave.status?.toLowerCase() === "requested") && (
-                                        <>
-                                            <button style={button_style} onClick={() => updateStatus(leave.id, 2)}>Approve</button>
-                                            <button style={button_style} onClick={() => updateStatus(leave.id, 4)}>Reject</button>
-                                        </>
-                                    )}
-                                </td>
                             </tr>
                         ))
                     )}

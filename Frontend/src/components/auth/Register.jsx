@@ -12,7 +12,7 @@ export default function Register() {
     const [password, setPassword] = useState("");
     const [confirm_password, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+    const [result, setResult] = useState(""); // now using same naming convention
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [role, setRole] = useState("");
@@ -21,7 +21,7 @@ export default function Register() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
-        setSuccess("");
+        setResult("");
 
         try {
             const response = await axios.post("http://localhost:5000/api/auth/register", {
@@ -34,29 +34,29 @@ export default function Register() {
                 role,
             });
 
-            if (response.data.success) {
-                setSuccess(response.data.message);
-                setError("");
-            }
-            else {
-                if (response.data.errors) {
+            // match backend structure: { status, result }
+            const { status, result } = response.data;
 
-                    setError(response.data.errors);
-                }
-                else if (response.data.message) {
-                    setError(response.data.message);
-                }
-                else {
-                    setError("An unknown error occurred.");
-                }
+            if (status) {
+                setResult(result || "Registration Successful");
+                setError("");
+
+                // optional: clear input fields
+                setFirstName("");
+                setLastName("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+                setGender("");
+                setRole("");
+            } else {
+                setError(result || "Registration failed.");
             }
-        }
-        catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setError(error.response.data.message);
-            }
-            else {
-                setError("Server Error in the Registration Frontend");
+        } catch (err) {
+            if (err.response && err.response.data && err.response.data.result) {
+                setError(err.response.data.result);
+            } else {
+                setError("Server Error in the Registration Frontend.");
             }
         }
     };
@@ -66,8 +66,9 @@ export default function Register() {
             <div className="card shadow-sm p-4" style={{ maxWidth: "500px", width: "100%" }}>
                 <h2 className="text-center mb-4">Register</h2>
 
+                {/* Show error/result from backend */}
                 {error && <div className="alert alert-danger text-center">{error}</div>}
-                {success && <div className="alert alert-success text-center">{success}</div>}
+                {result && !error && <div className="alert alert-success text-center">{result}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div className="row mb-3">
@@ -78,7 +79,6 @@ export default function Register() {
                                 className="form-control"
                                 value={first_name}
                                 onChange={(e) => setFirstName(e.target.value)}
-
                             />
                         </div>
                         <div className="col">
@@ -88,7 +88,6 @@ export default function Register() {
                                 className="form-control"
                                 value={last_name}
                                 onChange={(e) => setLastName(e.target.value)}
-
                             />
                         </div>
                     </div>
@@ -100,7 +99,6 @@ export default function Register() {
                             className="form-control"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-
                         />
                     </div>
 
@@ -110,7 +108,6 @@ export default function Register() {
                             className="form-select"
                             value={gender}
                             onChange={(e) => setGender(e.target.value)}
-
                         >
                             <option value="">Select Gender</option>
                             <option value="1">Male</option>
@@ -124,9 +121,8 @@ export default function Register() {
                             className="form-select"
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
-
                         >
-                            <option value="">Select role</option>
+                            <option value="">Select Role</option>
                             <option value="1">Admin</option>
                             <option value="2">Intern</option>
                             <option value="3">Employee</option>
@@ -142,7 +138,6 @@ export default function Register() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 minLength={8}
-
                             />
                             <button
                                 type="button"
@@ -164,7 +159,6 @@ export default function Register() {
                                 value={confirm_password}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 minLength={8}
-
                             />
                             <button
                                 type="button"

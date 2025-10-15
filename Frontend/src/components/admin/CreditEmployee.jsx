@@ -13,20 +13,20 @@ export default function CreditEmployee() {
     useEffect(() => {
         const fetchCredits = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/credits", {
+                const response = await axios.get("http://localhost:5000/api/credits/credits", {
                     withCredentials: true,
                 });
 
-                if (response.data.success && Array.isArray(response.data.result)) {
+                if (response.data.status && Array.isArray(response.data.result)) {
                     setCreditsByEmployee(response.data.result);
                 }
                 else {
-                    alert(response.data.error || "Failed to fetch credits");
+                    alert(response.result.error || "Failed to fetch credits");
                     setCreditsByEmployee([]);
                 }
             }
             catch (error) {
-                alert(error.response?.data?.error || "Server error while fetching credits");
+                alert(error.response?.result?.error || "Server error while fetching credits");
                 setCreditsByEmployee([]);
             }
         };
@@ -50,6 +50,9 @@ export default function CreditEmployee() {
                     <a href="/employeecredit" style={link_style}>Employee Credit</a>
                     <a href="/adminleavefile" style={link_style}>Leave File Application</a>
                     <a href="/adminrecordfile" style={link_style}>Employee Leave Record</a>
+                    <a href="/adminleavetypehistoryperemployee" style={link_style}>Employee Leave History</a>
+                    <a href="/allhistoryemployeeleavecredit" style={link_style}>Leave Employee History</a>
+                    <a href="/adminrewardedfile" style={link_style}>Leave Employee History</a>
                     <a href="/admin" style={link_style}>Employee Attendance</a>
                 </div>
             </div>

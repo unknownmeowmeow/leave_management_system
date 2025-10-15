@@ -1,35 +1,35 @@
 import db from "../Configs/database.js";
 import { 
-    ATTENDANCE_TYPE_ID, NUMBER
+    ATTENDANCE_TYPE_ID, NUMBER,
+    ROLE_TYPE_ID
 } from "../Constant/constants.js";
 
 class AttendanceModel{
+    constructor(connection = db){
+        this.db = connection; 
+    }
 
     /**
      * Inserts a "time in" attendance record for an employee into the database.
-     * @param {Object} param0 - Object containing:
-     *    @param {number} employee_id - The ID of the employee.
-     *    @param {number} [attendance_type_id=ATTENDANCE_TYPE_ID.time_in] - The attendance type ID, defaulting to "time in".
-     * @returns {Promise<Object>} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Inserted record info (ID) if successful.
-     *    - error: Error message if failed.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 03:18 PM
+     * @param {Object} param0 - Object containing employee_id and optional attendance_type_id
+     * @param {number} param0.employee_id - The ID of the employee.
+     * @param {number} [param0.attendance_type_id=ATTENDANCE_TYPE_ID.time_in] - Attendance type ID.
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-    static async insertEmployeeTimeInAttendance({ employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in }){
+    async insertEmployeeTimeIn(update_time_in){
         const response_data =  { status: false, result: null, error: null };
+        const { employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in } = update_time_in;
 
         try{
-            const [insert_time_in] = await db.execute(`
+            const [insert_time_in] = await this.db.execute(`
                 INSERT INTO attendances (
                     employee_id, 
                     attendance_type_id, 
-                    time_in, 
-                    created_at
+                    time_in
                 )
-                VALUES (?, ?, NOW(), NOW())
+                VALUES (?, ?, CURRENT_DATE())
             `, [employee_id, attendance_type_id]);
 
             if(insert_time_in.insertId){
@@ -37,7 +37,7 @@ class AttendanceModel{
                 response_data.result = { id: insert_time_in.insertId };
             }
             else{
-                response_data.error = "inserting failed in time in model";
+                response_data.error = "Inserting Failed in time";
             }
         }
         catch(error){
@@ -47,23 +47,18 @@ class AttendanceModel{
         return response_data;
     }
 
-    /**
-     * Retrieves the latest "time in" attendance record for an employee on the current date.
-     *
+     /**
+     * Retrieves the latest "time in" record for an employee for the current date.
      * @param {number} employee_id - The ID of the employee.
-     * @returns {Promise<Object>} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array with the latest time in record if successful.
-     *    - error: Error message if failed or no record found.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 03:18 PM
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-    static async checkEmployeeLatestTimeIn(employee_id){
+    async checkLatestTimeIn(employee_id){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_employee_time_in] = await db.execute(`
+            const [get_employee_time_in] = await this.db.execute(`
                 SELECT id, time_in 
                 FROM attendances
                 WHERE employee_id = ? 
@@ -74,10 +69,10 @@ class AttendanceModel{
 
             if(get_employee_time_in.length){
                 response_data.status = true;
-                response_data.result = get_employee_time_in[0];
+                response_data.result = get_employee_time_in[NUMBER.zero];
             }
             else{
-                response_data.error = "no time in record found in model";
+                response_data.error = "No Time in Record Found";
             }
         }
         catch(error){
@@ -88,23 +83,17 @@ class AttendanceModel{
     }
 
     /**
-     * Retrieves the latest "time out" attendance record for an employee on the current date.
-     *
+     * Retrieves the latest "time out" record for an employee for the current date.
      * @param {number} employee_id - The ID of the employee.
-     * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array with the latest time out record if successful.
-     *    - error: Error message if failed or no record found.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 03:18 PM
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-
-    static async checkLatestEmployeeTimeOut(employee_id){
+    async checkLatestTimeOut(employee_id){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_employee_time_out] = await db.execute(`
+            const [get_employee_time_out] = await this.db.execute(`
                 SELECT id, time_out 
                 FROM attendances
                 WHERE employee_id = ? 
@@ -114,10 +103,10 @@ class AttendanceModel{
 
             if(get_employee_time_out.length){
                 response_data.status = true;
-                response_data.result = get_employee_time_out;
+                response_data.result = get_employee_time_out[NUMBER.zero];
             }
             else{
-                response_data.error = "no time out record found in model";
+                response_data.error = "No Time-out Record Found";
             }
         }
         catch(error){
@@ -128,24 +117,20 @@ class AttendanceModel{
     }
 
     /**
-     * Updates an employee's "time out" attendance record with the specified details.
-     * @param {Object} param0 - Object containing:
-     *    @param {number} id - The ID of the attendance record to update.
-     *    @param {string|Date} time_out - The time out value to set.
-     *    @param {number} work_hour - The calculated work hours.
-     *    @param {number} attendance_type_id - The attendance type identifier.
-     *    @param {Object} [connection=db] - Optional database connection for transaction support.
-     * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Update operation result if successful.
-     *    - error: Error message if update failed or no row affected.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 03:18 PM
+     * Updates the "time out" attendance record for an employee.
+     * @param {Object} param0 - Object containing id, time_out, work_hour, and attendance_type_id
+     * @param {number} param0.id - Attendance record ID to update.
+     * @param {string} param0.time_out - Time out value.
+     * @param {number} param0.work_hour - Total worked hours.
+     * @param {number} param0.attendance_type_id - Attendance type ID.
+     * @param {object} [param0.connection=this.db] - Optional DB connection.
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-
-    static async updateEmployeeTimeOutAttendance({ id, time_out, work_hour, attendance_type_id, connection = db }){
+    async updateEmployeeTimeOut(update_time_out, connection = this.db ){
         const response_data =  { status: false, result: null, error: null };
+        const { id, time_out, work_hour, attendance_type_id } = update_time_out;
 
         try{
             const [update_time_out] = await connection.execute(`
@@ -153,8 +138,7 @@ class AttendanceModel{
                 SET 
                     time_out = ?, 
                     work_hour = ?, 
-                    attendance_type_id = ?, 
-                    updated_at = CURRENT_TIMESTAMP
+                    attendance_type_id = ?
                 WHERE id = ?
             `, [time_out, work_hour, attendance_type_id, id]);
 
@@ -163,7 +147,7 @@ class AttendanceModel{
                 response_data.result = update_time_out;
             }
             else{
-                response_data.error = "no affected row in updatetime out attendance in model";
+                response_data.error = "No Affected row in Update Time-out Attendance";
             }
         }
         catch(error){
@@ -173,32 +157,24 @@ class AttendanceModel{
         return response_data;
     }
 
+     
     /**
-     * Retrieves all employee attendance records including time in and time out details,
-     * along with the employee's first and last names.
-     * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array of attendance records with employee details if successful.
-     *    - error: Error message if no records found or on failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 03:18 PM
+     * Retrieves all employees' time-in and time-out attendance records.
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-
-    static async getAllEmployeeTimeInAndTimeOut(){
+    async getAllEmployeeAttendance(){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_all_employee_attendance] = await db.execute(`
-                SELECT 
-                    attendances.employee_id, 
-                    attendances.time_in, 
-                    attendances.time_out, 
-                    employees.first_name, 
+            const [get_all_employee_attendance] = await this.db.execute(`
+                SELECT *,
+                    employees.first_name,
                     employees.last_name
                 FROM attendances
                 LEFT JOIN employees ON attendances.employee_id = employees.id
-                ORDER BY attendances.updated_at DESC
+                ORDER BY attendances.id DESC
             `);
 
             if(get_all_employee_attendance.length){
@@ -206,7 +182,7 @@ class AttendanceModel{
                 response_data.result = get_all_employee_attendance;
             }
             else{
-                response_data.error = "no attendance records found in model";
+                response_data.error = "No Attendance Record Found";
             }
         }
         catch(error){
@@ -217,32 +193,22 @@ class AttendanceModel{
     }
 
     /**
-     * Retrieves all time in and time out attendance records for a specific employee,
-     * including the employee's first and last names.
-     * @param {number} employee_id - The ID of the employee to fetch attendance records for.
-     * @returns {Object} response_data - Object containing:
-     *    - status: Boolean indicating success or failure.
-     *    - result: Array of attendance records if successful.
-     *    - error: Error message if no records found or on failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 1, 2025 03:18 PM
+     * Retrieves all time-in and time-out attendance records for a specific employee.
+     * @param {number} employee_id - The ID of the employee.
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
      */
-    static async getAllTimeInAndTimeOutByEmployeeId(employee_id){
+    async getEmployeeAttendance(employee_id){
         const response_data =  { status: false, result: null, error: null };
 
         try{
-            const [get_attendance_employee_id] = await db.execute(`
-                SELECT 
-                    attendances.employee_id, 
-                    attendances.time_in, 
-                    attendances.time_out, 
-                    employees.first_name, 
-                    employees.last_name
+            const [get_attendance_employee_id] = await this.db.execute(`
+                SELECT *
                 FROM attendances
                 LEFT JOIN employees ON attendances.employee_id = employees.id
                 WHERE attendances.employee_id = ?
-                ORDER BY attendances.updated_at DESC
+                ORDER BY attendances.id DESC
             `, [employee_id]);
 
             if(get_attendance_employee_id.length){
@@ -250,7 +216,7 @@ class AttendanceModel{
                 response_data.result = get_attendance_employee_id;
             }
             else{
-                response_data.error =  "no employee attendance records found in model";
+                response_data.error =  "No Employee Attendance Records Found";
             }
         }
         catch(error){
@@ -259,6 +225,83 @@ class AttendanceModel{
         
         return response_data;
     }
+
+    /**
+     * Retrieves employees who reached a qualified attendance count.
+     * @param {number} [qualified_attendance=248] - Minimum required attendance.
+     * @param {number} [role_type_id=ROLE_TYPE_ID.employee] - Role type ID.
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
+     */
+    async getQualifiedEmployee(qualified_employee){
+        const response_data = { status: false, result: null, error: null };
+        const { qualified_attendance = NUMBER.two_hundred_forty_eight, role_type_id = ROLE_TYPE_ID.employee } = qualified_employee;
+
+        try{
+            const [qualified_employee] = await this.db.execute(`
+                SELECT attendances.employee_id AS employee_id
+                FROM attendances
+                INNER JOIN employees 
+                ON attendances.employee_id = employees.id
+                WHERE employees.employee_role_type_id = ?
+                GROUP BY attendances.employee_id
+                HAVING COUNT(attendances.id) >= ?
+            `, [role_type_id, qualified_attendance]);
+    
+            if(qualified_employee.length){
+                response_data.status = true;
+                response_data.result = qualified_employee; 
+            } 
+            else {
+                response_data.error = "No employees reached the required attendances.";
+            }
+    
+        } 
+        catch(error){
+            response_data.error = error.message;
+        }
+    
+        return response_data;
+    }
+    
+    /**
+     * Retrieves all employees who met the monthly attendance requirement.
+     * @param {number} required_count - Minimum required attendance count.
+     * @param {number} role_type_id - Role type ID.
+     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
+     * Last Updated At: October 1, 2025
+     * @author Keith
+     */
+    async getMonthlyAttendance(monthly_attendance) {
+        const response_data = { status: false, result: null, error: null };
+        const { required_count, role_type_id } = monthly_attendance;
+        
+        try {
+            const [get_monthly_attendance] = await this.db.execute(`
+                SELECT attendances.employee_id, COUNT(attendances.id)
+                FROM attendances 
+                JOIN employees  ON attendances.employee_id = employees.id
+                WHERE employees.employee_role_type_id = ?
+                GROUP BY attendances.employee_id
+                HAVING COUNT(attendances.id) >= ?
+            `, [role_type_id, required_count]);
+    
+            if(get_monthly_attendance.length){
+                response_data.status = true;
+                response_data.result = get_monthly_attendance;
+            } 
+            else{
+                response_data.error = 'No employees reached the required attendances.';
+            }
+        } 
+        catch(error){
+            response_data.error = error.message;
+        }
+    
+        return response_data;
+    }
+    
 }
 
-export default AttendanceModel;
+export default new AttendanceModel(); 

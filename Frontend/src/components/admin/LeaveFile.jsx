@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function LeaveFile() {
+export default function AddCredit() {
     const [leaveTypes, setLeaveTypes] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -9,42 +9,38 @@ export default function LeaveFile() {
 
     const [formData, setFormData] = useState({
         employee_id: "",
-        leave_type: "",
-        start_date: "",
-        end_date: "",
-        reason: "",
+        leave_type_id: "",
+        earned_credit: ""
     });
 
+    // Fetch leave types and employees
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch leave types
-                const leaveRes = await axios.get("http://localhost:5000/api/leave_types_admin", {
-                    withCredentials: true,
-                });
+                const [leaveRes, empRes] = await Promise.all([
+                    axios.get("http://localhost:5000/api/leave_types/leave_type_rewarded", { withCredentials: true }),
+                    axios.get("http://localhost:5000/api/auth/employeesbyrole", { withCredentials: true })
+                ]);
 
-                if (leaveRes.data.success && Array.isArray(leaveRes.data.data)) {
-                    setLeaveTypes(leaveRes.data.data);
+                // Leave Types
+                if (leaveRes.data.status && Array.isArray(leaveRes.data.result)) {
+                    setLeaveTypes(leaveRes.data.result);
                 } else {
                     setLeaveTypes([]);
                     setServerMessage("Failed to load leave types.");
                 }
 
-                // Fetch employees
-                const empRes = await axios.get("http://localhost:5000/api/employeesbyrole", {
-                    withCredentials: true,
-                });
-
-                if (empRes.data.success && Array.isArray(empRes.data.data)) {
-                    setEmployees(empRes.data.data);
+                // Employees
+                if (empRes.data.status && Array.isArray(empRes.data.result)) {
+                    setEmployees(empRes.data.result);
                 } else {
                     setEmployees([]);
                     setServerMessage("Failed to load employee data.");
                 }
+
             } catch (error) {
-                console.error("Fetch error:", error);
-                setEmployees([]);
                 setLeaveTypes([]);
+                setEmployees([]);
                 setServerMessage("Failed to load data from server.");
             } finally {
                 setLoading(false);
@@ -54,41 +50,38 @@ export default function LeaveFile() {
         fetchData();
     }, []);
 
+    // Handle input changes
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerMessage(null);
 
         try {
-            const response = await axios.post("http://localhost:5000/api/apply", formData, {
-                withCredentials: true,
-            });
+            const response = await axios.post(
+                "http://localhost:5000/api/credits/apply",
+                formData,
+                { withCredentials: true }
+            );
 
-            let msg = "";
-            if (typeof response.data.message === "string") {
-                msg = response.data.message;
-            } else if (typeof response.data.message === "object" && response.data.message !== null) {
-                msg = response.data.message.message || JSON.stringify(response.data.message);
-            } else {
-                msg = "Unknown response from server.";
-            }
+            const data = response.data;
 
-            setServerMessage(msg);
+            // Use 'result' from backend instead of 'message'
+            setServerMessage(data.result || "Operation completed.");
 
-            if (response.data.success) {
+            // Reset form if successful
+            if (data.status) {
                 setFormData({
                     employee_id: "",
-                    leave_type: "",
-                    start_date: "",
-                    end_date: "",
-                    reason: "",
+                    leave_type_id: "",
+                    earned_credit: ""
                 });
             }
         } catch (error) {
-            const msg = error?.response?.data?.message || "Server error occurred.";
+            const msg = error?.response?.data?.message || error?.message || "Server error occurred.";
             setServerMessage(msg);
         }
     };
@@ -96,24 +89,25 @@ export default function LeaveFile() {
     return (
         <div style={{ maxWidth: "700px", margin: "40px auto", fontFamily: "Segoe UI, Arial, sans-serif" }}>
             <div style={{ textAlign: "center", marginBottom: "30px" }}>
-                <h1>Welcome Admin</h1>
+                <h1>Admin - Add Leave Credit</h1>
                 <div>
                     <a href="/" style={linkStyle}>Logout</a>
                     <a href="/employeecredit" style={linkStyle}>Employee Credit</a>
                     <a href="/adminleavefile" style={linkStyle}>Leave File Application</a>
                     <a href="/adminrecordfile" style={linkStyle}>Employee Leave Record</a>
+                    <a href="/adminleavetypehistoryperemployee" style={linkStyle}>Employee Leave Credit</a>
+                    <a href="/allhistoryemployeeleavecredit" style={linkStyle}>Leave Employee History</a>
+                    <a href="/adminrewardedfile" style={linkStyle}>Leave Rewarded Employee History</a>                     
                     <a href="/admin" style={linkStyle}>Employee Attendance</a>
                 </div>
             </div>
 
             <div style={formWrapperStyle}>
-                <h2 style={formHeaderStyle}>Leave Application Form</h2>
+                <h2 style={formHeaderStyle}>Add Leave Credit</h2>
 
                 {loading && <div>Loading data...</div>}
 
-                {serverMessage && typeof serverMessage === "string" && (
-                    <div style={messageBoxStyle}>{serverMessage}</div>
-                )}
+                {serverMessage && <div style={messageBoxStyle}>{serverMessage}</div>}
 
                 {!loading && (
                     <form onSubmit={handleSubmit}>
@@ -126,7 +120,7 @@ export default function LeaveFile() {
                                 style={selectStyle}
                             >
                                 <option value="">Select Employee</option>
-                                {Array.isArray(employees) && employees.map((emp) => (
+                                {employees.map(emp => (
                                     <option key={emp.id} value={emp.id}>
                                         {emp.first_name} {emp.last_name}
                                     </option>
@@ -137,34 +131,33 @@ export default function LeaveFile() {
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Leave Type:</label>
                             <select
-                                name="leave_type"
-                                value={formData.leave_type}
+                                name="leave_type_id"
+                                value={formData.leave_type_id}
                                 onChange={handleChange}
                                 style={selectStyle}
                             >
                                 <option value="">Select Leave Type</option>
-                                {Array.isArray(leaveTypes) && leaveTypes.map((type) => (
+                                {leaveTypes.map(type => (
                                     <option key={type.id} value={type.id}>{type.name}</option>
                                 ))}
                             </select>
                         </div>
 
                         <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Start Date:</label>
-                            <input type="date" name="start_date" value={formData.start_date} onChange={handleChange} style={inputStyle} />
+                            <label style={labelStyle}>Earned Credit:</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                name="earned_credit"
+                                value={formData.earned_credit}
+                                onChange={handleChange}
+                                placeholder="Enter credit amount"
+                                style={inputStyle}
+                            />
                         </div>
 
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>End Date:</label>
-                            <input type="date" name="end_date" value={formData.end_date} onChange={handleChange} style={inputStyle} />
-                        </div>
-
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Reason:</label>
-                            <input type="text" name="reason" value={formData.reason} onChange={handleChange} placeholder="Enter your reason" style={inputStyle} />
-                        </div>
-
-                        <button type="submit" style={submitButtonStyle}>Submit</button>
+                        <button type="submit" style={submitButtonStyle}>Add Credit</button>
                     </form>
                 )}
             </div>

@@ -16,6 +16,10 @@ import Credit from "./components/admin/CreditEmployee.jsx";
 import AdminLeaveFileApplication from "./components/admin/LeaveFile.jsx";
 import AdminRecordFile from "./components/admin/RecordLeave.jsx";
 import InternRecord from "./components/intern/RecordFile.jsx";
+import LeaveType from "./components/employee/LeaveType.jsx";
+import AdminLeaveType from "./components/admin/LeaveTypeCredit.jsx";
+import AdminLeaveTypeCreditHistory from "./components/admin/AllLeaveCreditHistory.jsx";
+import AdminLeaveRewardedHistory from "./components/admin/EmployeeRewardedLeave.jsx";
 function App() {
   const main_content_style = { padding: "20px", minHeight: "80vh" };
 
@@ -31,13 +35,17 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/allhistoryemployeeleavecredit" element={<AdminLeaveTypeCreditHistory />} />
+          <Route path="/adminleavetypehistoryperemployee" element={<AdminLeaveType />} />
           <Route path="/application" element={<LeaveFile />} />
           <Route path="/recordfile" element={<RecordFile />} />
           <Route path="/adminrecordfile" element={<AdminRecordFile />} />
           <Route path="/adminleavefile" element={<AdminLeaveFileApplication />} />
+          <Route path="/adminrewardedfile" element={<AdminLeaveRewardedHistory />} />
           <Route path="/recordleave" element={<AdminRecordLeave />} />
           <Route path="/interndashboard" element={<InternDashboard />} />
           <Route path="/InternRecord" element={<InternRecord />} />
+          <Route path="/leavetypecredit" element={<LeaveType />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

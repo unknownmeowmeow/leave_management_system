@@ -6,34 +6,39 @@ import ValidationHelper from '../Helpers/validation_helper.js';
 import LeaveTypeModel from "../Models/leave_type.js";
 import LeaveCreditModel from "../Models/leave_credit.js";
 import database from "../Configs/database.js";
-import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
-
-
+import { NUMBER, ROLE_TYPE_ID, DECIMAL_NUMBER } from "../Constant/constants.js";
 
 class EmployeeControllers{
+    constructor(){
+        this.employeeModel = EmployeeModel;
+        this.genderModel = EmployeeGenderModel;
+        this.roleModel = EmployeeRoleTypeModel;
+        this.validationHelper = ValidationHelper;
+        this.leaveTypeModel = LeaveTypeModel;
+        this.leaveCreditModel = LeaveCreditModel;
+        this.db = database;
+    }
 
     /**
      * Fetches all employee role types from the database.
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 2, 2025 03:30 PM
+     * Last Updated At: October 2, 2025
+     * @author Keith
      */
-    static async employeeRole(req, res){
-
-        try{
-            const role_record = await EmployeeRoleTypeModel.getAllRoles();
-
-            if(!role_record.status || role_record.error){
+    async employeeRole(req, res){
+        try {
+            const role_record = await this.roleModel.getRoleTypeId();
+        
+            if(!role_record.status){
                 throw new Error(role_record.error)
             }
 
-            return res.json({ success: true, result: "Successfully get all employee role" });
-        }
-        catch{
-            return res.json({ success: false, message: error.message || "Server error employee role in controller" });
+            return res.json({ status: true, result: "Successfully get all employee role" });
+        } 
+        catch(error){
+            return res.json({ status: false, result: error.message});
         }
     }
 
@@ -42,24 +47,23 @@ class EmployeeControllers{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 2, 2025 03:30 PM
+     * Last Updated At: October 2, 2025
+     * @author Keith
      */
-    static async employeeGender(req, res){
-
+    async employeeGender(req, res){
+       
         try{
-            const gender_record = await EmployeeGenderModel.getAllGenders();
+            const gender_record = await this.genderModel.getGenderId();
 
-            if(!gender_record.status || gender_record.error){
+            if(!gender_record.status){
                 throw new Error(gender_record.error);
             }
 
-            return res.json({ success: true, result: "Successfully get all gender" });
-        }
-        catch{
-            return res.json({ success: false, message: error.message || "Server error employee gender" });
-        }
+            return res.json({ status: true, result: "Successfully get all gender" });
+       } 
+       catch(error){
+            return res.json({ status: false, result: error.message});
+       }
     }
 
     /**
@@ -67,148 +71,168 @@ class EmployeeControllers{
      * password hashing, and initial leave credit assignment if applicable.
      * @param {Object} req - Express request object containing registration details in req.body.
      * @param {Object} res - Express response object used to send JSON responses.
-     * @returns {Object} JSON response indicating the success or failure of the registration process.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 2, 2025 03:30 PM
+     * @returns {Object} JSON response indicating success or failure of registration.
+     * Last Updated At: October 2, 2025
+     * @author Keith
      */
-    static async employeeRegistration(req, res){
-        const connection = await database.getConnection();
+    async employeeRegistration(req, res){
+        const connection = await this.db.getConnection();
     
         try{
             await connection.beginTransaction();
-            const validation_error = ValidationHelper.validateEmployeeRegistration(req.body);
     
-            // If there are validation errors
-            if(validation_error.length){
-                return res.json({ success: false, errors: validation_error });
+            /* Validate employee registration input fields */
+            const validation_error = this.validationHelper.validateEmployeeRegistration(req.body);
+            
+            if (validation_error.length) {
+                throw new Error(validation_error.join(", "));
             }
-    
-            // Destructure registration data from the request body
+            
             const { first_name, last_name, email, password, role, gender } = req.body;
     
-            // Check if the email already exists in the database
-            const email_exist = await EmployeeModel.getEmployeeEmail(email);
-    
-            // If email exists, throw an error to prevent duplicate registration
-            if(email_exist.status){
+            /* Check if email already exists */
+            const email_exist = await this.employeeModel.getEmployeeId({email});
+            
+            if(email_exist.status){ 
                 throw new Error("Email already exist");
             }
     
-            // Get role data based on provided role ID
-            const role_record = await EmployeeRoleTypeModel.getRoleTypeById(role);
-    
-            // If role data is invalid or contains an error, throw an error
-            if(!role_record.status || role_record.error){
+            /* Validate role */
+            const role_record = await this.roleModel.getRoleTypeId(role);
+            
+            if(!role_record.status){
                 throw new Error(role_record.error);
             }
     
-            // Get gender data based on provided gender ID
-            const gender_record = await EmployeeGenderModel.getGenderById(gender);
-    
-            // If gender data is invalid or contains an error, throw an error
-            if(!gender_record.status || gender_record.error){
+            /* Validate gender */
+            const gender_record = await this.genderModel.getGenderId(gender);
+            
+            if(!gender_record.status){
                 throw new Error(gender_record.error);
-            }
+            } 
     
-            // Hash the password securely with bcrypt
+            /* Hash employee password */
             const hash_password = await bcrypt.hash(password, NUMBER.twelve);
     
-            // Create a new employee account record in the database
-            const employee_new_account_record = await EmployeeModel.createEmployeeAccount({ first_name, last_name, email, role, gender, password: hash_password }, connection);
+            /* Create new employee account */
+            const employee_new_account_record = await this.employeeModel.createEmployeeAccount({ 
+                first_name, 
+                last_name, 
+                email, 
+                role, 
+                gender, 
+                password: hash_password,
+                connection 
+            });
     
-            // If creation failed, throw an error with details
-            if(!employee_new_account_record.status || employee_new_account_record.error){
+            if(!employee_new_account_record.status){
                 throw new Error(employee_new_account_record.error);
             }
     
-            // Get the newly created employee ID
             const employee_id = employee_new_account_record.insert_employee_result.id;
+            let leave_credit_data = [];
     
-            // If the employee role is a regular employee, assign initial leave credits
+            /* If the role is 'employee', initialize leave credits */
             if(parseInt(role, NUMBER.ten) === ROLE_TYPE_ID.employee){
-                // Fetch all leave types that carry over
-                const carry_over_leave_type_record = await LeaveTypeModel.getAllCarryOverLeaveTypes();
+                /* Fetch all leave types */
+                const get_all_leave_types = await this.leaveTypeModel.getAllLeaveTypes();
                 
-                // If leave types exist, prepare data for insertion
-                if(carry_over_leave_type_record.status && carry_over_leave_type_record.result.length){
-                    const employee_record = carry_over_leave_type_record.result.map(leave_type => [employee_id, null, null, leave_type.id, leave_type.base_value, NUMBER.zero_point_zero_zero, NUMBER.zero_point_zero_zero, leave_type.base_value, leave_type.base_value, new Date()]);
-                    const leave_credit_record = await LeaveCreditModel.insertLeaveCredit({ employee_record, connection });
-            
-                    // If insertion failed, throw an error
-                    if(!leave_credit_record.status || leave_credit_record.error){
-                        throw new Error(leave_credit_record.error);
+                if(get_all_leave_types.status && get_all_leave_types.result.length){
+                    /* Prepare leave credit data for batch insertion */
+                    leave_credit_data = get_all_leave_types.result.map(leave_type => ([ 
+                        employee_id,
+                        null, 
+                        null, 
+                        leave_type.id,
+                        leave_type.base_value,
+                        DECIMAL_NUMBER.zero_point_zero_zero, 
+                        DECIMAL_NUMBER.zero_point_zero_zero, 
+                        leave_type.base_value,       
+                        leave_type.base_value
+                    ]));
+                }
+    
+                /* Insert leave credits in batch using the same transaction connection */
+                if(leave_credit_data.length){
+                    const leave_insert_result = await this.leaveCreditModel.insertLeaveCredit({employee_data: leave_credit_data, connection});
+    
+                    if(!leave_insert_result.status){
+                        throw new Error(leave_insert_result.error);
                     }
                 }
             }
-            
+    
             await connection.commit();
-            return res.json({ success: true, message: "Registration Successful in controller" });
+            return res.json({ status: true, result: "Registration Successful"});
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ success: false, message: error.message || "Server error register in controller" });
+            return res.json({ status: false, result: error.message});
         } 
         finally{
             connection.release();
         }
     }
     
+
     /**
      * Handles employee login by validating credentials, verifying email existence,
      * comparing passwords, and establishing a user session.
      * @param {Object} req - Express request object containing login credentials.
      * @param {Object} res - Express response object used to send JSON responses.
-     * @returns {Object} JSON response indicating the success or failure of login.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: October 2, 2025 03:30 PM
+     * @returns {Object} JSON response indicating success or failure of login.
+     * Last Updated At: October 2, 2025
+     * @author Keith
      */
-
-    static async employeeLogin(req, res){
+    async employeeLogin(req, res){
 
         try{
-            const validation_error = ValidationHelper.validateEmployeeLogin(req.body);
+            const validation_error = this.validationHelper.validateEmployeeLogin(req.body);
     
             if(validation_error.length){
-                return res.json({ success: false, errors: validation_error });
+                throw new Error(validation_error.join(", "));
             }
     
             const { email, password } = req.body;
-            const employee_record = await EmployeeModel.getEmployeeEmail(email);
+            const employee_record = await this.employeeModel.getEmployeeId({email});
     
-            if(!employee_record.status || employee_record.error){
+            if(!employee_record.status){
                 throw new Error(employee_record.error);
             }
     
             const user = employee_record.result;
-            const match = await bcrypt.compare(password, user.password);
+            const password_match = await bcrypt.compare(password, user.password);
     
-            if(!match){
+            if(!password_match){
                 throw new Error("Password does not match");
             }
     
-            req.session.user = { employee_id: user.id, first_name: user.first_name, last_name: user.last_name,email: user.email, role: user.employee_role_type_id };
-            return res.json({ success: true, message: "Login successful", user: req.session.user });
+            req.session.user = { 
+                employee_id: user.id, 
+                first_name: user.first_name, 
+                last_name: user.last_name,
+                email: user.email, 
+                role: user.employee_role_type_id, 
+                gender_id: user.employee_gender_id  
+            };
+
+            return res.json({ status: true, result: "Login successful", user: req.session.user });
     
         } 
         catch(error){
-            return res.json({ success: false, message: error.message || "Server error in controller" });
+            return res.json({ status: false, result: error.message });
         }
     }
-    
 
     /**
      * Logs out the currently logged-in employee by destroying the session.
-     *
      * @param {Object} req - Express request object containing session data.
-     * @param {Object} res - Express response object for sending JSON.
-     * @returns {Object} JSON response indicating success or failure.
-     *
-     * created by: Rogendher Keith Lachica
-     * updated at: September 26, 2025 12:25 PM
+     * @param {Object} res - Express response object used to send JSON responses.
+     * @returns {Object} JSON response indicating success or failure of logout.
+     * Last Updated At: September 26, 2025 12:25 PM
+     * @author Keith
      */
-    static async employeeLogout(req, res){
+    async employeeLogout(req, res){
 
         try{
             if(!req.session.user){
@@ -216,19 +240,44 @@ class EmployeeControllers{
             }
 
             req.session.destroy(error => {
+                
                 if(error){
                     throw new Error("Server Error");
                 }
                 else{
-                    return res.json({ success: true, message: "Successfully Logout" });
+                    return res.json({ status: true, result: "Successfully Logout" });
                 }
             });
         }
         catch(error){
-            return res.json({ success: false, message: error.message || "Server error register in controller" });
+            return res.json({ status: false, result: error.message });
         }
 
     }
+
+    /**
+     * Retrieves all employees including interns.
+     * @param {Object} req - Express request object.
+     * @param {Object} res - Express response object.
+     * @returns {Object} JSON response containing all employees or error.
+     * Last Updated At: September 26, 2025 12:25 PM
+     * @author Keith
+     */
+    async employeeWorker(req, res){
+      
+        try{
+            const get_all_employee_record = await this.employeeModel.getAllWorker();
+            
+            if(!get_all_employee_record){
+                throw new Error(get_all_employee_record.error)
+            }
+
+            return res.json({ status: true, result: get_all_employee_record.result });
+        } 
+        catch(error){
+            return res.json({ status: false, result: error.message });
+        }
+    }
 }
 
-export default EmployeeControllers; 
+export default new EmployeeControllers();
