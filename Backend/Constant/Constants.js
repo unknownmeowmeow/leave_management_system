@@ -98,16 +98,14 @@ export const DAY_MONTH = {
 
 }
 
-export const YES_OR_NO = {
-    yes: 1,
-    no: 0
-}
 export const IS_ACTIVE = {
     yes: 1,
     no: 0
 }
+
 export const IS_WEEKEND = {
-    
+    yes: 1,
+    no: 0
 }
 export const LEAVE_TRANSACTION_STATUS = {
     pending: 1,

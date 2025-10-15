@@ -1,6 +1,7 @@
 import db from "../Configs/database.js";
 import {
       NUMBER, LEAVE_TRANSACTION_STATUS,
+      IS_WEEKEND,
       IS_ACTIVE
 } from "../Constant/constants.js"
 
@@ -18,8 +19,8 @@ class leaveTransactionModel{
      */
     async insertEmployeeTransaction(employee_leave_data, connection = this.db){
         const response_data = { status: false, result: null, error: null };
-        const { employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = IS_ACTIVE.no,
-            is_active = IS.yes, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null} = employee_leave_data;
+        const { employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = IS_WEEKEND.no,
+            is_active = IS_ACTIVE.yes, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null} = employee_leave_data;
 
         try{
             const [insert_transaction] = await connection.execute(`
