@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { NUMBER, DECIMAL_NUMBER } from "../Constant/constants.js";
 
 class CreditCalculationHelper{
@@ -5,6 +6,12 @@ class CreditCalculationHelper{
 
     }
 
+=======
+import { NUMBER } from "../constant/constants.js";
+
+class CreditCalculation{
+    
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
     /**
      * Calculates the total base value from a collection of leave type records (2D Array format).
      * @param {Array} leave_types - Array of leave type records, each containing a base_value.
@@ -12,7 +19,11 @@ class CreditCalculationHelper{
      * Last Updated At: October 1, 2025 02:35 PM
      * @author Keith
      */
+<<<<<<< HEAD
     getTotalBaseValue(leave_types){
+=======
+    static getTotalBaseValue(leave_types){
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         return leave_types.reduce((total, leave_type) => { return total + (Number(leave_type.base_value) || DECIMAL_NUMBER.zero_point_zero_zero); }, DECIMAL_NUMBER.zero_point_zero_zero);
     }
     
@@ -35,11 +46,19 @@ class CreditCalculationHelper{
     
     /**
      * Calculates the total base leave credits from an array of leave type objects.
+<<<<<<< HEAD
      * Functionally identical to `getTotalBaseValue` but with a reusable method name.
      * @param {Array<Object>} leave_type - Array of leave type objects, each with a base_value.
      * @returns {number} Total sum of all base_value fields.
      * Last Updated At: October 2, 2025 03:30 PM
      * @author Keith
+=======
+     * This is functionally identical to `getTotalBaseValueFromLeaveTypes` but ensures a safe, reusable name.
+     * @param {Array<Object>} leaveTypes - Array of leave type objects, each containing a `base_value` property (string or number).
+     * @returns {number} The total sum of all `base_value` fields.
+     * created by: Rogendher Keith Lachica
+     * updated at: October 2, 2025 03:30 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     calculateBaseValueCredit(leave_type){
 
@@ -51,4 +70,8 @@ class CreditCalculationHelper{
     }
 }
 
+<<<<<<< HEAD
 export default new CreditCalculationHelper();
+=======
+export default CreditCalculation;
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06

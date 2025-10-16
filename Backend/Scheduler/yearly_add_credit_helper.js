@@ -1,15 +1,22 @@
 
 import cron from "node-cron";
-import CreditControllers from "../Controllers/credits.js";
+import credit from "../controllers/credits.js";
 
 
 /**
+<<<<<<< HEAD
  * Executes the yearly leave credit insertion for all employees.
  * Schedule: "0 0 1 1 *" → Runs every January 1st at 12:00 AM.
  * Function: addYearlyCredit()
  * @returns {Promise<Object>} - JSON response from addYearlyCredit function
  * Last Updated At: October 2, 2025
  * @author Keith
+=======
+ * Schedules a cron job to run yearly credit insertion.
+ * Schedule: "0 0 1 1 *" -> At 00:00 on day 1 of month 1 (January) every year.
+ * created by: Rogendher Keith Lachica
+ * updated at: October 2 2025 9:30 am
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
  */
 cron.schedule("* * * * * *", async () => {
     const mock_request = {};
@@ -19,6 +26,7 @@ cron.schedule("* * * * * *", async () => {
         }
     };
 
+<<<<<<< HEAD
     return await CreditControllers.addYearlyCredit(mock_request, mock_response);
 });
 
@@ -55,3 +63,7 @@ cron.schedule("59 59 23 31 12 *", async () => {
     await CreditControllers.resetEmployeeCredit(mock_request, mock_response);
 });
 
+=======
+    return await credit.runYearlyCreditInsertion(mock_request, mock_response);
+});
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06

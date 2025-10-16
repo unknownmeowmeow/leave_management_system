@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function RecordFile() {
-    const [leaves, setLeaves] = useState([]);
+    const [leaves, setLeaves] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
@@ -32,6 +32,7 @@ export default function RecordFile() {
     const fetchLeaves = async () => {
         setLoading(true);
         try {
+<<<<<<< HEAD
             const res = await axios.get("http://localhost:5000/api/transaction/leave_transaction", { withCredentials: true });
             if (res.data.status) setLeaves(res.data.result || []);
             else setError(res.data.result || "Failed to fetch leave records.");
@@ -42,14 +43,24 @@ export default function RecordFile() {
                     : JSON.stringify(err.response.data.result)
                 : "Server error.";
             setError(errMsg);
+=======
+            const res = await axios.get("http://localhost:5000/api/leave/leave_transaction", { withCredentials: true });
+            if (res.data.success) {
+                setLeaves(res.data.data || []);
+                setError(null);
+            } else {
+                setError(res.data.message || "Failed to fetch leave records.");
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || "Server error.");
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         } finally {
-            setLoading(false);
+            setLoading(false); 
         }
     };
+    
 
-    useEffect(() => {
-        fetchLeaves();
-    }, []);
+    useEffect(() => { fetchLeaves(); }, []);
 
     // Update leave status (Cancel for employee)
     const updateStatus = async (leave_id, status_id) => {
@@ -63,7 +74,11 @@ export default function RecordFile() {
             if (res.data.status) {
                 setMessage("Leave updated successfully.");
                 setError(null);
+<<<<<<< HEAD
                 fetchLeaves(); // Refresh table
+=======
+                fetchLeaves(); 
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
             } else {
                 const errorMsg = typeof res.data.result === "string"
                     ? res.data.result
@@ -84,8 +99,28 @@ export default function RecordFile() {
 
     // Render table rows
     const renderRows = () => {
+<<<<<<< HEAD
         if (loading) return <tr><td colSpan="11" style={{ textAlign: "center", padding: "12px" }}>Loading...</td></tr>;
         if (error || leaves.length === 0) return <tr><td colSpan="11" style={{ textAlign: "center", padding: "12px" }}>{error || "No leave records found."}</td></tr>;
+=======
+        if (loading) {
+            return (
+                <tr>
+                    <td colSpan="10" style={{ textAlign: "center", padding: "12px" }}>Loading...</td>
+                </tr>
+            );
+        }
+
+        if (!leaves || leaves.length === 0) {
+            return (
+                <tr>
+                    <td colSpan="10" style={{ textAlign: "center", padding: "12px" }}>
+                        {error || "No leave records found."}
+                    </td>
+                </tr>
+            );
+        }
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
 
         return leaves.map((leave, i) => {
             const startDate = formatDate(leave.start_date);

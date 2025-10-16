@@ -1,4 +1,4 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 
 class EmployeeGenderModel{
     constructor(connection = db) {
@@ -6,6 +6,7 @@ class EmployeeGenderModel{
     }
     
     /**
+<<<<<<< HEAD
      * Retrieves a gender record by its ID from the database.
      * @param {number} id - The ID of the gender record.
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
@@ -16,6 +17,17 @@ class EmployeeGenderModel{
         const response_data = { status: false, result: null, error: null };
 
 
+=======
+     * Retrieves a gender record from the database by its ID.
+     *
+     * @param {number} id - The ID of the gender to retrieve.
+     * @returns {Object} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+     */ 
+    static async getGenderById(id){
+        const response_data =  { status: false, result: null, error: null };
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
 
         try{
             const [get_gender_id] = await this.db.execute(`

@@ -1,4 +1,4 @@
-class AuthMiddleware{
+class AuthEmployee{
     /**
      * Middleware to require user login by checking session.
      * @param {object} req - The request object.
@@ -13,9 +13,14 @@ class AuthMiddleware{
             return res.json({ status: false, result: "User session not found." });
         }
         
-        req.user = req.session.user;
+        req.user = req.session.user;                 
+        req.employee_id = req.session.user.employee_id;
         next();
     }
 }
 
+<<<<<<< HEAD:Backend/Middleware/authMiddleware.js
 export default new AuthMiddleware();
+=======
+export default AuthEmployee;
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06:Backend/middleware/auth.js

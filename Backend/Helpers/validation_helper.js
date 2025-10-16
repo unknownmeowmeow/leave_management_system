@@ -1,5 +1,5 @@
 
-class ValidationHelper{
+class EmployeeValidation{
 
     /**
      * Validates employee registration input fields for correctness and compliance.
@@ -12,8 +12,13 @@ class ValidationHelper{
      * @param {string|number} employee_data.role - Role assigned to employee.
      * @param {string} employee_data.gender - Gender of employee.
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
+<<<<<<< HEAD
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 02:05 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     validateEmployeeRegistration(employee_data){
 
@@ -71,8 +76,13 @@ class ValidationHelper{
      * @param {string} employee_data.email - Employee's login email.
      * @param {string} employee_data.password - Employee's login password.
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
+<<<<<<< HEAD
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 02:15 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     validateEmployeeLogin(employee_data){
 
@@ -100,8 +110,13 @@ class ValidationHelper{
      * @param {string} leave_data.start_date - Leave start date (YYYY-MM-DD).
      * @param {string} leave_data.end_date - Leave end date (YYYY-MM-DD).
      * @returns {Array<string>} List of error messages. Empty if all validations pass.
+<<<<<<< HEAD
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 02:25 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     validateLeaveApplication(leave_data){
 
@@ -120,4 +135,8 @@ class ValidationHelper{
     }
 }
 
+<<<<<<< HEAD
 export default new ValidationHelper();
+=======
+export default EmployeeValidation;
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06

@@ -1,5 +1,6 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 import {
+<<<<<<< HEAD
     ROLE_TYPE_ID, NUMBER, LEAVE_TYPE_ID, DECIMAL_NUMBER,
     IS_CARRIED_OVER,
     DAY_COUNT
@@ -19,9 +20,29 @@ class LeaveCreditModel{
      * @author Keith
      */
     async insertLeaveCredit( employee_data, connection = this.db ){
+=======
+    ROLE_TYPE_ID, NUMBER
+} from "../constant/constants.js";
+
+class LeaveCredit{
+
+    /**
+     * Inserts multiple leave credit records into the database.
+     * @param {Object[]} employee_data - Array of leave credit records to insert.
+     * @param {Object} [connection=db] - Database connection to use.
+     * @returns {Promise<Object>} Response containing status, result, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 24 2025 10:20 pm
+     */
+    static async insertLeaveCredit({ employee_data, connection = db }) {
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         const response_data = { status: false, result: null, error: null };
     
         try{
+            if(!employee_data || !employee_data.length){
+                throw new Error("No leave credit data provided");
+            }
+    
             const [insert_leave_credit] = await connection.query(`
                 INSERT INTO leave_credits (
                     employee_id,
@@ -32,6 +53,7 @@ class LeaveCreditModel{
                     deducted_credit,
                     used_credit,
                     current_credit,
+<<<<<<< HEAD
                     latest_credit
                 ) 
                 VALUES ?
@@ -46,6 +68,21 @@ class LeaveCreditModel{
             }
     
         }
+=======
+                    latest_credit,
+                    created_at
+                ) VALUES ?
+            `, [employee_data]);
+    
+            if(insert_leave_credit.insertId){
+                response_data.status = true;
+                response_data.result = { first_insert_id: insert_leave_credit.insertId };
+            } 
+            else{
+                response_data.error = "Failed to insert in model";
+            }
+        } 
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         catch(error){
             response_data.error = error.message;
         }
@@ -53,6 +90,7 @@ class LeaveCreditModel{
         return response_data;
     }
     
+<<<<<<< HEAD
     /**
     * @param {Object} update_credit 
     * @param {number} update_credit.employee_id
@@ -67,6 +105,28 @@ class LeaveCreditModel{
     async updateEmployeeLeaveCredit(update_leave_credit, connection = this.db){
         const response_data = { status: false, result: null, error: null };
         
+=======
+
+    /**
+     * Inserts a leave credit record earned from employee work hours.
+     *
+     * @param {Object} params - Parameters required for insertion.
+     * @param {number} params.employee_id - Employee identifier.
+     * @param {number} params.attendance_id - Linked attendance record ID.
+     * @param {number} params.earned_credit - Earned leave credit.
+     * @param {number} params.deducted_credit - Deducted leave credit.
+     * @param {number} params.current_credit - Current leave credit.
+     * @param {number} params.latest_credit - Latest cumulative leave credit.
+     * @param {Object} [params.connection=db] - Database connection to use.
+     * @returns {Promise<Object>} Response with status, result, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 30 2025 6:45 pm
+     */
+    static async insertEmployeeLeaveCreditFromWorkHour(insert_credit_data, connection = db){
+        const response_data = { status: false, result: null, error: null };
+        const { employee_id, attendance_id, earned_credit, deducted_credit, current_credit, latest_credit } = insert_credit_data;
+
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         try{
             const [update_credit_work_hour] = await connection.execute(`
                 UPDATE leave_credits
@@ -99,15 +159,70 @@ class LeaveCreditModel{
     }
 
     /**
+<<<<<<< HEAD
      * @returns {Promise<Object>} 
      * Last Updated At: September 24, 2025
      * @author Keith
+=======
+     * Inserts yearly leave credit records in bulk.
+     * @param {Object[]} employee_data - Array of yearly leave credit records.
+     * @returns {Promise<Object>} Response with status, result, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 24 2025 1:25 pm
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async getAllEmployeeCredit(){
         const response_data = { status: false, result: null, error: null };
 
         try{
+<<<<<<< HEAD
             const [get_all_employee_credit] = await this.db.execute(`
+=======
+            const [insert_yearly_credit] = await db.query(`
+                INSERT INTO leave_credits (
+                    employee_id,
+                    leave_transaction_id,
+                    attendance_id,
+                    leave_type_id,
+                    earned_credit,
+                    deducted_credit,
+                    used_credit,
+                    current_credit,
+                    latest_credit,
+                    created_at
+                ) 
+                VALUES ?
+            `, [employee_data]);
+
+            if(insert_yearly_credit.insertId){
+                response_data.status = true;
+                response_data.result = { id: insert_yearly_credit.insertId };
+            }
+            else{
+                response_data.error = "Failed to insert yearly leave credit in model.";
+            }
+
+        }
+        catch(error){
+            response_data.error = error.message;
+        }
+
+        return response_data;
+    }
+
+
+    /**
+     * Retrieves summarized leave credit totals for all employees with specific roles.
+     * @returns {Promise<Object>} Response with status, result array, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 24 2025 1:25 pm
+     */
+    static async getAllEmployeeCredit() {
+        const response_data = { status: false, result: null, error: null };
+
+        try{
+            const [get_all_employee_credit] = await db.execute(`
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
                 SELECT 
                     leave_credits.employee_id,
                     employees.first_name,
@@ -139,6 +254,7 @@ class LeaveCreditModel{
         return response_data;
     }
 
+<<<<<<< HEAD
     /**
      * @param {Array<number>} leave_type_ids 
      * @param {Array<number>} gain_credits
@@ -146,6 +262,14 @@ class LeaveCreditModel{
      * @returns {Promise<Object>} 
      * Last Updated At: October 14, 2025
      * @author Keith
+=======
+     /**
+     * Retrieves the most recent leave credit record for a specific employee.
+     * @param {number} employee_id - Employee identifier.
+     * @returns {Promise<Object>} Response with status, record ID, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25 2025 12:10 am
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async latestCredit(employee_id, leave_type){
         const response_data = { status: false, result: null, error: null };
@@ -246,6 +370,7 @@ class LeaveCreditModel{
     }
 
     /**
+<<<<<<< HEAD
     * Calculates total leave credits for an employee.
     * @param {number} employee_id - Employee ID to fetch totals for.
     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
@@ -253,6 +378,15 @@ class LeaveCreditModel{
     * @author Keith
     */
     async getTotalCredit(employee_id){
+=======
+     * Retrieves total leave credits summary for a given employee.
+     * @param {number} employee_id - Employee identifier.
+     * @returns {Promise<Object>} Response with status, summarized credits, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25 2025 12:10 am
+     */
+    static async getTotalCredit(employee_id){
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         const response_data = { status: false, result: null, error: null };
 
         try{
@@ -330,6 +464,7 @@ class LeaveCreditModel{
     }
 
     /**
+<<<<<<< HEAD
      * Updates an employee's leave credit.
      * @param {number} employee_id - Employee ID to update.
      * @param {number} leave_type_id - Leave type ID.
@@ -342,7 +477,25 @@ class LeaveCreditModel{
      * @author Keith
      */
     async updateEmployeeCredit(update_credit, connection = this.db) {
+=======
+     * Updates the latest leave credit record for an employee.
+     * @param {Object} data - Data fields for update.
+     * @param {number} data.leave_credit_id - ID of leave credit record to update.
+     * @param {number} data.leave_transaction_id - Leave transaction reference.
+     * @param {number} data.leave_type_id - Type of leave.
+     * @param {number} data.used_credit - Used leave credits.
+     * @param {number} data.latest_credit - Latest leave credit total.
+     * @param {number} data.current_credit - Current leave credit.
+     * @param {number} data.deducted_credit - Deducted leave credits.
+     * @param {Object} [connection=db] - Database connection to use.
+     * @returns {Promise<Object>} Response with status, updated data, or error.
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25 2025 12:30 am
+     */
+    static async updateLatestCredit(update_credit_data, connection = db){
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         const response_data = { status: false, result: null, error: null };
+        const { leave_credit_id, leave_transaction_id, leave_type_id, used_credit, latest_credit, current_credit, deducted_credit } = update_credit_data;
 
         try{
             const [update_credit_result] = await connection.execute(`
@@ -719,4 +872,8 @@ class LeaveCreditModel{
 
 }
 
+<<<<<<< HEAD
 export default new LeaveCreditModel(); 
+=======
+export default LeaveCredit; 
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06

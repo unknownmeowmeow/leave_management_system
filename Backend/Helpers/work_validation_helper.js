@@ -1,4 +1,4 @@
-class WorkTimeValidationHelper{
+class WorkValidation{
     
     /**
      * Validates the required fields for employee time-out entry.
@@ -7,10 +7,17 @@ class WorkTimeValidationHelper{
      * @param {string|Date} param0.time_out - Time-out value (e.g., "18:00" or Date object).
      * @param {number} param0.work_hour - Total computed work hours (numeric).
      * @returns {Object} Validation result.
+<<<<<<< HEAD:Backend/Helpers/work_validation_helper.js
      * @returns {boolean} return.is_valid - `true` if all validations pass, otherwise `false`.
      * @returns {string|null} return.error - Error message if invalid, otherwise `null`.
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * @returns {boolean} return.is_valid 
+     * @returns {string|null} return.error
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 02:32 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06:Backend/Helpers/work_time_validation_helper.js
      */
     validateEmployeeTimeOut({ id, time_out, work_hour }){
         const result_validation = { status: false, error: null };
@@ -32,4 +39,8 @@ class WorkTimeValidationHelper{
     }
 }
 
+<<<<<<< HEAD:Backend/Helpers/work_validation_helper.js
 export default new WorkTimeValidationHelper();
+=======
+export default WorkValidation;
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06:Backend/Helpers/work_time_validation_helper.js

@@ -1,8 +1,13 @@
-import db from "../Configs/database.js";
+import db from "../config/database.js";
 import { 
+<<<<<<< HEAD
     ATTENDANCE_TYPE_ID, NUMBER,
     ROLE_TYPE_ID
 } from "../Constant/constants.js";
+=======
+    ATTENDANCE_TYPE_ID, NUMBER
+} from "../constant/constants.js";
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
 
 class AttendanceModel{
     constructor(connection = db){
@@ -11,13 +16,25 @@ class AttendanceModel{
 
     /**
      * Inserts a "time in" attendance record for an employee into the database.
+<<<<<<< HEAD
      * @param {Object} update_time_in - Object containing employee_id and optional attendance_type_id
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
      * Last Updated At: October 1, 2025
      * @author Keith
      */
     async insertEmployeeTimeIn(update_time_in){
+=======
+     * @param {Object} param0 - Object containing:
+     *    @param {number} employee_id - The ID of the employee.
+     *    @param {number} [attendance_type_id=ATTENDANCE_TYPE_ID.time_in] - The attendance type ID, defaulting to "time in".
+     * @returns {Promise<Object>} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+     */
+    static async insertEmployeeTimeInAttendance(time_in_data){
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         const response_data =  { status: false, result: null, error: null };
+        const { employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in } = time_in_data;
 
         try{
             const [insert_time_in] = await this.db.query(
@@ -43,9 +60,15 @@ class AttendanceModel{
      /**
      * Retrieves the latest "time in" record for an employee for the current date.
      * @param {number} employee_id - The ID of the employee.
+<<<<<<< HEAD
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * @returns {Promise<Object>} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async checkLatestTimeIn(employee_id){
         const response_data =  { status: false, result: null, error: null };
@@ -78,9 +101,15 @@ class AttendanceModel{
     /**
      * Retrieves the latest "time out" record for an employee for the current date.
      * @param {number} employee_id - The ID of the employee.
+<<<<<<< HEAD
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * @returns {Object} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async checkLatestTimeOut(employee_id){
         const response_data =  { status: false, result: null, error: null };
@@ -110,6 +139,7 @@ class AttendanceModel{
     }
 
     /**
+<<<<<<< HEAD
      * Updates the "time out" attendance record for an employee.
      * @param {Object} param0 - Object containing id, time_out, work_hour, and attendance_type_id
      * @param {number} param0.id - Attendance record ID to update.
@@ -122,7 +152,23 @@ class AttendanceModel{
      * @author Keith
      */
     async updateEmployeeTimeOut( employee_time_out, attendance_id, connection = this.db ){
+=======
+     * Updates an employee's "time out" attendance record with the specified details.
+     * @param {Object} param0 - Object containing:
+     *    @param {number} id - The ID of the attendance record to update.
+     *    @param {string|Date} time_out - The time out value to set.
+     *    @param {number} work_hour - The calculated work hours.
+     *    @param {number} attendance_type_id - The attendance type identifier.
+     *    @param {Object} [connection=db] - Optional database connection for transaction support.
+     * @returns {Object} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+     */
+
+    static async updateEmployeeTimeOutAttendance(update_attendance, connection = db){
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         const response_data =  { status: false, result: null, error: null };
+        const { time_out, work_hour, attendance_type_id, id } = update_attendance;
 
         try{
             const [update_time_out] = await connection.execute(`
@@ -132,7 +178,11 @@ class AttendanceModel{
                     work_hour = ?, 
                     attendance_type_id = ?
                 WHERE id = ?
+<<<<<<< HEAD
             `, [ employee_time_out.time_out, employee_time_out.work_hour, employee_time_out.attendance_type_id, attendance_id ]);
+=======
+            `, [time_out, work_hour,attendance_type_id, id]);
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
 
             if(update_time_out.affectedRows){
                 response_data.status = true;
@@ -151,10 +201,18 @@ class AttendanceModel{
 
      
     /**
+<<<<<<< HEAD
      * Retrieves all employees' time-in and time-out attendance records.
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * Retrieves all employee attendance records including time in and time out details,
+     * along with the employee's first and last names.
+     * @returns {Object} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async getAllEmployeeAttendance(){
         const response_data =  { status: false, result: null, error: null };
@@ -185,11 +243,20 @@ class AttendanceModel{
     }
 
     /**
+<<<<<<< HEAD
      * Retrieves all time-in and time-out attendance records for a specific employee.
      * @param {number} employee_id - The ID of the employee.
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
      * Last Updated At: October 1, 2025
      * @author Keith
+=======
+     * Retrieves all time in and time out attendance records for a specific employee,
+     * including the employee's first and last names.
+     * @param {number} employee_id - The ID of the employee to fetch attendance records for.
+     * @returns {Object} response_data - Object containing:
+     * created by: Rogendher Keith Lachica
+     * updated at: October 1, 2025 03:18 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async getEmployeeAttendance(employee_id){
         const response_data =  { status: false, result: null, error: null };

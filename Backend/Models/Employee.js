@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import db from "../Configs/database.js";
 import { NUMBER, ROLE_TYPE_ID } from "../Constant/constants.js";
 
@@ -12,6 +13,20 @@ class EmployeeModel{
      * @returns {Promise<Object>} response_data - Contains status, result, or error.
      * Last Updated At: September 26, 2025 
      * @author Keith
+=======
+import db from "../config/database.js";
+import { ROLE_TYPE_ID } from "../constant/constants.js";
+
+class Employee{
+
+    /**
+     * Retrieves an employee record by email.
+     *
+     * @param {string} email - The email of the employee to retrieve.
+     * @returns {Promise<Object>} response_data - Contains:
+     * created by: Rogendher Keith Lachica
+     * updated at: September 20 2025 10:38 pm
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async getEmployeeId(employee_data){
         const response_data =  { status: false, result: null, error: null };
@@ -52,6 +67,7 @@ class EmployeeModel{
      * @param {number} create_employee.gender - Gender ID of the employee.
      * @param {string} create_employee.password - Hashed password.
      * @param {Object} [connection=db] - Optional database connection.
+<<<<<<< HEAD
      * @returns {Promise<Object>} response_data - Contains status, inserted employee ID, or error.
      * Last Updated At: September 21, 2025 
      * @author Keith
@@ -59,6 +75,16 @@ class EmployeeModel{
     async createEmployeeAccount(create_employee, connection = this.db) {
         const response_data = { status: false, result: null, error: null };
         
+=======
+     * @returns {Promise<Object>} response_data - Contains:
+     * created by: Rogendher Keith Lachica
+     * updated at: September 21 2025 11:38 pm
+     */
+    static async createEmployeeAccount( employee_data, connection = db) {
+        const response_data = { status: false, insert_employee_result: null, error: null };
+        const { first_name, last_name, email, role, gender, password } = employee_data;
+
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
         try{
             const [insert_employee_account] = await connection.query(
                 `INSERT INTO employees SET ?`,
@@ -82,9 +108,15 @@ class EmployeeModel{
 
      /**
      * Retrieves all employees where role type is intern or employee.
+<<<<<<< HEAD
      * @returns {Promise<Object>} response_data - Contains status, result, or error.
      * Last Updated At: September 25, 2025 
      * @author Keith
+=======
+     * @returns {Promise<Object>} response_data - Contains:
+     * created by: Rogendher Keith Lachica
+     * updated at: September 25, 2025 - 4:30 PM
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
      */
     async getAllWorker(){
         const response_data = { status: false, result: null, error: null };
@@ -113,6 +145,45 @@ class EmployeeModel{
         return response_data;
     }
     
+<<<<<<< HEAD
 }
 
 export default new EmployeeModel();
+=======
+    /**
+     * Retrieves an employee record by ID.
+     *
+     * @param {number} employee_id - The ID of the employee to retrieve.
+     * @returns {Promise<Object>} response_data - Contains:
+     * created by: Rogendher Keith Lachica
+     * updated at: September 26 2025 5:00 pm
+     */
+    static async getById(employee_id){
+        const response_data =  { status: false, result: null, error: null };
+
+        try{
+            const [get_employee_id] = await db.execute(`
+                SELECT *
+                FROM employees
+                WHERE id = ? 
+            `, [employee_id]);
+
+            if(get_employee_id.length){
+                response_data.status = true;
+                response_data.result = get_employee_id[0];
+            }
+            else{
+                response_data.error =  "employee id not found in employee model.";
+            }
+        }
+        catch(error){
+            response_data.error = error.message;
+        }
+
+        return response_data;
+    }
+
+}
+
+export default Employee;
+>>>>>>> e32ee9aad433961e2090e70aa930345a3b923f06
