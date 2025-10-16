@@ -38,10 +38,10 @@ export default function Login() {
                     setError("Role not recognized. Please contact admin.");
                 }
             } else {
-                setError(data.result || "Invalid email or password");
+                setError(data.error);
             }
         } catch (error) {
-            const msg = error?.response?.data?.result || error?.message || "Server error occurred.";
+            const msg = error?.response?.data?.error || error?.message || "Server error occurred.";
             setError(msg);
         } finally {
             setLoading(false);

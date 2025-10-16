@@ -70,7 +70,7 @@ export default function AddCredit() {
             const data = response.data;
 
             // Use 'result' from backend instead of 'message'
-            setServerMessage(data.result || "Operation completed.");
+            setServerMessage(data.result);
 
             // Reset form if successful
             if (data.status) {
