@@ -123,19 +123,19 @@ class TimeValidationHelper{
      * @param {string|Date} params.start_date - Leave start date
      * @param {string|Date} params.end_date - Leave end date
      * @param {string} params.reason - Reason for leave
-     * @returns {Object} Result object with is_valid, message, duration, adjusted_end_date
+     * @returns {Object} status object with is_valid, message, duration, adjusted_end_date
      * Last Updated At: October 1, 2025
      * @author Keith
      */
     async validateLeaveApplication({ employee_id, leave_type_data, start_date, end_date, reason }){
         /* Initialize response object */
-        const response = { is_valid: true, status: { status: false, result: null }, duration: NUMBER.zero, adjusted_end_date: end_date || start_date };
+        const response = { status: true, result: { duration: NUMBER.zero, adjusted_end_date: end_date || start_date }, error: null };
     
         try{
             /* Check for required fields */
             if(!employee_id || !leave_type_data || !start_date || !end_date || !reason){
-                response.is_valid = false;
-                response.result = "All Fields are Required";
+                response.status = false;
+                response.error = "All Fields are Required";
                 return response;
             }
     
@@ -145,16 +145,16 @@ class TimeValidationHelper{
     
             /* Validate date objects */
             if(isNaN(start_date_day.getTime()) || isNaN(end_date_day.getTime())){
-                response.is_valid = false;
-                response.result = "Invalid date format.";
+                response.status = false;
+                response.error = "Invalid date format.";
                 return response;
             }
     
             /* Prevent leave from starting or ending on weekends */
             if([DAY_COUNT.sunday, DAY_COUNT.saturday].includes(start_date_day.getDay()) || 
                [DAY_COUNT.sunday, DAY_COUNT.saturday].includes(end_date_day.getDay())){
-                response.is_valid = false;
-                response.result = "Leave cannot start or end on a weekend.";
+                response.status = false;
+                response.error = "Leave cannot start or end on a weekend.";
                 return response;
             }
     
@@ -164,11 +164,10 @@ class TimeValidationHelper{
     
             /* Adjust end date if leave started in the past but extends beyond today */
             let adjusted_end_date = end_date_day;
-            
             if(start_date_day < today_only && end_date_day > today_only){
                 adjusted_end_date = today_only;
             }
-            response.adjusted_end_date = adjusted_end_date;
+            response.result.adjusted_end_date = adjusted_end_date;
     
             /* Check leave type year restriction if not carried over */
             if(leave_type_data.is_carried_over === NUMBER.zero){
@@ -177,13 +176,13 @@ class TimeValidationHelper{
                 const year_end = new Date(year, DAY_MONTH.december_eleven, DAY_MONTH.december_thirty_one, TIME_HOUR.twenty_three_hour, TIME_MINUTES, NUMBER.fifty_nine, TIME_MILISECOND.milisecond_nine_houndred_ninety_nine);
     
                 if(start_date_day < year_start || start_date_day > year_end || end_date_day < year_start || end_date_day > year_end){
-                    response.is_valid = false;
-                    response.result = `The selected leave type "${leave_type_data.name}" can only be used within the current year (${year}).`;
+                    response.status = false;
+                    response.error = `The selected leave type "${leave_type_data.name}" can only be used within the current year (${year}).`;
                     return response;
                 }
             }
     
-            /* Notice day and leave rules */
+            /* Notice day rules */
             const notice_day = Number(leave_type_data.notice_day) || NUMBER.zero;
             const rule_id = leave_type_data.leave_type_rule_id;
     
@@ -196,47 +195,45 @@ class TimeValidationHelper{
                 const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (TIME_MILISECOND.milisecond_one_thousand * TIME_HOUR.sixty_hour * TIME_HOUR.sixty_hour * TIME_HOUR.twenty_four_hour));
     
                 if(different_days < notice_day){
-                    response.is_valid = false;
-                    response.result = `This leave type requires a notice period of at least ${notice_day} days.`;
+                    response.status = false;
+                    response.error = `This leave type requires a notice period of at least ${notice_day} days.`;
                     return response;
                 }
     
                 if(end_only < start_only){
-                    response.is_valid = false;
-                    response.result = "End date cannot be before start date for this leave type with future notice.";
+                    response.status = false;
+                    response.error = "End date cannot be before start date for this leave type with future notice.";
                     return response;
                 }
             }
-            /* Handle zero notice_day rules */
             else if(notice_day === NUMBER.zero){
                 const different_days = Math.ceil((start_only.getTime() - today_only.getTime()) / (TIME_MILISECOND.milisecond_one_thousand * TIME_HOUR.sixty_hour * TIME_HOUR.sixty_hour * TIME_HOUR.twenty_four_hour));
                 
                 if(rule_id === ROLE_TYPE_ID.employee && different_days < NUMBER.zero){
-                    response.is_valid = false;
-                    response.result = "This leave type cannot be applied for past dates.";
+                    response.status = false;
+                    response.error = "This leave type cannot be applied for past dates.";
                     return response;
                 }
-            } 
-            /* Handle negative notice_day rules (allow past date leave within allowed range) */
+            }
             else if(notice_day < NUMBER.zero){
                 const allowed_past_date = new Date(today_only);
                 allowed_past_date.setDate(today_only.getDate() + notice_day);
     
                 if(start_only < allowed_past_date || start_only > today_only){
-                    response.is_valid = false;
-                    response.result = `This leave type allows past date leave only within ${Math.abs(notice_day)} days from today.`;
+                    response.status = false;
+                    response.error = `This leave type allows past date leave only within ${Math.abs(notice_day)} days from today.`;
                     return response;
                 }
     
                 if(end_only < start_only){
-                    response.is_valid = false;
-                    response.result = "End date cannot be before start date.";
+                    response.status = false;
+                    response.error = "End date cannot be before start date.";
                     return response;
                 }
     
                 /* Adjust end date if it exceeds today */
                 adjusted_end_date = end_only > today_only ? today_only : end_only;
-                response.adjusted_end_date = adjusted_end_date;
+                response.result.adjusted_end_date = adjusted_end_date;
             }
     
             /* Count total leave days excluding weekends using adjusted_end_date */
@@ -245,24 +242,24 @@ class TimeValidationHelper{
     
             for(let except = new Date(start_only); except <= adjusted_end_only; except.setDate(except.getDate() + NUMBER.one)){
                 const day = except.getDay();
-                
                 if(day !== DAY_COUNT.sunday && day !== DAY_COUNT.saturday){
                     total_leave_day++;
                 }
             }
     
-            /* Assign calculated duration to response */
-            response.duration = total_leave_day;
+            /* Assign calculated duration */
+            response.result.duration = total_leave_day;
     
         } 
         catch(error){
             /* Handle unexpected errors */
-            response.is_valid = false;
-            response.result = "Error validating leave application.";
+            response.status = false;
+            response.error = "Error validating leave application.";
         }
     
         return response;
     }
+    
 }
 
 

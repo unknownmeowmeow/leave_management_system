@@ -12,15 +12,17 @@ class EmployeeGenderModel{
      * Last Updated At: October 14, 2025
      * @author Keith
      */
-    async getGenderId(id){
+    async getGenderId(id = null ){
         const response_data = { status: false, result: null, error: null };
+
+
 
         try{
             const [get_gender_id] = await this.db.execute(`
                 SELECT * 
                 FROM employee_genders 
-                WHERE id = ?
-            `, [id]);
+                WHERE (? IS NULL OR id = ?)
+            `, [id, id]);
 
             if(get_gender_id.length){
                 response_data.status = true;

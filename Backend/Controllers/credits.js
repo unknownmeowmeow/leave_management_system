@@ -53,14 +53,14 @@ class Credit{
             }
     
             /* Extract all qualified employee IDs */
-            const employee_ids_all = (qualified_employee.result || []).map(employees => employees.employee_id);
+            const all_employee_id = (qualified_employee.result || []).map(employees => employees.employee_id);
     
             /* Fetch employees who have already received yearly credit this year */
-            const already_credited_record = await this.leaveCreditModel.getEmployeeYearylyAddedCredit({ leave_type_id, year: new Date().getFullYear() });
-            const already_credited_ids = ((already_credited_record.result) || []).map(employee => employee.employee_id);
+            const employee_credited = await this.leaveCreditModel.getEmployeeYearylyAddedCredit({ leave_type_id, year: new Date().getFullYear() });
+            const already_credited_id = ((employee_credited.result) || []).map(employee => employee.employee_id);
     
             /* Filter out employees who have already been credited */
-            const employee_credit = employee_ids_all.filter(id => !already_credited_ids.includes(id));
+            const employee_credit = all_employee_id.filter(id => !already_credited_id.includes(id));
     
             if(!employee_credit.length){
                 throw new Error("All qualified employees have already received yearly credit.");
@@ -72,11 +72,11 @@ class Credit{
                 throw new Error(update_yearly_credit.error);
             }
     
-            return res.json({ status: true, result: update_yearly_credit, result: `Successfully credited ${update_yearly_credit.result} employees with ${gain_credit} leave days.`});
+            return res.json({ status: true, result: update_yearly_credit});
     
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
     
@@ -89,52 +89,22 @@ class Credit{
      * Last Updated At: October 14, 2025
      * @author Keith
      */
-    async addMonthlyCredit(req, res){
+    async addMonthlyCredit(req, res) {
         try{
-            /* Define leave type IDs to be credited monthly */
-            const leave_type_ids = [LEAVE_TYPE_ID.vacation_leave, LEAVE_TYPE_ID.sick_leave];
-    
-            /* Fetch all active monthly leave types from the database */
-            const leave_type_records = await this.leaveTypeModel.getMonthlyEarnLeaveType();
-    
-            if(!leave_type_records.status){
-                throw new Error(leave_type_records.error);
-            }
-    
-            /* Filter leave types to include only the ones specified in leave_type_ids */
-            const filtered_leave_types = leave_type_records.result.filter(leave_type => leave_type_ids.includes(leave_type.id));
-    
-            if(!filtered_leave_types.length){
-                throw new Error("No active leave types matching IDs found.");
-            }
-    
-            /* Map leave_type_ids to their corresponding gain credits */
-            const gain_credits = leave_type_ids.map(id => { 
-                const leave = filtered_leave_types.find(leave_type => leave_type.id === id);
-                return leave ? parseFloat(leave.gain_credit) : NUMBER.zero;
-            });
-    
-            /* Get employees who qualify for monthly leave credit */
-            const qualified_employee = await this.attendanceModel.getMonthlyAttendance({ required_count: NUMBER.twenty, role_type_id: ROLE_TYPE_ID.employee });
-    
-            if(!qualified_employee.status){
-                throw new Error(qualified_employee.error);
-            }
-    
-            /* Extract employee IDs for updating */
-            const employee_ids = qualified_employee.result.map(employee => employee.employee_id);
-    
-            if(!employee_ids.length){
-                throw new Error("No employees to update.");
+            // const monthly_credit = {
+
+            // }
+
+            const monthly_earned_leave = await this.leaveCreditModel.updateMonthlyCredit();
+            
+            if(!monthly_earned_leave.status){
+                throw new Error(monthly_earned_leave.error);
             }
 
-            const update_result = await this.leaveCreditModel.updateMonthlyCredit({ leave_type_ids, gain_credits, employee_ids });
-            return res.json({ status: true, result: update_result.result || NUMBER.zero, 
-                result: `Successfully credited ${update_result.result || NUMBER.zero} employees with leave days.`});
-    
+            return res.json({ status: true, result: monthly_earned_leave.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message });
         }
     }
 
@@ -143,7 +113,7 @@ class Credit{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response containing all leave credits.
-     * Last Updated At: September 26, 2025 12:15 PM
+     * Last Updated At: September 26, 2025 
      * @author Keith
      */
     async allEmployeeCredit(req, res){    
@@ -151,14 +121,14 @@ class Credit{
         try{
             const leave_credit_record = await this.leaveCreditModel.getAllEmployeeCredit();
         
-            if(!leave_credit_record){
+            if(!leave_credit_record.status){
                 throw new Error(leave_credit_record.error);
             }
     
             return res.json({ status: true, result: leave_credit_record.result}); 
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }  
 
@@ -215,9 +185,8 @@ class Credit{
             if(leave_type_gender_id !== GENDER_TYPE_ID.both_gender && leave_type_gender_id !== employee_gender_id){
                 throw new Error("This leave type is not allowed for this employee's gender.");
             }
-    
-            /* Insert leave transaction for the employee */
-            const leave_transaction_data = await this.leaveTransactionModel.insertEmployeeTransaction({
+            
+            const employee_transaction = {
                 employee_id,
                 leave_type_id,
                 rewarded_by_id,
@@ -231,45 +200,48 @@ class Credit{
                 year: new Date().getFullYear(),
                 approved_by_id: null,
                 reason: null,
-                connection
-            });            
+            }
     
-            if(!leave_transaction_data.status){
-                throw new Error(leave_transaction_data.error);
+            /* Insert leave transaction for the employee */
+            const leave_transaction = await this.leaveTransactionModel.insertEmployeeTransaction(employee_transaction, connection);            
+            
+            if(!leave_transaction.status){
+                throw new Error(leave_transaction.error);
             }
     
             /* Get the latest leave credit record for the employee and leave type */
-            const existing_credit_data = await this.leaveCreditModel.getLatestCredit({ employee_id, leave_type_id });
+            const existing_credit = await this.leaveCreditModel.getLatestCredit({ employee_id, leave_type_id });
             
-            if(!existing_credit_data.status){
-                throw new Error(existing_credit_data.error);
+            if(!existing_credit.status){
+                throw new Error(existing_credit.error);
             }
     
             /* Calculate updated leave credits */
-            const current_credit = Number(existing_credit_data.result.current_credit || NUMBER.zero) + parseFloat(earned_credit);
-            const latest_credit = Number(existing_credit_data.result.latest_credit || NUMBER.zero) + parseFloat(earned_credit);
+            const current_credit = Number(existing_credit.result.current_credit || NUMBER.zero) + parseFloat(earned_credit);
+            const latest_credit = Number(existing_credit.result.latest_credit || NUMBER.zero) + parseFloat(earned_credit);
     
+            const update_credit = {
+                employee_id,
+                leave_type_id,
+                earned_credit: parseFloat(earned_credit),
+                current_credit,
+                latest_credit
+            };
+            
             /* Update leave credit in the database */
-            const leave_credit_data = await this.leaveCreditModel.updateEmployeeCredit({
-                employee_id, 
-                leave_type_id, 
-                earned_credit: parseFloat(earned_credit), 
-                current_credit, 
-                latest_credit, 
-                connection
-            });
-    
+            const leave_credit_data = await this.leaveCreditModel.updateEmployeeCredit( update_credit, connection);
+            
             if(!leave_credit_data.status){
                 throw new Error(leave_credit_data.error);
             }
     
             await connection.commit();
-            return res.json({ status: true, result: "Leave credit successfully updated." });
+            return res.json({ status: true, result: leave_credit_data.result});
     
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
         finally{
             connection.release();
@@ -281,72 +253,25 @@ class Credit{
      * @param {Object} req - Express request object.
      * @param {Object} res - Express response object.
      * @returns {Object} JSON response indicating success or failure.
-     * Last Updated At: September 26, 2025 12:30 PM
+     * Last Updated At: September 26, 2025 
      * @author Keith
      */
     async resetEmployeeCredit(req, res){
         try{
-            /* Fetch all employees with the 'employee' role */
-            const employee_record = await this.employeeModel.getEmployeeId({role_id: ROLE_TYPE_ID.employee});
+            const reset_credit = await this.leaveCreditModel.resetUpdateCredit();
             
-            if(!employee_record.status){
-                throw new Error(employee_record.error);
+            if(!reset_credit.status){
+                throw new Error(reset_credit.error);
             }
     
-            let employees = [];
-
-            if(employee_record.result){
-                employees = [employee_record.result];
-            } 
-            else{
-                throw new Error("No employees found to reset credits.");
-            }
-    
-            /* Check if there are any employees to reset credits for */
-            if(!employees.length){
-               throw new Error("No employees found to reset credits.");
-            }
-    
-            /* Fetch leave types that are not carried over */
-            const leave_type_record = await this.leaveTypeModel.getNotCarryOverLeave();
-            
-            if(!leave_type_record.status){
-                throw new Error(leave_type_record.error);
-            }
-            
-            const leave_types = leave_type_record.result;
-    
-            /* Check if there are leave types to reset */
-            if(!leave_types.length){
-               throw new Error("No leave types found to reset.");
-            }
-    
-            /* Prepare reset data: for each employee and leave type, reset all credit fields to 0 */
-            const reset_data = employees.flatMap(employee => leave_types.map(leave_type => ({
-                employee_id: employee.id,
-                leave_type_id: leave_type.id,
-                earned_credit:  DECIMAL_NUMBER.zero_point_zero_zero,    
-                deducted_credit:  DECIMAL_NUMBER.zero_point_zero_zero,    
-                used_credit:  DECIMAL_NUMBER.zero_point_zero_zero,        
-                current_credit:  DECIMAL_NUMBER.zero_point_zero_zero,     
-                latest_credit:  DECIMAL_NUMBER.zero_point_zero_zero       
-            })));
-    
-            const reset_result = await this.leaveCreditModel.resetUpdateCredit(reset_data);
-            
-            if(!reset_result.status){
-                throw new Error(reset_result.error);
-            }
-    
-            return res.json({ status: true, result: "Employee leave credits successfully reset per leave type."});
-    
-        } 
+            return res.json({ status: true, result: reset_credit.result });
+        }
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message });
         }
     }
     
-    
+      
     /**
      * Retrieves the latest leave credit for the currently logged-in employee.
      * @param {Object} req - Express request object containing employee session data.
@@ -354,7 +279,7 @@ class Credit{
      * @returns {Object} JSON response with success status and latest leave credit (if available).
      *
      * created by: keith
-     * updated at: October 1, 2025 01:57 PM
+     * updated at: October 1, 2025
      */
     async allLatestCredit(req, res){
         
@@ -370,10 +295,10 @@ class Credit{
             return res.json({ status: true, result: parseFloat(employee_credit_record.result)});
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
-     
+
      /**
      * Retrieves leave history for all employees.
      * @param {Object} req - Express request object.
@@ -394,7 +319,7 @@ class Credit{
             return res.json({ status: true, result: get_all_leave_record.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
     
@@ -412,14 +337,14 @@ class Credit{
             const user = req.session.user;
             const get_employee_leave_record = await this.leaveCreditModel.getCreditSummary(user.employee_id);
             
-            if(!get_employee_leave_record){
+            if(!get_employee_leave_record.status){
                 throw new Error(get_employee_leave_record.error);
             }
     
             return res.json({ status: true, result: get_employee_leave_record.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
 
@@ -444,7 +369,7 @@ class Credit{
             return res.json({ status: true, result: get_specific_leave_record.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
    

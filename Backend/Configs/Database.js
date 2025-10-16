@@ -11,7 +11,8 @@ class Database {
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME,
-            port: parseInt(process.env.DB_PORT, 10)
+            port: parseInt(process.env.DB_PORT, 10),
+            namedPlaceholders: true 
         });
 
         this.db = this.pool.promise();

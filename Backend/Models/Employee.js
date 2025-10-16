@@ -10,7 +10,7 @@ class EmployeeModel{
      * Retrieves an employee record by ID.
      * @param {number} employee_id - The ID of the employee to retrieve.
      * @returns {Promise<Object>} response_data - Contains status, result, or error.
-     * Last Updated At: September 26, 2025 5:00 PM
+     * Last Updated At: September 26, 2025 
      * @author Keith
      */
     async getEmployeeId(employee_data){
@@ -32,7 +32,7 @@ class EmployeeModel{
                 response_data.result = get_employee_id[NUMBER.zero];
             }
             else{
-                response_data.error =  "Employee ID not Found.";
+                response_data.error =  "Employee not Found.";
             }
         }
         catch(error){
@@ -53,29 +53,21 @@ class EmployeeModel{
      * @param {string} create_employee.password - Hashed password.
      * @param {Object} [connection=db] - Optional database connection.
      * @returns {Promise<Object>} response_data - Contains status, inserted employee ID, or error.
-     * Last Updated At: September 21, 2025 11:38 PM
+     * Last Updated At: September 21, 2025 
      * @author Keith
      */
     async createEmployeeAccount(create_employee, connection = this.db) {
-        const response_data = { status: false, insert_employee_result: null, error: null };
-        const { first_name, last_name, email, role, gender, password } = create_employee;
+        const response_data = { status: false, result: null, error: null };
         
         try{
-            const [insert_employee_account] = await connection.execute(`
-                INSERT INTO employees (
-                    employee_role_type_id, 
-                    employee_gender_id, 
-                    first_name, 
-                    last_name, 
-                    email, 
-                    password
-                ) 
-                VALUES (?, ?, ?, ?, ?, ?)
-            `, [role, gender, first_name, last_name, email, password]);
-    
+            const [insert_employee_account] = await connection.query(
+                `INSERT INTO employees SET ?`,
+                create_employee
+            );
+            
             if(insert_employee_account.insertId){
                 response_data.status = true;
-                response_data.insert_employee_result = { id: insert_employee_account.insertId };
+                response_data.result = { id: insert_employee_account.insertId };
             } 
             else{
                 response_data.error = "Insert employee data error";
@@ -91,7 +83,7 @@ class EmployeeModel{
      /**
      * Retrieves all employees where role type is intern or employee.
      * @returns {Promise<Object>} response_data - Contains status, result, or error.
-     * Last Updated At: September 25, 2025 4:30 PM
+     * Last Updated At: September 25, 2025 
      * @author Keith
      */
     async getAllWorker(){

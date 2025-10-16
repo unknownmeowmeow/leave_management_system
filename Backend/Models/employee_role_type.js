@@ -12,15 +12,15 @@ class EmployeeRoleTypeModel{
      * Last Updated At: October 1, 2025
      * @author Keith
      */
-    async getRoleTypeId(role_id){
+    async getRoleTypeId(role_id = null){
         const response_data = { status: false, result: null, error: null };
 
         try{
             const [get_role_id] = await this.db.execute(`
                 SELECT * 
                 FROM employee_role_types 
-                WHERE id = ?
-            `, [role_id]);
+                WHERE (? IS NULL OR id = ?)
+            `, [role_id, role_id]);
 
             if(get_role_id.length){
                 response_data.status = true;

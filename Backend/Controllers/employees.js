@@ -29,16 +29,16 @@ class EmployeeControllers{
      */
     async employeeRole(req, res){
         try {
-            const role_record = await this.roleModel.getRoleTypeId();
+            const role_type = await this.roleModel.getRoleTypeId();
         
-            if(!role_record.status){
-                throw new Error(role_record.error)
+            if(!role_type.status){
+                throw new Error(role_type.error)
             }
 
-            return res.json({ status: true, result: "Successfully get all employee role" });
+            return res.json({ status: true, result: role_type.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
 
@@ -53,16 +53,16 @@ class EmployeeControllers{
     async employeeGender(req, res){
        
         try{
-            const gender_record = await this.genderModel.getGenderId();
+            const gender_type = await this.genderModel.getGenderId();
 
-            if(!gender_record.status){
-                throw new Error(gender_record.error);
+            if(!gender_type.status){
+                throw new Error(gender_type.error);
             }
 
-            return res.json({ status: true, result: "Successfully get all gender" });
+            return res.json({ status: true, result: gender_type.result });
        } 
        catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
        }
     }
 
@@ -99,45 +99,47 @@ class EmployeeControllers{
     
             /* Validate role */
             const role_record = await this.roleModel.getRoleTypeId(role);
-            
+
             if(!role_record.status){
                 throw new Error(role_record.error);
             }
     
             /* Validate gender */
             const gender_record = await this.genderModel.getGenderId(gender);
-            
+
             if(!gender_record.status){
                 throw new Error(gender_record.error);
             } 
     
             /* Hash employee password */
             const hash_password = await bcrypt.hash(password, NUMBER.twelve);
-    
-            /* Create new employee account */
-            const employee_new_account_record = await this.employeeModel.createEmployeeAccount({ 
-                first_name, 
-                last_name, 
-                email, 
-                role, 
-                gender, 
+            
+            /*Prepare data to insert in database*/
+            const create_employee = {
+                first_name,
+                last_name,
+                email,
                 password: hash_password,
-                connection 
-            });
-    
-            if(!employee_new_account_record.status){
-                throw new Error(employee_new_account_record.error);
+                employee_role_type_id: parseInt(role),
+                employee_gender_id: parseInt(gender)
+            };
+            
+            /* Create new employee account */
+            const employee_new_account = await this.employeeModel.createEmployeeAccount(create_employee, connection);
+            
+            if(!employee_new_account.status){
+                throw new Error(employee_new_account.error);
             }
     
-            const employee_id = employee_new_account_record.insert_employee_result.id;
+            const employee_id = employee_new_account.result.id;
             let leave_credit_data = [];
     
             /* If the role is 'employee', initialize leave credits */
             if(parseInt(role, NUMBER.ten) === ROLE_TYPE_ID.employee){
                 /* Fetch all leave types */
                 const get_all_leave_types = await this.leaveTypeModel.getAllLeaveTypes();
-                
-                if(get_all_leave_types.status && get_all_leave_types.result.length){
+
+                if(get_all_leave_types.status){
                     /* Prepare leave credit data for batch insertion */
                     leave_credit_data = get_all_leave_types.result.map(leave_type => ([ 
                         employee_id,
@@ -151,23 +153,22 @@ class EmployeeControllers{
                         leave_type.base_value
                     ]));
                 }
-    
                 /* Insert leave credits in batch using the same transaction connection */
                 if(leave_credit_data.length){
-                    const leave_insert_result = await this.leaveCreditModel.insertLeaveCredit({employee_data: leave_credit_data, connection});
-    
-                    if(!leave_insert_result.status){
-                        throw new Error(leave_insert_result.error);
+                    const leave_insert_credit = await this.leaveCreditModel.insertLeaveCredit( leave_credit_data, connection);
+
+                    if(!leave_insert_credit.status){
+                        throw new Error(leave_insert_credit.error);
                     }
                 }
             }
-    
+            
             await connection.commit();
-            return res.json({ status: true, result: "Registration Successful"});
+            return res.json({ status: true, result: "Registration successfully" });
         } 
         catch(error){
             await connection.rollback();
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         } 
         finally{
             connection.release();
@@ -220,7 +221,7 @@ class EmployeeControllers{
     
         } 
         catch(error){
-            return res.json({ status: false, result: error.message });
+            return res.json({ status: false, error: error.message });
         }
     }
 
@@ -250,7 +251,7 @@ class EmployeeControllers{
             });
         }
         catch(error){
-            return res.json({ status: false, result: error.message });
+            return res.json({ status: false, error: error.message });
         }
 
     }
@@ -275,7 +276,7 @@ class EmployeeControllers{
             return res.json({ status: true, result: get_all_employee_record.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message });
+            return res.json({ status: false, error: error.message });
         }
     }
 }

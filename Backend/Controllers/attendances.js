@@ -34,17 +34,23 @@ class AttendanceControllers{
             if(latest_timein_record.status){
                 throw new Error("Already time in this day");
             }
+            
+            const update_time_in = { 
+                employee_id, 
+                attendance_type_id: ATTENDANCE_TYPE_ID.time_in,
+                time_in: new Date()
+            }; 
 
-            const insert_employee_attendance_record = await this.attendanceModel.insertEmployeeTimeIn({employee_id});
+            const insert_employee_attendance_record = await this.attendanceModel.insertEmployeeTimeIn(update_time_in);
 
             if(!insert_employee_attendance_record.status){
                 throw new Error(insert_employee_attendance_record.error);
             }
 
-            return res.json({ status: true, result: "Time in successfully"});
+            return res.json({ status: true, result: insert_employee_attendance_record.result});
         } 
         catch(error){
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         }
     }
 
@@ -66,7 +72,6 @@ class AttendanceControllers{
     
         try{
             await connection.beginTransaction();
-            const attendance_type_id = ATTENDANCE_TYPE_ID.time_out;
     
             /* Fetch the latest Time In record for the employee */
             const latest_time_in = await this.attendanceModel.checkLatestTimeIn(employee_id);
@@ -97,51 +102,58 @@ class AttendanceControllers{
             /* Validate work hours before updating Time Out */
             const validation_check_time = this.workTimeHelper.validateEmployeeTimeOut({ id: attendance_id, time_out, work_hour: total_work_hours });
     
-            if(!validation_check_time.is_valid){
+            if(!validation_check_time.status){
                 throw new Error("Failed to Time Out");
             }
-    
-            /* Update employee Time Out record in the database */
-            const update_attendance_record = await this.attendanceModel.updateEmployeeTimeOut({ 
-                id: attendance_id, 
-                time_out, 
+
+            const employee_time_out = {
+                time_out: time_out, 
                 work_hour: total_work_hours, 
-                attendance_type_id, 
-                connection
-            });
-    
+                attendance_type_id: ATTENDANCE_TYPE_ID.time_out
+            }
+  
+            /* Update employee Time Out record in the database */
+            const update_attendance_record = await this.attendanceModel.updateEmployeeTimeOut(employee_time_out, attendance_id,  connection);
+
             if(!update_attendance_record.status){
+
                 throw new Error(update_attendance_record.error);
             }
     
             /* Get the latest leave credit for the employee */
-            const latest_credit_record = await this.leaveCreditModel.getLatestEmployeeCredit(employee_id, connection);
-            const current_credit = latest_credit_record.latest_credit || NUMBER.zero;
+            const latest_credit_record = await this.leaveCreditModel.getLatestEmployeeCredit(employee_id);
+            const current_credit = latest_credit_record.result || NUMBER.zero;
     
             /* Compute leave credit based on total work hours */
-            const { earned_credit, deducted_credit, latest_credit } = this.timeHelper.computeLeaveCredit(total_work_hours, current_credit);
-    
-            /* Update the employee's leave credit record */
-            const update_latest_credit_record = await this.leaveCreditModel.updateEmployeeLeaveCredit({ 
+            const new_earned_credit = this.timeHelper.computeLeaveCredit(total_work_hours); 
+            const { deducted_credit } = this.timeHelper.computeLeaveCredit(total_work_hours, current_credit);
+            
+            const latest_credit = current_credit + new_earned_credit - deducted_credit;
+            let earned_credit = new_earned_credit; 
+            
+
+            const update_leave_credit = { 
                 employee_id, 
                 attendance_id, 
                 earned_credit, 
                 deducted_credit, 
-                current_credit, 
-                latest_credit, 
-                connection  
-            });
+                current_credit,
+                latest_credit 
+            }; 
+
+            /* Update the employee's leave credit record */
+            const update_latest_credit_record = await this.leaveCreditModel.updateEmployeeLeaveCredit(update_leave_credit, connection);
     
             if(!update_latest_credit_record.status){
                 throw new Error(update_latest_credit_record.error);
             }
     
             await connection.commit();
-            return res.json({ status: true, result: "Time out successfully"});
+            return res.json({ status: true, result: update_latest_credit_record.result});
         } 
         catch(error){
             await connection.rollback(); 
-            return res.json({ status: false, result: error.message});
+            return res.json({ status: false, error: error.message});
         } 
         finally{
             connection.release();
@@ -169,7 +181,7 @@ class AttendanceControllers{
             return res.json({ status: true, result: employee_record.result });
         } 
         catch(error){
-            return res.json({ status: false, result: error.message });
+            return res.json({ status: false, error: error.message });
         }
     }
 
@@ -193,7 +205,7 @@ class AttendanceControllers{
             return res.json({ status: true, result: attendance_record.result});
         } 
         catch(error){
-            return res.json({ status: false, result: error.message });
+            return res.json({ status: false, error: error.message });
         }
         
     }

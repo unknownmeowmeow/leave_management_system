@@ -1,7 +1,10 @@
 import db from "../Configs/database.js";
 import {
-    ROLE_TYPE_ID, NUMBER, LEAVE_TYPE_ID, DECIMAL_NUMBER
+    ROLE_TYPE_ID, NUMBER, LEAVE_TYPE_ID, DECIMAL_NUMBER,
+    IS_CARRIED_OVER,
+    DAY_COUNT
 } from "../Constant/constants.js";
+import leave_type from "./leave_type.js";
 
 class LeaveCreditModel{
     constructor(connection = db){
@@ -15,7 +18,7 @@ class LeaveCreditModel{
      * Last Updated At: September 24, 2025
      * @author Keith
      */
-    async insertLeaveCredit({ employee_data, connection = this.db }){
+    async insertLeaveCredit( employee_data, connection = this.db ){
         const response_data = { status: false, result: null, error: null };
     
         try{
@@ -61,9 +64,8 @@ class LeaveCreditModel{
     * Last Updated At: October 8, 2025
     * @author Keith
     */
-    async updateEmployeeLeaveCredit(update_credit, connection = this.db){
+    async updateEmployeeLeaveCredit(update_leave_credit, connection = this.db){
         const response_data = { status: false, result: null, error: null };
-        const { employee_id, earned_credit, deducted_credit, current_credit } = update_credit;
         
         try{
             const [update_credit_work_hour] = await connection.execute(`
@@ -71,13 +73,19 @@ class LeaveCreditModel{
                 SET earned_credit = earned_credit + ?, 
                     deducted_credit = deducted_credit + ?, 
                     current_credit = ?, 
-                    latest_credit = latest_credit + ? - ?
+                    latest_credit = ?
                 WHERE employee_id = ? AND leave_type_id = ?
-            `, [earned_credit, deducted_credit, current_credit, earned_credit, deducted_credit, employee_id, LEAVE_TYPE_ID.compensatory_leave]);            
+            `, [ 
+                update_leave_credit.earned_credit, 
+                update_leave_credit.deducted_credit,
+                update_leave_credit.current_credit, 
+                update_leave_credit.latest_credit,
+                update_leave_credit.employee_id, 
+                LEAVE_TYPE_ID.compensatory_leave
+            ]);
     
             if(update_credit_work_hour.affectedRows){
                 response_data.status = true;
-                response_data.result = { affectedRows: update_credit_work_hour.affectedRows };
             } 
             else{
                 response_data.error = "No existing leave credit record Found to Update.";
@@ -210,11 +218,11 @@ class LeaveCreditModel{
      * Last Updated At: September 25, 2025
      * @author Keith
      */
-    async getLatestEmployeeCredit(employee_id, connection = this.db){
+    async getLatestEmployeeCredit(employee_id){
         const response_data = { status: false, result: null, error: null };
 
         try{
-            const [get_latest_employee_credit] = await connection.execute(`
+            const [get_latest_employee_credit] = await this.db.execute(`
                 SELECT SUM(latest_credit) AS latest_credit_sum
                 FROM leave_credits
                 WHERE employee_id = ? AND leave_type_id = ?
@@ -333,20 +341,18 @@ class LeaveCreditModel{
      * Last Updated At: October 8, 2025
      * @author Keith
      */
-    async updateEmployeeCredit(update_employee_credit, connection = this.db) {
+    async updateEmployeeCredit(update_credit, connection = this.db) {
         const response_data = { status: false, result: null, error: null };
-        const { employee_id, leave_type_id, earned_credit, current_credit, latest_credit } = update_employee_credit;
-        
+
         try{
             const [update_credit_result] = await connection.execute(`
                 UPDATE leave_credits
                 SET 
-                    earned_credit = earned_credit + ?, 
+                    earned_credit = ?, 
                     current_credit = ?, 
-                    latest_credit = latest_credit + ?
-                WHERE employee_id = ? 
-                AND leave_type_id = ?
-            `, [earned_credit, current_credit, latest_credit, employee_id, leave_type_id]);
+                    latest_credit = ?
+                WHERE employee_id = ? AND leave_type_id = ?
+            `, [ update_credit.earned_credit, update_credit.current_credit, update_credit.latest_credit, update_credit.employee_id,update_credit.leave_type_id]);
 
             if(update_credit_result.affectedRows){
                 response_data.status = true;
@@ -373,17 +379,18 @@ class LeaveCreditModel{
     async resetUpdateCredit(){
         const response_data = { status: false, result: null, error: null };
     
-        try{
+        try {
             const [reset_leave_credit] = await this.db.execute(`
-                UPDATE leave_credits
+                UPDATE leave_credits 
+                INNER JOIN leave_types ON leave_types.id = leave_credits.leave_type_id
                 SET 
-                    earned_credit = ?,
-                    current_credit = ?,
-                    latest_credit = ?,
-                    deducted_credit = ?,
-                    used_credit = ?
-            `, [DECIMAL_NUMBER.zero_point_zero_zero, DECIMAL_NUMBER.zero_point_zero_zero, DECIMAL_NUMBER.zero_point_zero_zero, DECIMAL_NUMBER.zero_point_zero_zero, 
-                DECIMAL_NUMBER.zero_point_zero_zero]);
+                    leave_credits.earned_credit = ?,
+                    leave_credits.current_credit = ?,
+                    leave_credits.latest_credit = ?,
+                    leave_credits.deducted_credit = ?,
+                    leave_credits.used_credit = ?
+                WHERE leave_types.is_carried_over = ?
+            `, [DECIMAL_NUMBER.zero_point_zero_zero,DECIMAL_NUMBER.zero_point_zero_zero,DECIMAL_NUMBER.zero_point_zero_zero,DECIMAL_NUMBER.zero_point_zero_zero,DECIMAL_NUMBER.zero_point_zero_zero,IS_CARRIED_OVER.no]);
     
             if(reset_leave_credit.affectedRows){
                 response_data.status = true;
@@ -400,6 +407,7 @@ class LeaveCreditModel{
     
         return response_data;
     }
+    
     
     /**
     * Deducts leave credit for a specific leave credit record.
@@ -573,26 +581,23 @@ class LeaveCreditModel{
      * Last Updated At: October 14, 2025
      * @author Keith
      */
-    async updateYearlyCreditBatch(update_yearly_credit){
+    async updateYearlyCreditBatch(update_yearly_credit, employee_id, leave_type_id){
         const response_data = { status: false, result: null, error: null };
-        const { leave_type_id, gain_credit, employee_ids } = update_yearly_credit; 
         
         try {
-            const employees_id = employee_ids.map(() => "?").join(",");
-            const earned_yearly_leave = [gain_credit, gain_credit, ...employee_ids, leave_type_id];
-    
+
             const [update_credit] = await this.db.execute(`
                 UPDATE leave_credits
                 SET 
-                    earned_credit = earned_credit + ?, 
-                    latest_credit = latest_credit + ?
-                WHERE employee_id IN (${employees_id}) 
+                    earned_credit = ?, 
+                    latest_credit = ?
+                WHERE employee_id IN (?) 
                 AND leave_type_id = ?
-            `, earned_yearly_leave);
+            `, [update_yearly_credit.earned_credit, , employee_id, leave_type_id]);
     
             if(update_credit.affectedRows){
                 response_data.status = true;
-                response_data.result = update_credit.affectedRows;
+                response_data.result = update_credit;
             } 
             else{
                 response_data.error = "No leave credits were updated. Employees may have already received credit or do not exist.";
@@ -616,7 +621,6 @@ class LeaveCreditModel{
      */
     async getEmployeeYearylyAddedCredit(yearly_added){
         const response_data = { status: false, result: null, error: null };
-        const { leave_type_id, year } = yearly_added;
 
         try{
             const [get_employee_updated_credit] = await this.db.execute(`
@@ -624,11 +628,11 @@ class LeaveCreditModel{
                 FROM leave_credits
                 WHERE leave_type_id = ? 
                 AND YEAR(updated_at) = ?
-            `, [leave_type_id, year]);
+            `, [yearly_added.leave_type_id, yearly_added.year]);
     
             if(get_employee_updated_credit.length){
                 response_data.status = true;
-                response_data.result = get_employee_updated_credit;
+                response_data.result = get_employee_updated_credit[0];
             } 
             else{
                 response_data.error = "No leave credit found for this leave type for the current year.";
@@ -678,46 +682,41 @@ class LeaveCreditModel{
         return response_data;
     }
 
-    /**
-     * Updates the monthly leave credits for multiple employees and leave types.
-     * @param {Array<number>} leave_type_ids - Array of leave type IDs to update.
-     * @param {Array<number>} gain_credits - Array of corresponding credit values to add.
-     * @param {Array<number>} employee_ids - Array of employee IDs whose credits will be updated.
-     * @returns {Promise<Object>} response_data - Object containing status, result, or error.
-     * Last Updated At: October 14, 2025
-     * @author Keith
-     */
-    async updateMonthlyCredit(update_montly_credit){
+    async updateMonthlyCredit(){
         const response_data = { status: false, result: null, error: null };
-        const { leave_type_ids, gain_credits, employee_ids} = update_montly_credit;
-
-        try {
-            const earn_leave_type = leave_type_ids.map((id, index) => `WHEN leave_type_id = ${id} THEN ${gain_credits[index]}`).join(" ");
-    
-            const [update_monthly_earn] = await this.db.execute(`
+        
+        try{
+            const [monthly_earn] = await this.db.execute(`
                 UPDATE leave_credits
-                SET
-                    earned_credit = earned_credit + CASE ${earn_leave_type} ELSE ${NUMBER.zero} END,
-                    latest_credit = latest_credit + CASE ${earn_leave_type} ELSE ${NUMBER.zero} END
-                WHERE employee_id IN (${employee_ids.join(",")})
-                AND leave_type_id IN (${leave_type_ids.join(",")})
-            `);
-    
-            if(update_monthly_earn.affectedRows){
+                INNER JOIN leave_types ON leave_types.id = leave_credits.leave_type_id
+                INNER JOIN(
+                    SELECT employee_id
+                    FROM attendances
+                    GROUP BY employee_id
+                    HAVING COUNT(time_out) = ? 
+                ) 
+                attendances ON attendances.employee_id = leave_credits.employee_id
+                SET 
+                    leave_credits.earned_credit = leave_credits.latest_credit + leave_types.gain_credit,
+                    leave_credits.latest_credit = leave_credits.latest_credit + leave_types.gain_credit
+                WHERE leave_types.is_carried_over = ?
+                AND (leave_credits.updated_at IS NULL OR MONTH(leave_credits.updated_at) <> MONTH(NOW()) OR YEAR(leave_credits.updated_at) <> YEAR(NOW()))
+            `, [ NUMBER.one, IS_CARRIED_OVER.yes ]);
+
+            if(monthly_earn.affectedRows){
                 response_data.status = true;
-                response_data.result = update_monthly_earn.affectedRows;
+                response_data.result = monthly_earn;
             } 
             else{
                 response_data.error = "No leave credits were updated. Employees may have already received credit or do not exist.";
             }
-    
         } 
         catch(error){
-            response_data.error = error.message || error;
+            response_data.error = error.message;
         }
-    
         return response_data;
     }
+
 }
 
 export default new LeaveCreditModel(); 

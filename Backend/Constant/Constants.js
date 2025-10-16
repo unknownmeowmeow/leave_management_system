@@ -123,5 +123,12 @@ export const GENDER_TYPE_ID = {
 export const DECIMAL_NUMBER = {
     zero_point_zero_zero: 0.00,
     twenty_four: 24.00,
-    eight: 8.00
+    eight: 8.00,
+    three_point_zero_zero: 3.00
+}
+
+export const EMPLOYEE = { 
+    employee_id: null, 
+    email: null, 
+    role_id: null 
 }

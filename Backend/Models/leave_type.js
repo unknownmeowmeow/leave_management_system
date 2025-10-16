@@ -16,19 +16,15 @@ class LeaveTypeModel{
      * Last Updated At: October 2, 2025
      * @author Keith
      */
-    async getAllLeaveTypes() {
+    async getAllLeaveTypes(){
         const response_data = { status: false, result: null, error: null };
     
-        try {
-            const leave_type_id = Object.values(LEAVE_TYPE_ID);
-            const employee_id = leave_type_id.map(() => "?").join(",");
-            
+        try{
             const [get_all_leave_type_credit_value] = await this.db.execute(`
-                SELECT id, base_value 
-                FROM leave_types 
+                SELECT id, base_value
+                FROM leave_types
                 WHERE is_active = ?
-                AND id IN (${employee_id})
-            `, [IS_ACTIVE.yes, ...leave_type_id]);
+            `, [IS_ACTIVE.yes]);
             
     
             if(get_all_leave_type_credit_value.length){
@@ -89,25 +85,22 @@ class LeaveTypeModel{
         const response_data = { status: false, result: null, error: null };
     
         try {
-            const leave_type_id = [LEAVE_TYPE_ID.vacation_leave,LEAVE_TYPE_ID.sick_leave];
-    
-            const employee_id = leave_type_id.map(() => "?").join(",");
+            const leave_type_id = [LEAVE_TYPE_ID.vacation_leave,LEAVE_TYPE_ID.sick_leave].join(',');
     
             const [monthly_earn_leave] = await this.db.execute(`
                 SELECT id, gain_credit 
                 FROM leave_types 
                 WHERE is_active = ?
-                AND id IN (${employee_id})
-            `, [LEAVE_STATUS.active, ...leave_type_id]);
+                AND FIND_IN_SET(id, ?)
+            `, [LEAVE_STATUS.active, leave_type_id]);
     
-            if(monthly_earn_leave.length > NUMBER.zero){
+            if(monthly_earn_leave.length){
                 response_data.status = true;
                 response_data.result = monthly_earn_leave;
             } 
             else{
                 response_data.error = "No active monthly leave types found.";
             }
-    
         } 
         catch(error){
             response_data.error = error.message || "Database query failed.";
@@ -116,39 +109,6 @@ class LeaveTypeModel{
         return response_data;
     }
     
-    
-    
-
-    /**
-     * Retrieves yearly leave types for adding leave credits.
-     * @returns {Promise<Object>} response_data - Contains status, result array, or error.
-     * Last Updated At: October 2, 2025
-     */
-    async yearlyEarnLeaveType(){
-        const response_data =  { status: false, result: null, error: null };
-
-        try{
-            const [get_yearly_add_leavetype] = await this.db.execute(`
-                SELECT * 
-                FROM leave_types 
-                WHERE id IN (?, ?)
-            `, [LEAVE_TYPE_ID.sick_leave, LEAVE_TYPE_ID.vacation_leave]);
-
-            if(get_yearly_add_leavetype.length){
-                response_data.status = true;
-                response_data.result = get_yearly_add_leavetype;
-            }
-            else{
-                response_data.error = "No carry over leave type Found";  
-            }
-        }
-        catch(error){
-            response_data.error = error.message;
-        }
-
-        return response_data;
-    }
-  
     /**
      * Retrieves all default leave types.
      * @returns {Promise<Object>} response_data - Contains status, result array, or error.
@@ -292,8 +252,8 @@ class LeaveTypeModel{
             const [leave_types] = await this.db.execute(`
                 SELECT *
                 FROM leave_types
-                WHERE is_active = ? AND is_carried_over = ?
-            `, [LEAVE_STATUS.active, IS_CARRIED_OVER.no]);
+                WHERE is_carried_over = ?
+            `, [ IS_CARRIED_OVER.no]);
             
             if(leave_types.length){
                 response_data.status = true;

@@ -13,7 +13,7 @@ class WorkTimeValidationHelper{
      * @author Keith
      */
     validateEmployeeTimeOut({ id, time_out, work_hour }){
-        const result_validation = { is_valid: false, error: null };
+        const result_validation = { status: false, error: null };
 
         if(!id){
             result_validation.error = "Attendance ID is required.";
@@ -25,7 +25,7 @@ class WorkTimeValidationHelper{
             result_validation.error = "Work hour must be a valid number.";
         }
         else{
-            result_validation.is_valid = true;
+            result_validation.status = true;
         }
 
         return result_validation;

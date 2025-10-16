@@ -11,27 +11,20 @@ class AttendanceModel{
 
     /**
      * Inserts a "time in" attendance record for an employee into the database.
-     * @param {Object} param0 - Object containing employee_id and optional attendance_type_id
-     * @param {number} param0.employee_id - The ID of the employee.
-     * @param {number} [param0.attendance_type_id=ATTENDANCE_TYPE_ID.time_in] - Attendance type ID.
+     * @param {Object} update_time_in - Object containing employee_id and optional attendance_type_id
      * @returns {Promise<Object>} response_data - Object containing status, result, or error.
      * Last Updated At: October 1, 2025
      * @author Keith
      */
     async insertEmployeeTimeIn(update_time_in){
         const response_data =  { status: false, result: null, error: null };
-        const { employee_id, attendance_type_id = ATTENDANCE_TYPE_ID.time_in } = update_time_in;
 
         try{
-            const [insert_time_in] = await this.db.execute(`
-                INSERT INTO attendances (
-                    employee_id, 
-                    attendance_type_id, 
-                    time_in
-                )
-                VALUES (?, ?, CURRENT_DATE())
-            `, [employee_id, attendance_type_id]);
-
+            const [insert_time_in] = await this.db.query(
+                `INSERT INTO attendances SET ?`,
+                [update_time_in]
+            );
+            
             if(insert_time_in.insertId){
                 response_data.status = true;
                 response_data.result = { id: insert_time_in.insertId };
@@ -128,9 +121,8 @@ class AttendanceModel{
      * Last Updated At: October 1, 2025
      * @author Keith
      */
-    async updateEmployeeTimeOut(update_time_out, connection = this.db ){
+    async updateEmployeeTimeOut( employee_time_out, attendance_id, connection = this.db ){
         const response_data =  { status: false, result: null, error: null };
-        const { id, time_out, work_hour, attendance_type_id } = update_time_out;
 
         try{
             const [update_time_out] = await connection.execute(`
@@ -140,7 +132,7 @@ class AttendanceModel{
                     work_hour = ?, 
                     attendance_type_id = ?
                 WHERE id = ?
-            `, [time_out, work_hour, attendance_type_id, id]);
+            `, [ employee_time_out.time_out, employee_time_out.work_hour, employee_time_out.attendance_type_id, attendance_id ]);
 
             if(update_time_out.affectedRows){
                 response_data.status = true;
@@ -234,9 +226,8 @@ class AttendanceModel{
      * Last Updated At: October 1, 2025
      * @author Keith
      */
-    async getQualifiedEmployee(qualified_employee){
+    async getQualifiedEmployee(quealified_gain_employee){
         const response_data = { status: false, result: null, error: null };
-        const { qualified_attendance = NUMBER.two_hundred_forty_eight, role_type_id = ROLE_TYPE_ID.employee } = qualified_employee;
 
         try{
             const [qualified_employee] = await this.db.execute(`
@@ -247,7 +238,7 @@ class AttendanceModel{
                 WHERE employees.employee_role_type_id = ?
                 GROUP BY attendances.employee_id
                 HAVING COUNT(attendances.id) >= ?
-            `, [role_type_id, qualified_attendance]);
+            `, [quealified_gain_employee.role_type_id, quealified_gain_employee.qualified_attendance]);
     
             if(qualified_employee.length){
                 response_data.status = true;

@@ -17,30 +17,13 @@ class leaveTransactionModel{
      * Last Updated At: September 25, 2025
      * @author Keith
      */
-    async insertEmployeeTransaction(employee_leave_data, connection = this.db){
+    async insertEmployeeTransaction(employee_transaction, connection = this.db) {
         const response_data = { status: false, result: null, error: null };
-        const { employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend = IS_WEEKEND.no,
-            is_active = IS_ACTIVE.yes, start_date, end_date, filed_date = new Date(), year, rewarded_by_id = null, approved_by_id = null} = employee_leave_data;
-
-        try{
-            const [insert_transaction] = await connection.execute(`
-                INSERT INTO leave_transactions (
-                    employee_id,
-                    leave_transaction_status_id,
-                    leave_type_id,
-                    reason,
-                    total_leave,
-                    is_weekend,
-                    is_active,
-                    start_date,
-                    end_date,
-                    filed_date,
-                    year,
-                    rewarded_by_id,
-                    approved_by_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [ employee_id, leave_transaction_status_id, leave_type_id, reason, total_leave, is_weekend,
-                is_active, start_date, end_date, filed_date, year, rewarded_by_id, approved_by_id]);
+    
+        try {
+            const [insert_transaction] = await connection.query(`
+                INSERT INTO leave_transactions SET ?
+            `, [employee_transaction]);
     
             if(insert_transaction.insertId){
                 response_data.status = true;
@@ -49,7 +32,6 @@ class leaveTransactionModel{
             else{
                 response_data.error = "Insert transaction failed.";
             }
-    
         } 
         catch(error){
             response_data.error = error.message;
@@ -57,6 +39,7 @@ class leaveTransactionModel{
     
         return response_data;
     }
+    
     
      /**
      * Retrieves a leave transaction record by its ID.
@@ -129,9 +112,7 @@ class leaveTransactionModel{
     
     /**
      * Checks if an employee has an existing leave that overlaps with the given date range.
-     * @param {number} employee_id - The ID of the employee to check.
-     * @param {string} start_date - The start date of the leave.
-     * @param {string} end_date - The end date of the leave.
+     * @param {number} check_overlap_date - The ID of the employee to check.
      * @returns {Promise<Object>} response_data - Contains status, result, or error.
      * Last Updated At: October 8, 2025
      * @author Keith
@@ -148,7 +129,7 @@ class leaveTransactionModel{
                 AND leave_transaction_status_id NOT IN (?, ?)
                 AND (start_date < ? AND end_date > ?)
                 ORDER BY id DESC
-            `, [employee_id, LEAVE_TRANSACTION_STATUS.rejected, LEAVE_TRANSACTION_STATUS.cancelled, end_date, start_date ]);
+            `, [ employee_id, LEAVE_TRANSACTION_STATUS.rejected, LEAVE_TRANSACTION_STATUS.cancelled, end_date, start_date ]);
 
             if(check_overlapping_leave.length){
                 response_data.status = true;

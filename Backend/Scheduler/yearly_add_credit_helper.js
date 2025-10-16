@@ -31,14 +31,9 @@ cron.schedule("* * * * * *", async () => {
  * @author Keith
  */
 cron.schedule("* * * * * *", async () => {
-    const mock_request = {};
-    const mock_response = {
-        json: (data) => {
-            return data;
-        }
-    };
-
-    return await CreditControllers.addMonthlyCredit(mock_request, mock_response);
+    const mock_req = {};
+    const mock_res = { json: (data) => console.log("Monthly:", data) };
+    await CreditControllers.addMonthlyCredit(mock_req, mock_res);
 });
 
 /**
@@ -50,12 +45,13 @@ cron.schedule("* * * * * *", async () => {
  * @author Keith
  */
 cron.schedule("59 59 23 31 12 *", async () => {
-    const mock_request = {};
+    const mock_request = {}; 
     const mock_response = {
         json: (data) => {
             return data;
         }
     };
 
-    return await CreditControllers.resetEmployeeCredit(mock_request, mock_response);
+    await CreditControllers.resetEmployeeCredit(mock_request, mock_response);
 });
+
